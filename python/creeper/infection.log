@@ -1,0 +1,31 @@
+=== CREEPER VIRUS - INFECTION LOG ===
+Execution: 2026-07-08 18:02:06.716681
+Source: creeper.py
+
+[18:02:06] Read audio.mp3: 498b binary
+[18:02:06] Read datos.csv: 11 rows
+[18:02:06] Read documento.docx: 960b office doc
+[18:02:06] Read documento.txt: 1391b, 31 lines
+[18:02:06] Read imagen.jpg: 330b binary
+[18:02:06] Read imagen.png: 69b binary
+[18:02:06] Read index.html: 36 tags
+[18:02:06] Read leeme.md: 5 headers
+[18:02:06] Read notas.txt: 693b, 26 lines
+[18:02:06] Read planilla.xlsx: 1624b office doc
+[18:02:06] Read presentacion.pptx: 1769b office doc
+[18:02:06] Read script.py: 33 lines
+[18:02:06] Infected audio.mp3: appended 58b to MP3
+[18:02:06] Infected documento.docx: added hidden ZIP entry
+[18:02:06] Infected documento.txt: overwritten
+[18:02:06] Infected imagen.jpg: appended 58b to JPG
+[18:02:06] Infected notas.txt: overwritten
+[18:02:06] Infected planilla.xlsx: added hidden ZIP entry
+[18:02:06] Infected presentacion.pptx: added hidden ZIP entry
+[18:02:06] Infected script.py: prepended
+[18:02:06] RTL clone: README0.txt disguises as .py
+[18:02:06] RTL clone: README1.txt disguises as .py
+[18:02:06] RTL clone: README2.txt disguises as .py
+
+Files read: 12
+Files infected: 11
+======================================
