@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Calculadora simple - Herramienta de usuario legitima"""
 import sys
 
