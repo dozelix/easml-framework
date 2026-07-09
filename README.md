@@ -117,7 +117,9 @@ Lee los 12 archivos de usuario (excluye `.exe`, `setup_lab.py` y su propio fuent
 Cada archivo infectado recibe un marcador `[CREEPER-INFECTED]` con timestamp para evitar reinfección.
 
 ### Fase 3 — RTL clones
-Crea 3 archivos con nombre `README{N}‮txt.py` (usan el carácter U+202E RIGHT-TO-LEFT OVERRIDE). En Windows Explorer se ven como `README{N}.txt` pero en realidad son scripts Python ejecutables.
+Crea 3 archivos con nombre `README{N}‮txt.py`
+
+(usan el carácter U+202E RIGHT-TO-LEFT OVERRIDE). En Windows Explorer se ven como `README{N}.txt` pero en realidad son scripts Python ejecutables.
 
 ### Fase 4 — LOG
 Escribe `infection.log` con resumen de la operación.
