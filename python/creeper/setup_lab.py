@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Generate user files for the Creeper lab"""
 import os
+import sys
 import struct
 import zlib
 import zipfile
 import io
 
-DIR = os.path.dirname(os.path.abspath(__file__))
+DIR = os.getcwd()
 
 def write(name, data):
     path = os.path.join(DIR, name)
