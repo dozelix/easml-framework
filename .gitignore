@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.exe
+infection.log
+*.o
+*.rcgu.o
