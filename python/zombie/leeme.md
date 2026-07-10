@@ -1,8 +1,9 @@
-# Laboratorio Creeper Virus
+# Laboratorio Zombie Virus
 
 ## Descripcion
-Laboratorio educativo para demostrar el concepto del primer virus
-informatico de la historia: el Creeper (1971).
+Laboratorio educativo para simular el comportamiento de la variante
+Zombie (basada en Minecraft) con evasión UV, enrutamiento Manhattan
+y correlación rendimiento/detección.
 
 ## Archivos incluidos
 - `documento.txt` - Contrato laboral de ejemplo
@@ -19,7 +20,7 @@ informatico de la historia: el Creeper (1971).
 
 ## Uso
 1. Ejecutar `setup_lab.py` para generar los archivos
-2. Ejecutar `python creeper.py` para simular el virus
+2. Ejecutar `python zombie.py` para simular el virus
 
 ## Advertencia
 SOLO PARA USO EDUCATIVO EN ENTORNO CONTROLADO.
