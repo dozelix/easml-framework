@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate user files for the Creeper lab"""
+"""Generate user files for the Zombie lab"""
 import os
 import sys
 import struct
@@ -168,11 +168,12 @@ Jorge Ramirez,jorge.ramirez@empresa.com,Logistica,Jefe de Deposito,9
 """
 
 def make_leeme_md():
-    return """# Laboratorio Creeper Virus
+    return """# Laboratorio Zombie Virus
 
 ## Descripcion
-Laboratorio educativo para demostrar el concepto del primer virus
-informatico de la historia: el Creeper (1971).
+Laboratorio educativo para simular el comportamiento de la variante
+Zombie (basada en Minecraft) con evasión UV, enrutamiento Manhattan
+y correlación rendimiento/detección.
 
 ## Archivos incluidos
 - `documento.txt` - Contrato laboral de ejemplo
@@ -189,7 +190,7 @@ informatico de la historia: el Creeper (1971).
 
 ## Uso
 1. Ejecutar `setup_lab.py` para generar los archivos
-2. Ejecutar `python creeper.py` para simular el virus
+2. Ejecutar `python zombie.py` para simular el virus
 
 ## Advertencia
 SOLO PARA USO EDUCATIVO EN ENTORNO CONTROLADO.
@@ -281,7 +282,7 @@ def make_mp3():
     tit2_data = b'\x03Silent Track'
     tit2 = b'TIT2' + struct.pack('>I', len(tit2_data)) + b'\x00\x00' + tit2_data
 
-    tpe1_data = b'\x03Creeper Lab'
+    tpe1_data = b'\x03Zombie Lab'
     tpe1 = b'TPE1' + struct.pack('>I', len(tpe1_data)) + b'\x00\x00' + tpe1_data
 
     talb_data = b'\x03Malware Studies'
@@ -326,7 +327,7 @@ def make_docx():
             '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
             '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
             '<w:body><w:p><w:r><w:t>Hola Mundo - Documento de prueba</w:t></w:r></w:p>'
-            '<w:p><w:r><w:t>Este archivo fue creado para el laboratorio Creeper.</w:t></w:r></w:p>'
+            '<w:p><w:r><w:t>Este archivo fue creado para el laboratorio Zombie.</w:t></w:r></w:p>'
             '</w:body></w:document>'))
         z.writestr('_rels/.rels', (
             '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
@@ -404,7 +405,7 @@ def make_pptx():
             '<p:grpSpPr><a:xfrm xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></a:xfrm></p:grpSpPr>'
             '<p:sp><p:nvSpPr><p:cNvPr id="2" name="Title"/><p:nvSpPrType spPr="true"/></p:nvSpPr>'
             '<p:spPr><a:xfrm xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:off x="685800" y="457200"/><a:ext cx="7772400" cy="1219200"/></a:xfrm></p:spPr>'
-            '<p:txBody><a:bodyPr/><a:p><a:r><a:rPr lang="es-AR" sz="4400"/><a:t>Creeper Virus Lab</a:t></a:r></a:p></p:txBody>'
+            '<p:txBody><a:bodyPr/><a:p><a:r><a:rPr lang="es-AR" sz="4400"/><a:t>Zombie Virus Lab</a:t></a:r></a:p></p:txBody>'
             '</p:sp></p:spTree></p:cSld>'
             '</p:sld>'))
         z.writestr('ppt/_rels/presentation.xml.rels', (
@@ -418,7 +419,7 @@ def make_pptx():
 # ── MAIN ───────────────────────────────────────────────
 
 def main():
-    print("Generating user files for Creeper lab...\n")
+    print("Generating user files for Zombie lab...\n")
 
     write('documento.txt', make_documento_txt())
     write('notas.txt', make_notas_txt())
