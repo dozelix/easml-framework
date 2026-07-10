@@ -7,7 +7,7 @@ Simulación educativa del virus Zombie (variante Minecraft) en Python 3.
 - Python 3.7+
 - Sin dependencias externas
 
-## Compilar / Ejecutar
+## Ejecución
 
 ```bash
 python zombie.py
@@ -15,7 +15,7 @@ python zombie.py
 
 No necesita compilación. Se ejecuta directamente con el intérprete de Python.
 
-## Test rápido
+## Prueba rápida
 
 ```bash
 # 1. Generar archivos de prueba (12 archivos)
@@ -25,7 +25,7 @@ python setup_lab.py
 python zombie.py
 
 # 3. Ver resultado
-cat infection.log
+type infection.log
 
 # 4. Limpiar
 Remove-Item infection.log, "BRAINS*txt.py" -ErrorAction SilentlyContinue
@@ -37,76 +37,76 @@ python setup_lab.py   # regenera archivos limpios
 ```
 BRAINS... I MEAN, FILES. THE ZOMBIE WALKS.
 
-── PHASE 1: RECON (HUNGER) ──
-[zombie] reading: documento.txt (1234 bytes, 32 lines)
-[zombie] reading: datos.csv (parsed 11 rows)
+── FASE 1: RECON (HAMBRE) ──
+[zombie] leyendo: documento.txt (1234 bytes, 32 lineas)
+[zombie] leyendo: datos.csv (parseado 11 filas)
 ...
 
-── PHASE 4: UV EVASION (SUNLIGHT AVOIDANCE) ──
-[zombie] UV EVASION: nighttime (hour=21) — zombie is active
+── FASE 4: EVASION UV (EVITAR LUZ SOLAR) ──
+[zombie] EVASION UV: noche detectada (hora=21) — zombie activo
 
-── PHASE 2: INFECT (BITE) ──
-[zombie] infected: script.py (prepended zombie code)
-[zombie] infected: notas.txt (overwritten with zombie)
+── FASE 2: INFECTAR (MORDIDA) ──
+[zombie] infectado: script.py (codigo zombie antepuesto)
+[zombie] infectado: notas.txt (sobrescrito con zombie)
 ...
 
-── PHASE 3: RTL SPAWN (ZOMBIE SPAWN) ──
-[zombie] spawned: 'BRAINS0\u202Etxt.py'
-        (looks like BRAINS0.txt in Explorer)
+── FASE 3: RTL SPAWN (REPRODUCCION ZOMBIE) ──
+[zombie] creado: 'BRAINS0\u202Etxt.py'
+        (parece BRAINS0.txt en Explorer)
 
-── PHASE 5: MANHATTAN ROUTING (ORTHOGONAL SCANNING) ──
-[zombie] hop: documento.txt -> script.py (distance=42)
+── FASE 5: ENRUTAMIENTO MANHATTAN (ESCANEO ORTOGONAL) ──
+[zombie] salto: documento.txt -> script.py (distancia=42)
 ...
 
-── PHASE 6: PERFORMANCE PROFILING (HORDE ACTIVITY) ──
-[zombie] HIGH ACTIVITY MODE (fast scan, high CPU, HIGH detection risk)
-[zombie] high activity: 125.43ms — SIEM detection risk: 85/100
+── FASE 6: PERFILAMIENTO DE RENDIMIENTO (ACTIVIDAD DE LA HORDA) ──
+[zombie] MODO ALTA ACTIVIDAD (escaneo rapido, alto CPU, ALTO riesgo de deteccion)
+[zombie] alta actividad: 125.43ms — riesgo SIEM: 85/100
 ...
 ```
 
 ## Comportamiento del virus
 
-### Fase 1 — RECON (Hunger)
+### Fase 1 — RECON (Hambre)
 Lee los 12 archivos de usuario e imprime metadata por tipo.
 
-### Fase 2 — INFECT (Bite)
-| Ext | Método |
+### Fase 2 — INFECTAR (Mordida)
+| Ext | Metodo |
 |-----|--------|
-| `.py` | Antepone código fuente del zombie |
-| `.txt` | Sobrescribe con código fuente |
+| `.py` | Antepone codigo fuente del zombie |
+| `.txt` | Sobrescribe con codigo fuente |
 | `.jpg` | Inserta marcador antes de `FF D9` (EOI) |
-| `.png` | Inserta marcador después de chunk IEND |
-| `.mp3` | Appendea marcador al final |
+| `.png` | Inserta marcador despues de chunk IEND |
+| `.mp3` | Agrega marcador al final |
 | `.docx`, `.xlsx`, `.pptx` | Inyecta marcador oculto dentro del ZIP |
 
 ### Fase 3 — RTL Spawn
 Crea 3 archivos `BRAINS{N}‮txt.py` (usan U+202E). En Windows Explorer se ven como `BRAINS{N}.txt` pero son scripts Python ejecutables.
 
-### Fase 4 — UV Evasion (Sunlight Avoidance)
-**Hora 9-17**: El zombie detecta "luz diurna" y se autodestruye — elimina todos los rastros (archivos infectados, RTL clones, infection.log) y aborta la ejecución.
+### Fase 4 — Evasion UV (Evitar Luz Solar)
+**Hora 9-17**: El zombie detecta "luz diurna" y se autodestruye — elimina todos los rastros (archivos infectados, RTL clones, infection.log) y aborta la ejecucion.
 
-**Fuera de 9-17**: El zombie permanece activo y continúa con las demás fases.
+**Fuera de 9-17**: El zombie permanece activo y continua con las demas fases.
 
-Esto simula la ejecución fileless: el payload reside en memoria y evita persistir cuando hay alta supervisión.
+Esto simula la ejecucion fileless: el payload reside en memoria y evita persistir cuando hay alta supervision.
 
-### Fase 5 — Manhattan Routing
-Simula escaneo de red ortogonal (distancia Manhattan): cada salto es horizontal o vertical, nunca diagonal. Esto es predecible y colisiona con topologías segmentadas, VLANs aisladas o honeypots.
+### Fase 5 — Enrutamiento Manhattan
+Simula escaneo de red ortogonal (distancia Manhattan): cada salto es horizontal o vertical, nunca diagonal. Esto es predecible y colisiona con topologias segmentadas, VLANs aisladas o honeypots.
 
-### Fase 6 — Performance Profiling
-Demuestra la correlación entre actividad del CPU y riesgo de detección:
-- **Alta actividad**: Alto uso de CPU → firma grande → SIEM lo detecta fácil
-- **Baja actividad**: Bajo uso de CPU → firma pequeña → evasión exitosa
+### Fase 6 — Perfilamiento de Rendimiento
+Demuestra la correlacion entre actividad del CPU y riesgo de deteccion:
+- **Alta actividad**: Alto uso de CPU → firma grande → SIEM lo detecta facil
+- **Baja actividad**: Bajo uso de CPU → firma pequena → evasion exitosa
 
 ## Archivos infectables
 
-| Ext | Método | Marcador |
+| Ext | Metodo | Marcador |
 |-----|--------|----------|
-| `.py` | Prepend | `# === INFECTED BY ZOMBIE ===` |
-| `.txt` | Overwrite | Código fuente completo |
-| `.png` | Insert after IEND | `[ZOMBIE-INFECTED]` |
-| `.jpg` | Insert before EOI | `[ZOMBIE-INFECTED]` |
-| `.mp3` | Append | `[ZOMBIE-INFECTED]` |
-| `.docx/.xlsx/.pptx` | ZIP injection | `zombie_infection/.zombie_marker.txt` |
+| `.py` | Anteponer | `# === INFECTED BY ZOMBIE ===` |
+| `.txt` | Sobrescribir | Codigo fuente completo |
+| `.png` | Insertar despues de IEND | `[ZOMBIE-INFECTED]` |
+| `.jpg` | Insertar antes de EOI | `[ZOMBIE-INFECTED]` |
+| `.mp3` | Agregar | `[ZOMBIE-INFECTED]` |
+| `.docx/.xlsx/.pptx` | Inyeccion ZIP | `zombie_infection/.zombie_marker.txt` |
 
 ## Limpieza total
 
