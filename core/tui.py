@@ -354,9 +354,11 @@ class LaboratorioTUI(App):
         Se dispara cuando se resalta un item (flechas arriba/abajo).
         Actualiza el panel de info sin cambiar el indice seleccionado.
         """
-        if event.item is not None and event.index is not None:
+        if event.item is not None:
+            lv = self.query_one("#lista-modulos", ListView)
+            idx = lv.index if lv.index is not None else 0
             info = self.query_one("#info-modulo", Static)
-            info.update(self._render_modulo_info(event.index))
+            info.update(self._render_modulo_info(idx))
 
     # ── Acciones de teclado ──────────────────────────────────────────────
 
