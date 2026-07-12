@@ -21,10 +21,11 @@ sys.path.insert(0, _DIR_RAIZ)
 
 from core.common import (
     log, safe_print, color, banner, hash_file, cleanup, write_log,
+    find_lab_dir,
 )
 
 # ── Constantes ──────────────────────────────────────────────────────────────
-DIR_SIMULACION = os.path.join(os.getcwd(), 'directorio_pruebas')
+DIR_SIMULACION = find_lab_dir(_DIR_RAIZ)
 EXTENSION_LOCKED = '.locked'
 NOTA_RESCATE = 'README_RESCATE.txt'
 LOG_DEFENSA = 'defensa_ransomware.log'

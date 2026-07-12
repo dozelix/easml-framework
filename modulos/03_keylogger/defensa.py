@@ -21,11 +21,10 @@ _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 sys.path.insert(0, _DIR_RAIZ)
 
 from core.common import (
-    log, safe_print, color, banner, cleanup, write_log,
-)
+    log, safe_print, color, banner, cleanup, write_log,    find_lab_dir,)
 
 # ── Constantes ──────────────────────────────────────────────────────────────
-DIR_SIMULACION = os.path.join(os.getcwd(), 'directorio_pruebas')
+DIR_SIMULACION = find_lab_dir(_DIR_RAIZ)
 LOG_KEYLOG = 'keylog.log'
 LOG_DEFENSA = 'defensa_keylogger.log'
 

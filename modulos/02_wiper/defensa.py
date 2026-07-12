@@ -24,8 +24,8 @@ from core.common import (
 )
 
 # ── Constantes ──────────────────────────────────────────────────────────────
-DIR_SIMULACION = os.path.join(os.getcwd(), 'directorio_pruebas')
-DIR_BACKUP = os.path.join(os.getcwd(), '.backup_wiper')
+DIR_SIMULACION = find_lab_dir(_DIR_RAIZ)
+DIR_BACKUP = os.path.join(os.path.dirname(DIR_SIMULACION), '.backup_wiper')
 LOG_DEFENSA = 'defensa_wiper.log'
 
 # Archivos generados por lab_setup.py

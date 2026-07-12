@@ -24,10 +24,11 @@ sys.path.insert(0, ROOT)
 from core.common import (
     banner, color, safe_print, log, LOG_LINES,
     write_log, cleanup, hash_file as _hash_file,
+    find_lab_dir,
 )
 
 # ── Ruta del directorio de pruebas ──
-LAB_DIR = os.path.join(ROOT, "directorio_pruebas")
+LAB_DIR = find_lab_dir(ROOT)
 
 # ── Configuracion de la simulacion ──
 # Cada "nodo" representa un host en la red simulada

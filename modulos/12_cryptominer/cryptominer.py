@@ -26,13 +26,13 @@ import shutil
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from core.common import log, safe_print, color, banner, traverse_lab_files
-from core.common import hash_file, read_file, cleanup, write_log, is_lab_ready
+from core.common import hash_file, read_file, cleanup, write_log, is_lab_ready, find_lab_dir
 
 MODULO_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.join(MODULO_DIR, '..', '..')
 
 # Directorio de trabajo confinado — todas las operaciones ocurren aqui
-DIR_SIMULACION = os.path.join(os.getcwd(), 'directorio_pruebas')
+DIR_SIMULACION = find_lab_dir(ROOT_DIR)
 
 # Estado del minero
 minando = False

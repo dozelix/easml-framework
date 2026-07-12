@@ -23,13 +23,12 @@ import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from core.common import (
-    log, safe_print, color, banner, cleanup, write_log
+    log, safe_print, color, banner, cleanup, write_log, find_lab_dir
 )
 
 # ── Constantes ──────────────────────────────────────────
 # Directorio de trabajo confinado
-LAB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))), 'directorio_pruebas')
+LAB_DIR = find_lab_dir(os.path.dirname(os.path.abspath(__file__)))
 BOMB_MARKER = os.path.join(LAB_DIR, "logic_bomb_marker.json")
 BOMB_LOG = os.path.join(LAB_DIR, "logic_bomb.log")
 TRIGGER_FILE = os.path.join(LAB_DIR, "_trigger_bomb.txt")

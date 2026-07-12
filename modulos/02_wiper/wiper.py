@@ -26,15 +26,15 @@ sys.path.insert(0, _DIR_RAIZ)
 from core.common import (
     log, safe_print, color, banner, traverse_lab_files,
     hash_file, read_file, cleanup, write_log, is_lab_ready,
-    LOG_LINES,
+    LOG_LINES, find_lab_dir,
 )
 
 # ── Constantes ──────────────────────────────────────────────────────────────
 # Directorio donde se trabaja la simulacion
-DIR_SIMULACION = os.path.join(os.getcwd(), 'directorio_pruebas')
+DIR_SIMULACION = find_lab_dir(_DIR_RAIZ)
 
 # Backup seguro de los originales ANTES de la corrupcion
-DIR_BACKUP = os.path.join(os.getcwd(), '.backup_wiper')
+DIR_BACKUP = os.path.join(os.path.dirname(DIR_SIMULACION), '.backup_wiper')
 
 # Cantidad de bytes a sobreescribir con basura (de 64 a total del archivo)
 BYTES_A_CORROMPER = 64

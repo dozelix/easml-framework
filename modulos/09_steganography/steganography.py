@@ -24,13 +24,12 @@ import shutil
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from core.common import (
-    log, safe_print, color, banner, hash_file, cleanup, write_log
+    log, safe_print, color, banner, hash_file, cleanup, write_log, find_lab_dir
 )
 
 # ── Constantes ──────────────────────────────────────────
 # Directorio de trabajo confinado
-LAB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))), 'directorio_pruebas')
+LAB_DIR = find_lab_dir(os.path.dirname(os.path.abspath(__file__)))
 IMAGEN_ORIG = os.path.join(LAB_DIR, "imagen.png")
 IMAGEN_STEG = os.path.join(LAB_DIR, "imagen_steg.png")
 BACKUP_EXT = ".bak_steg"

@@ -25,7 +25,7 @@ from core.common import (
 )
 
 # ── Ruta del directorio de pruebas ──
-LAB_DIR = os.path.join(ROOT, "directorio_pruebas")
+LAB_DIR = find_lab_dir(ROOT)
 
 # ── Marcadores que inserta worm.py ──
 WORM_NAME = "worm_sim.py"

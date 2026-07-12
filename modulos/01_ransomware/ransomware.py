@@ -25,12 +25,11 @@ sys.path.insert(0, _DIR_RAIZ)
 from core.common import (
     log, safe_print, color, banner, traverse_lab_files,
     hash_file, read_file, cleanup, write_log, is_lab_ready,
-    LOG_LINES,
+    LOG_LINES, find_lab_dir,
 )
 
 # ── Constantes fijadas a la raíz ────────────────────────────────────────────
-# Ahora DIR_SIMULACION usa _DIR_RAIZ para asegurar que siempre apunte al lugar correcto
-DIR_SIMULACION = os.path.join(_DIR_RAIZ, 'directorio_pruebas')
+DIR_SIMULACION = find_lab_dir(_DIR_RAIZ)
 
 EXTENSION_LOCKED = '.locked'
 NOTA_RESCATE = 'README_RESCATE.txt'

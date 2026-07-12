@@ -22,11 +22,10 @@ import shutil
 # ── Configurar path para importar core.common ──
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from core.common import log, safe_print, color, banner, cleanup, write_log, hash_file
+from core.common import log, safe_print, color, banner, cleanup, write_log, hash_file, find_lab_dir
 
 # ── Directorio de trabajo de la simulación ──
-LAB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))), 'directorio_pruebas')
+LAB_DIR = find_lab_dir(os.path.dirname(os.path.abspath(__file__)))
 
 # Artefactos conocidos que genera la simulación de esteganografía
 ARTIFACTOS = {

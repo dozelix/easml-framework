@@ -24,13 +24,12 @@ import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from core.common import (
-    log, safe_print, color, banner, cleanup, write_log, LOG_LINES
+    log, safe_print, color, banner, cleanup, write_log, LOG_LINES, find_lab_dir
 )
 
 # ── Constantes ──────────────────────────────────────────
 # Directorio de trabajo confinado para la simulación
-LAB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))), 'directorio_pruebas')
+LAB_DIR = find_lab_dir(os.path.dirname(os.path.abspath(__file__)))
 BOTNET_CONFIG = os.path.join(LAB_DIR, "bot_config.json")
 BOTNET_LOG = os.path.join(LAB_DIR, "botnet_c2.log")
 

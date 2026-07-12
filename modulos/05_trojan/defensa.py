@@ -23,7 +23,7 @@ from core.common import (
 )
 
 # ── Ruta del directorio de pruebas ──
-LAB_DIR = os.path.join(ROOT, "directorio_pruebas")
+LAB_DIR = find_lab_dir(ROOT)
 
 # ── Marcadores de IOC (Indicators of Compromise) ──
 PAYLOAD_MARKER = "TROJAN_PAYLOAD_SIMULATION"
