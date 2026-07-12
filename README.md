@@ -17,7 +17,7 @@ graph TB
     subgraph "core/ — Utilidades compartidas"
         COMMON["common.py<br/>log, colores, traversal, hashing"]
         SETUP["lab_setup.py<br/>generador de archivos de prueba"]
-        TUIMOD["tui.py<br/>interfaz panel dividido"]
+        TUIMOD["tui.py<br/>interfaz panel dividido (Textual)"]
         CLIMOD["cli.py<br/>navegador por comandos"]
     end
 
@@ -51,8 +51,8 @@ graph TB
 
 ## Requisitos
 
-- Python 3.7+
-- Sin dependencias externas
+- Python 3.10+
+- `textual` (solo para TUI): `pip install textual`
 
 ## Inicio rapido
 

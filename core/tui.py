@@ -1,27 +1,39 @@
 #!/usr/bin/env python3
 """
-TUI interactiva del Laboratorio de Malware Educativo.
+TUI interactiva del Laboratorio de Malware Educativo — basada en Textual.
 
-Interfaz de usuario de terminal con panel dividido (split-view):
-  - Panel izquierdo:  lista navegable de 14 modulos
-  - Panel derecho:    metadata del modulo seleccionado (CIA, CIS, descripcion)
-  - Barra inferior:   atajos de teclado visuales
-  - Vista de logs:    output capturado de simulaciones y defensas
+Interfaz de usuario de terminal moderna con layout flexbox:
+  - Panel izquierdo:  lista navegable de 14 modulos (ListView)
+  - Panel derecho superior: metadata del modulo seleccionado (CIA, CIS, desc)
+  - Panel derecho inferior: consola de logs con output en tiempo real (RichLog)
+  - Barra inferior:   Footer nativo de Textual con atajos de teclado
 
-Dependencias: solo curses (estandar de Python 3).
-  En Windows se necesita: pip install windows-curses
+Dependencias:
+  pip install textual
 
 Uso:
     python -m core.tui
 """
 import os
 import sys
-import curses
-import subprocess
+import re
+import asyncio
 import textwrap
-import threading
-import queue
-import time
+
+from textual import on
+from textual.app import App, ComposeResult
+from textual.binding import Binding
+from textual.containers import Horizontal, Vertical
+from textual.reactive import reactive
+from textual.widgets import (
+    Footer,
+    Header,
+    Label,
+    ListItem,
+    ListView,
+    RichLog,
+    Static,
+)
 
 # ── Rutas del proyecto ──────────────────────────────────────────────────────
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -74,598 +86,414 @@ MODULOS = [
      "Exfiltracion via consultas DNS"),
 ]
 
-# ── Colores ANSI para strips de texto plano ─────────────────────────────────
-# Usados al procesar el output de los subprocesos que imprimen con ANSI codes.
-ANSI_COLORS = {
-    '\033[0m':  '', '\033[1m':  '', '\033[91m': '', '\033[92m': '',
-    '\033[93m': '', '\033[94m': '', '\033[95m': '', '\033[96m': '',
-    '\033[97m': '', '\033[0;32m': '', '\033[0;33m': '', '\033[0;36m': '',
+# ── Regex para limpiar ANSI codes ──────────────────────────────────────────
+ANSI_RE = re.compile(r'\x1b\[[0-9;]*m')
+
+
+def strip_ansi(text: str) -> str:
+    """Elimina secuencias de escape ANSI de un string."""
+    return ANSI_RE.sub('', text)
+
+
+def _cia_icon(cia: str) -> str:
+    """Retorna un simbolo visual segun el pilar CIA."""
+    return {"Confidencialidad": "C", "Integridad": "I", "Disponibilidad": "A"}.get(cia, "?")
+
+
+# ════════════════════════════════════════════════════════════════════════════
+#  CSS DE TEXTUAL — Estilos declarativos para el layout
+# ════════════════════════════════════════════════════════════════════════════
+TUI_CSS = """
+Screen {
+    layout: horizontal;
 }
 
+#panel-izquierdo {
+    width: 30%;
+    min-width: 24;
+    height: 100%;
+    border: solid $accent;
+    padding: 0 1;
+}
 
-def strip_ansi(text):
-    """Elimina secuencias de escape ANSI de un string para mostrarlo en curses."""
-    import re
-    ansi_re = re.compile(r'\x1b\[[0-9;]*m')
-    return ansi_re.sub('', text)
+#panel-derecho {
+    width: 1fr;
+    height: 100%;
+}
+
+#info-modulo {
+    height: 2fr;
+    border: solid $accent;
+    padding: 1 2;
+}
+
+#consola-logs {
+    height: 3fr;
+    border: solid $accent;
+}
+
+/* ── Lista de modulos ─────────────────────────────────────── */
+#lista-modulos {
+    height: 1fr;
+}
+
+#lista-modulos > ListItem {
+    padding: 0 1;
+}
+
+#lista-modulos > ListItem.-active {
+    background: $accent;
+    color: $text;
+}
+
+/* ── Header del panel izquierdo ────────────────────────────── */
+.titulo-panel {
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 0;
+}
+
+/* ── Campo de info ─────────────────────────────────────────── */
+.campo-label {
+    text-style: bold;
+    color: $accent;
+}
+"""
 
 
 # ════════════════════════════════════════════════════════════════════════════
-#  CLASE PRINCIPAL: LaboratorioTUI
+#  APP PRINCIPAL
 # ════════════════════════════════════════════════════════════════════════════
-class LaboratorioTUI:
+class LaboratorioTUI(App):
     """
-    Interfaz de terminal dividida en paneles para el laboratorio.
+    Interfaz TUI para el Laboratorio de Malware Educativo.
 
-    Layout de pantalla:
-    ┌──────────────────────────────────────────────────────────┐
+    Layout:
+    ┌────────────────────┬─────────────────────────────────────┐
     │  TITULO / HEADER                                         │
     ├────────────────────┬─────────────────────────────────────┤
-    │                    │                                     │
-    │   LISTA DE         │   INFO DEL MODULO SELECCIONADO     │
-    │   MODULOS          │   - Pilar CIA                      │
-    │   (panel izq)      │   - Control CIS                    │
-    │                    │   - Descripcion                     │
-    │                    │                                     │
+    │                    │  INFO DEL MODULO SELECCIONADO       │
+    │   LISTA DE         │  - Pilar CIA                       │
+    │   MODULOS          │  - Control CIS                     │
+    │   (ListView)       │  - Descripcion                     │
+    │                    ├─────────────────────────────────────┤
+    │                    │  CONSOLA DE LOGS (RichLog)          │
+    │                    │  [output en tiempo real]            │
     ├────────────────────┴─────────────────────────────────────┤
     │  [Enter] Simular  [D] Defensa  [C] Limpiar  [Q] Salir  │
     └──────────────────────────────────────────────────────────┘
-
-    Cuando se ejecuta un modulo, se sobrepone una vista de logs:
-    ┌──────────────────────────────────────────────────────────┐
-    │  LOG DE EJECUCION — [nombre_modulo]                      │
-    ├──────────────────────────────────────────────────────────┤
-    │  [output en tiempo real del subproceso]                  │
-    │  ...                                                     │
-    ├──────────────────────────────────────────────────────────┤
-    │  [Enter] Volver   [Q] Salir                             │
-    └──────────────────────────────────────────────────────────┘
     """
 
-    def __init__(self, stdscr):
-        self.stdscr = stdscr
-        self.selected = 0          # Indice del modulo seleccionado
-        self.log_mode = False      # True = estamos viendo logs de ejecucion
-        self.log_lines = []        # Lineas de output del subproceso
-        self.log_scroll = 0        # Offset de scroll en vista de logs
-        self.running_proc = None   # Referencia al subproceso activo
-        self.output_queue = queue.Queue()  # Cola thread-safe para output
-        self.done_event = threading.Event()  # Senal de fin de subproceso
+    # ── Atajos de teclado ────────────────────────────────────────────────
+    BINDINGS = [
+        Binding("enter", "ejecutar_simulacion", "Simular", show=True),
+        Binding("d",     "ejecutar_defensa",    "Defensa", show=True),
+        Binding("c",     "ejecutar_clean",      "Limpiar", show=True),
+        Binding("q",     "quit",                "Salir",   show=True),
+        Binding("j",     "cursor_down",  "Abajo",  show=False, key_display="↓"),
+        Binding("k",     "cursor_up",    "Arriba", show=False, key_display="↑"),
+    ]
 
-        # Configuracion inicial de curses
-        curses.curs_set(0)         # Ocultar cursor
-        curses.use_default_colors()# Usar colores default del terminal
-        self.stdscr.keypad(True)   # Capturar teclas especiales (flechas, etc.)
-        self.stdscr.timeout(-1)    # Bloquear en getch() hasta recibir input
+    # ── CSS ──────────────────────────────────────────────────────────────
+    CSS = TUI_CSS
 
-        # Definir pares de colores
-        curses.init_pair(1, curses.COLOR_CYAN, -1)     # Titulos
-        curses.init_pair(2, curses.COLOR_GREEN, -1)     # Texto positivo
-        curses.init_pair(3, curses.COLOR_YELLOW, -1)    # Advertencias
-        curses.init_pair(4, curses.COLOR_RED, -1)       # Errores/seleccion
-        curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_BLUE)  # Barra de estado
-        curses.init_pair(6, curses.COLOR_BLACK, curses.COLOR_CYAN)  # Header
-        curses.init_pair(7, curses.COLOR_WHITE, curses.COLOR_RED)   # Ejecutando
-        curses.init_pair(8, curses.COLOR_MAGENTA, -1)   # CIS Control
-        curses.init_pair(9, curses.COLOR_BLACK, curses.COLOR_GREEN) # Seleccion
+    # ── Estado reactivo ──────────────────────────────────────────────────
+    # El indice seleccionado se observa para actualizar el panel de info
+    selected_index: reactive[int] = reactive(0)
+    # Flag para indicar si un subproceso esta corriendo
+    ejecutando: reactive[bool] = reactive(False)
 
-    # ── Utilidades de dibujo ────────────────────────────────────────────────
-
-    def safe_addstr(self, y, x, text, attr=0):
+    def compose(self) -> ComposeResult:
         """
-        Escribe texto en la pantalla de forma segura.
-        Si el texto no cabe, lo trunca en vez de lanzar异常.
-        Esto evita errores cuando la terminal es mas chica de lo esperado.
+        Construye el arbol de widgets de la interfaz.
+
+        Estructura:
+          Header
+          Horizontal
+            Vertical (panel-izquierdo)
+              Label (titulo)
+              ListView (lista de modulos)
+            Vertical (panel-derecho)
+              Static (info del modulo)
+              RichLog (consola de logs)
+          Footer
         """
-        max_y, max_x = self.stdscr.getmaxyx()
-        if y < 0 or y >= max_y or x < 0 or x >= max_x:
-            return
-        # Truncar texto si no cabe en la linea
-        available = max_x - x - 1
-        if available <= 0:
-            return
-        text = text[:available]
-        try:
-            self.stdscr.addstr(y, x, text, attr)
-        except curses.error:
-            pass  # Ignorar errores de escritura al borde de pantalla
+        yield Header(show_clock=True)
 
-    def get_layout(self):
+        # ── Construir items de la lista ──────────────────────────────────
+        list_items = []
+        for num, nombre, script, _cia, _cis, _desc in MODULOS:
+            list_items.append(
+                ListItem(Label(f" {num}_{nombre}"), name=f"{num}_{nombre}")
+            )
+
+        with Horizontal():
+            # ── Panel izquierdo: lista de modulos ────────────────────────
+            with Vertical(id="panel-izquierdo"):
+                yield Label(" MODULOS ", classes="titulo-panel")
+                yield ListView(*list_items, id="lista-modulos")
+
+            # ── Panel derecho ────────────────────────────────────────────
+            with Vertical(id="panel-derecho"):
+                yield Static(
+                    self._render_modulo_info(0),
+                    id="info-modulo",
+                )
+                yield RichLog(
+                    id="consola-logs",
+                    highlight=True,
+                    markup=True,
+                    wrap=True,
+                    auto_scroll=True,
+                    max_lines=500,
+                )
+
+        yield Footer()
+
+    def on_mount(self) -> None:
         """
-        Calcula las dimensiones de cada panel basado en el tamanho de la terminal.
-
-        Retorna: (ancho_izq, ancho_der, alto_header, alto_status, alto_log, y_log)
+        Se ejecuta despues de montar la interfaz.
+        Verifica si existe el directorio de pruebas y muestra advertencia.
         """
-        max_y, max_x = self.stdscr.getmaxyx()
+        lab_dir = os.path.join(ROOT, 'directorio_pruebas')
+        log = self.query_one("#consola-logs", RichLog)
+        log.write("[bold cyan]E.A.S.M.L — Educational Advanced Simulation Malware Laboratory[/]")
+        log.write("[dim]Panel de Control — Laboratorio Educativo de Ciberseguridad[/]")
+        log.write("")
 
-        # El panel izquierdo ocupa ~35% del ancho, minimo 20 cols
-        ancho_izq = max(20, min(35, max_x // 3))
-        ancho_der = max_x - ancho_izq - 1  # -1 para el separador vertical
+        if not os.path.isdir(lab_dir):
+            log.write(
+                "[bold yellow]ADVERTENCIA:[/] No se encontro el directorio de pruebas "
+                f"[bold]{lab_dir}[/]."
+            )
+            log.write(
+                "[dim]Ejecuta [bold]python core/lab_setup.py[/bold] para generar "
+                "los archivos de prueba antes de usar las simulaciones.[/]"
+            )
+        else:
+            # Contar archivos de prueba
+            count = sum(1 for f in os.listdir(lab_dir)
+                        if os.path.isfile(os.path.join(lab_dir, f)))
+            log.write(
+                f"[green]Directorio de pruebas encontrado:[/] {count} archivos"
+            )
 
-        alto_header = 3   # Lineas del titulo
-        alto_status = 2   # Lineas de la barra de hotkeys
-        alto_log = 2      # Lineas extra para el footer del log
+        log.write("[dim]Presiona [bold]Enter[/bold] para simular, "
+                  "[bold]D[/bold] para defensa, [bold]C[/bold] para limpiar[/]")
+        log.write("")
 
-        y_log = max_y - alto_status - alto_log
+    # ── Renderizado del panel de info ────────────────────────────────────
 
-        return ancho_izq, ancho_der, alto_header, alto_status, alto_log, y_log
-
-    # ── Dibujo de paneles ───────────────────────────────────────────────────
-
-    def draw_header(self):
-        """Dibuja la barra de titulo superior."""
-        max_y, max_x = self.stdscr.getmaxyx()
-        header = " E.A.S.M.L — Educational Advanced Simulation Malware Laboratory "
-        # Centrar el header
-        x_start = max(0, (max_x - len(header)) // 2)
-        self.safe_addstr(0, 0, " " * max_x, curses.color_pair(6) | curses.A_BOLD)
-        self.safe_addstr(0, x_start, header, curses.color_pair(6) | curses.A_BOLD)
-        # Subtitulo
-        subtitle = " Panel de Control — Laboratorio Educativo de Ciberseguridad "
-        x_sub = max(0, (max_x - len(subtitle)) // 2)
-        self.safe_addstr(1, 0, " " * max_x, curses.color_pair(6))
-        self.safe_addstr(1, x_sub, subtitle, curses.color_pair(6))
-
-    def draw_module_list(self, ancho):
+    def _render_modulo_info(self, index: int) -> str:
         """
-        Dibuja el panel izquierdo con la lista de modulos.
+        Genera el texto formateado para el panel de info del modulo.
 
-        El modulo seleccionado se resalta con fondo verde.
-        Muestra el numero y nombre de cada modulo.
+        Retorna un string con formato Rich markup para el widget Static.
         """
-        alto_header = 3
-        alto_status = 2
-        alto_log = 2
-        max_y = self.stdscr.getmaxyx()[0]
-        alto_disponible = max_y - alto_header - alto_status - alto_log - 1
+        if index < 0 or index >= len(MODULOS):
+            return "[dim]Selecciona un modulo[/]"
 
-        # Titulo del panel
-        self.safe_addstr(alto_header, 1, " MODULOS ",
-                         curses.color_pair(1) | curses.A_BOLD)
-        self.safe_addstr(alto_header, 10, "─" * (ancho - 12),
-                         curses.color_pair(1))
+        num, nombre, script, cia, cis, desc = MODULOS[index]
+        icono = _cia_icon(cia)
 
-        # Calcular rango visible (scroll si hay mas modulos que espacio)
-        start = max(0, self.selected - alto_disponible + 3)
-        end = min(len(MODULOS), start + alto_disponible - 1)
-
-        for i in range(start, end):
-            num, nombre, script, cia, cis, desc = MODULOS[i]
-            y = alto_header + 1 + (i - start)
-
-            if i == self.selected:
-                # Modulo seleccionado: fondo verde, texto negro
-                label = f" ▸ {num}_{nombre} "
-                self.safe_addstr(y, 0, " " * ancho, curses.color_pair(9))
-                self.safe_addstr(y, 0, label[:ancho], curses.color_pair(9) | curses.A_BOLD)
-            else:
-                # Modulo normal
-                label = f"   {num}_{nombre} "
-                self.safe_addstr(y, 0, label[:ancho], curses.A_NORMAL)
-
-    def draw_separator(self, ancho_izq):
-        """Dibuja la linea vertical separadora entre paneles."""
-        max_y = self.stdscr.getmaxyx()[0]
-        for y in range(3, max_y - 3):
-            self.safe_addstr(y, ancho_izq, "│",
-                             curses.color_pair(1) | curses.A_DIM)
-
-    def draw_module_info(self, x_start, ancho):
-        """
-        Dibuja el panel derecho con la informacion del modulo seleccionado.
-
-        Muestra:
-          - Nombre del modulo
-          - Pilar CIA afectado (con indicador visual)
-          - Control CIS asociado
-          - Descripcion de la amenaza
-          - Ruta del script
-        """
-        alto_header = 3
-        num, nombre, script, cia, cis, desc = MODULOS[self.selected]
-
-        # Titulo del panel
-        self.safe_addstr(alto_header, x_start + 1, " INFORMACION DEL MODULO ",
-                         curses.color_pair(1) | curses.A_BOLD)
-        self.safe_addstr(alto_header, x_start + 25, "─" * (ancho - 27),
-                         curses.color_pair(1))
-
-        y = alto_header + 2
-
-        # Nombre del modulo
-        self.safe_addstr(y, x_start + 2, "Modulo:", curses.A_BOLD)
-        self.safe_addstr(y, x_start + 12, f"{num}_{nombre} ({script}.py)")
-        y += 2
-
-        # Pilar CIA con indicador de color
-        self.safe_addstr(y, x_start + 2, "Pilar CIA:", curses.A_BOLD)
-        y += 1
-        # Icono visual segun el pilar
-        if cia == "Confidencialidad":
-            icono = "🔒"
-            color_cia = curses.color_pair(8)
-        elif cia == "Integridad":
-            icono = "🛡"
-            color_cia = curses.color_pair(3)
-        else:  # Disponibilidad
-            icono = "⚡"
-            color_cia = curses.color_pair(4)
-        self.safe_addstr(y, x_start + 4, f"{cia}", color_cia | curses.A_BOLD)
-        y += 2
-
-        # Control CIS
-        self.safe_addstr(y, x_start + 2, "Control CIS:", curses.A_BOLD)
-        y += 1
-        # Envolver texto largo del CIS control
-        cis_wrapped = textwrap.wrap(cis, ancho - 8)
-        for line in cis_wrapped:
-            self.safe_addstr(y, x_start + 4, line, curses.color_pair(8))
-            y += 1
-        y += 1
-
-        # Separador
-        self.safe_addstr(y, x_start + 2, "─" * (ancho - 6), curses.A_DIM)
-        y += 1
-
-        # Descripcion
-        self.safe_addstr(y, x_start + 2, "Descripcion:", curses.A_BOLD)
-        y += 1
-        desc_wrapped = textwrap.wrap(desc, ancho - 8)
-        for line in desc_wrapped:
-            self.safe_addstr(y, x_start + 4, line)
-            y += 1
-        y += 2
-
-        # Ruta del script
+        # Verificar existencia de archivos
         dir_modulo = os.path.join(MODULOS_DIR, f"{num}_{nombre}")
         script_path = os.path.join(dir_modulo, f"{script}.py")
         defensa_path = os.path.join(dir_modulo, "defensa.py")
+        sim_ok = "[green]v[/]" if os.path.exists(script_path) else "[red]x[/]"
+        def_ok = "[green]v[/]" if os.path.exists(defensa_path) else "[red]x[/]"
 
-        self.safe_addstr(y, x_start + 2, "Archivos:", curses.A_BOLD)
-        y += 1
-        # Verificar existencia
-        sim_ok = "✓" if os.path.exists(script_path) else "✗"
-        def_ok = "✓" if os.path.exists(defensa_path) else "✗"
-        self.safe_addstr(y, x_start + 4,
-                         f"  {sim_ok} {script}.py  (simulacion)",
-                         curses.color_pair(2) if os.path.exists(script_path) else curses.color_pair(4))
-        y += 1
-        self.safe_addstr(y, x_start + 4,
-                         f"  {def_ok} defensa.py  (defensa)",
-                         curses.color_pair(2) if os.path.exists(defensa_path) else curses.color_pair(4))
-        y += 2
-
-        # Leyenda CIA
-        self.safe_addstr(y, x_start + 2, "─" * (ancho - 6), curses.A_DIM)
-        y += 1
-        self.safe_addstr(y, x_start + 2, "Tríada CIA:", curses.A_BOLD)
-        y += 1
-        for pillar, icon in [("Confidencialidad", "C"), ("Integridad", "I"),
+        # Indicadores de la triada CIA
+        triada_lines = []
+        for pillar, letra in [("Confidencialidad", "C"), ("Integridad", "I"),
                               ("Disponibilidad", "A")]:
-            activo = pillar == cia
-            marca = "●" if activo else "○"
-            attr = curses.A_BOLD if activo else curses.A_DIM
-            self.safe_addstr(y, x_start + 4, f" {marca} {pillar} ({icon})",
-                             attr)
-            y += 1
-
-    def draw_status_bar(self):
-        """Dibuja la barra de atajos de teclado en la parte inferior."""
-        max_y, max_x = self.stdscr.getmaxyx()
-        y = max_y - 2
-
-        # Fondo azul para toda la barra
-        barra = " " * max_x
-        self.safe_addstr(y, 0, barra, curses.color_pair(5))
-
-        if self.log_mode:
-            hotkeys = " [Enter] Volver  │  [Q] Salir del Laboratorio  "
-        else:
-            hotkeys = " [Enter] Simular  │  [D] Defensa  │  [C] Limpiar  │  [Q] Salir  "
-
-        x_start = max(0, (max_x - len(hotkeys)) // 2)
-        self.safe_addstr(y, x_start, hotkeys, curses.color_pair(5) | curses.A_BOLD)
-
-    def draw_executing_banner(self):
-        """Muestra banner animado de ejecucion en la ultima linea."""
-        max_y, max_x = self.stdscr.getmaxyx()
-        y = max_y - 1
-        msg = " ⏳ Ejecutando... "
-        x = max(0, (max_x - len(msg)) // 2)
-        self.safe_addstr(y, 0, " " * max_x, curses.color_pair(7))
-        self.safe_addstr(y, x, msg, curses.color_pair(7) | curses.A_BOLD | curses.A_BLINK)
-
-    # ── Vista de logs ───────────────────────────────────────────────────────
-
-    def draw_log_view(self):
-        """
-        Dibuja la vista de logs de ejecucion.
-
-        Muestra el output capturado del subproceso en tiempo real.
-        Soporta scroll con flechas arriba/abajo.
-        """
-        max_y, max_x = self.stdscr.getmaxyx()
-        alto_header = 3
-        alto_status = 2
-
-        # Titulo del log
-        num, nombre, script, cia, cis, desc = MODULOS[self.selected]
-        log_title = f" LOG DE EJECUCION — {num}_{nombre} "
-        self.safe_addstr(alto_header, 1, log_title,
-                         curses.color_pair(7) | curses.A_BOLD)
-        remaining = max_x - len(log_title) - 2
-        if remaining > 0:
-            self.safe_addstr(alto_header, len(log_title) + 1,
-                             "─" * remaining, curses.color_pair(7))
-
-        # Calcular area de logs
-        y_start = alto_header + 1
-        y_end = max_y - alto_status - 3
-        alto_log = y_end - y_start
-
-        if alto_log <= 0:
-            return
-
-        # Calcular scroll
-        total_lines = len(self.log_lines)
-        max_scroll = max(0, total_lines - alto_log)
-        self.log_scroll = min(self.log_scroll, max_scroll)
-        self.log_scroll = max(0, self.log_scroll)
-
-        # Dibujar lineas visibles
-        visible = self.log_lines[self.log_scroll:self.log_scroll + alto_log]
-        for i, line in enumerate(visible):
-            y = y_start + i
-            # Limpiar la linea completa primero
-            self.safe_addstr(y, 0, " " * (max_x - 1))
-            # Escribir la linea (sin ANSI codes)
-            clean = strip_ansi(line)
-            # Colorear segun contenido
-            if "[CIFRADO]" in line or "[ELIMINADO]" in line or "[CORROMPIDO]" in line:
-                attr = curses.color_pair(4)  # Rojo
-            elif "[OK]" in line or "[+] " in line or "eliminado:" in line:
-                attr = curses.color_pair(2)  # Verde
-            elif "[!]" in line or "ADVERTENCIA" in line:
-                attr = curses.color_pair(3)  # Amarillo
-            elif "FASE" in line or "===" in line:
-                attr = curses.color_pair(1) | curses.A_BOLD  # Cyan bold
+            if pillar == cia:
+                triada_lines.append(f"  [bold green]* {pillar} ({letra})[/]")
             else:
-                attr = curses.A_NORMAL
-            self.safe_addstr(y, 1, clean[:max_x - 3], attr)
+                triada_lines.append(f"  [dim]  {pillar} ({letra})[/]")
 
-        # Indicador de scroll
-        if total_lines > alto_log:
-            pct = int((self.log_scroll + alto_log) / total_lines * 100)
-            scroll_info = f" {pct}% "
-            self.safe_addstr(y_end + 1, max_x - len(scroll_info) - 1,
-                             scroll_info, curses.A_DIM)
+        lines = [
+            f"[bold cyan]Modulo:[/] {num}_{nombre} [dim]({script}.py)[/]",
+            "",
+            f"[bold cyan]Pilar CIA:[/] [bold]{cia}[/] ({icono})",
+            f"[bold cyan]Control CIS:[/] {cis}",
+            "",
+            "[bold cyan]Descripcion:[/]",
+            f"  {desc}",
+            "",
+            "─" * 40,
+            "[bold cyan]Archivos:[/]",
+            f"  {sim_ok} {script}.py  [dim](simulacion)[/]",
+            f"  {def_ok} defensa.py  [dim](defensa)[/]",
+            "",
+            "─" * 40,
+            "[bold cyan]Triada CIA:[/]",
+            *triada_lines,
+        ]
 
-        # Footer del log
-        if self.done_event.is_set():
-            status = " ✓ Ejecucion completada — Presiona [Enter] para volver "
-        else:
-            status = " ⏳ Ejecutando... presiona [C] para cancelar "
-        self.safe_addstr(y_end + 1, 0, " " * max_x, curses.color_pair(3))
-        x = max(0, (max_x - len(status)) // 2)
-        self.safe_addstr(y_end + 1, x, status,
-                         curses.color_pair(3) | curses.A_BOLD)
+        return "\n".join(lines)
 
-    # ── Ejecucion de subprocesos ────────────────────────────────────────────
+    def _actualizar_info(self) -> None:
+        """Actualiza el panel de info del modulo seleccionado."""
+        info = self.query_one("#info-modulo", Static)
+        info.update(self._render_modulo_info(self.selected_index))
 
-    def _run_subprocess(self, script_path, args=None):
+    # ── Evento de seleccion en ListView ──────────────────────────────────
+
+    @on(ListView.Selected)
+    def on_list_selected(self, event: ListView.Selected) -> None:
         """
-        Ejecuta un script Python como subproceso y captura su output linea a linea.
+        Se dispara cuando el usuario selecciona un modulo en la lista.
+        Actualiza el panel de info y registra en la consola.
+        """
+        self.selected_index = event.index
 
-        Usa un hilo separado (thread) para leer el output sin bloquear la TUI.
-        El output se envia a una cola thread-safe (queue.Queue) y se procesa
-        en el ciclo principal de la interfaz.
+    @on(ListView.Highlighted)
+    def on_list_highlighted(self, event: ListView.Highlighted) -> None:
+        """
+        Se dispara cuando se resalta un item (flechas arriba/abajo).
+        Actualiza el panel de info sin cambiar el indice seleccionado.
+        """
+        if event.item is not None and event.index is not None:
+            info = self.query_one("#info-modulo", Static)
+            info.update(self._render_modulo_info(event.index))
+
+    # ── Acciones de teclado ──────────────────────────────────────────────
+
+    def action_cursor_up(self) -> None:
+        """Mueve el cursor un item hacia arriba en la lista."""
+        lv = self.query_one("#lista-modulos", ListView)
+        if lv.index is not None and lv.index > 0:
+            lv.index = lv.index - 1
+
+    def action_cursor_down(self) -> None:
+        """Mueve el cursor un item hacia abajo en la lista."""
+        lv = self.query_one("#lista-modulos", ListView)
+        total = len(MODULOS)
+        if lv.index is not None and lv.index < total - 1:
+            lv.index = lv.index + 1
+
+    # ── Ejecucion de modulos ─────────────────────────────────────────────
+
+    def _get_selected_module(self) -> tuple:
+        """Retorna la tupla del modulo actualmente seleccionado."""
+        lv = self.query_one("#lista-modulos", ListView)
+        idx = lv.index if lv.index is not None else 0
+        return MODULOS[idx], idx
+
+    def action_ejecutar_simulacion(self) -> None:
+        """Ejecuta la simulacion del modulo seleccionado."""
+        if self.ejecutando:
+            return
+        modulo, _idx = self._get_selected_module()
+        num, nombre, script, _cia, _cis, _desc = modulo
+        script_path = os.path.join(MODULOS_DIR, f"{num}_{nombre}", f"{script}.py")
+        self._ejecutar_script(script_path, f"{num}_{nombre}/simulacion")
+
+    def action_ejecutar_defensa(self) -> None:
+        """Ejecuta la defensa del modulo seleccionado."""
+        if self.ejecutando:
+            return
+        modulo, _idx = self._get_selected_module()
+        num, nombre, _script, _cia, _cis, _desc = modulo
+        defensa_path = os.path.join(MODULOS_DIR, f"{num}_{nombre}", "defensa.py")
+        self._ejecutar_script(defensa_path, f"{num}_{nombre}/defensa")
+
+    def action_ejecutar_clean(self) -> None:
+        """Ejecuta la limpieza del modulo seleccionado (--clean)."""
+        if self.ejecutando:
+            return
+        modulo, _idx = self._get_selected_module()
+        num, nombre, script, _cia, _cis, _desc = modulo
+        script_path = os.path.join(MODULOS_DIR, f"{num}_{nombre}", f"{script}.py")
+        self._ejecutar_script(script_path, f"{num}_{nombre}/clean", args=["--clean"])
+
+    def _ejecutar_script(
+        self, script_path: str, label: str, args: list[str] | None = None
+    ) -> None:
+        """
+        Inicia la ejecucion asincrona de un script Python como subproceso.
+
+        No bloquea la interfaz. El output se captura linea a linea y se
+        muestra en el RichLog en tiempo real.
 
         Args:
-            script_path: Ruta absoluta al script .py a ejecutar
-            args: Lista de argumentos adicionales (ej: ['--clean'])
+            script_path: Ruta absoluta al script .py
+            label: Etiqueta descriptiva para el log
+            args: Argumentos adicionales (ej: ['--clean'])
         """
-        self.log_lines = []
-        self.log_scroll = 0
-        self.done_event.clear()
+        if not os.path.exists(script_path):
+            log = self.query_one("#consola-logs", RichLog)
+            log.write(f"[bold red]ERROR:[/] Script no encontrado: {script_path}")
+            return
 
+        self.ejecutando = True
+        log = self.query_one("#consola-logs", RichLog)
+        log.write(f"[bold yellow]{'='*50}[/]")
+        log.write(f"[bold yellow]Ejecutando:[/] {label}")
+        log.write(f"[dim]{script_path}{' ' + ' '.join(args) if args else ''}[/]")
+        log.write(f"[bold yellow]{'='*50}[/]")
+
+        self.run_worker(
+            self._run_subprocess(script_path, args),
+            group="subprocess",
+            exclusive=True,
+        )
+
+    async def _run_subprocess(
+        self, script_path: str, args: list[str] | None = None
+    ) -> None:
+        """
+        Ejecuta un subproceso de forma asincrona y escribe su output al RichLog.
+
+        Lee stdout/stderr linea por linea y las escribe inmediatamente
+        en el panel de logs para mostrar progreso en tiempo real.
+        """
+        log = self.query_one("#consola-logs", RichLog)
         cmd = [sys.executable, script_path]
         if args:
             cmd.extend(args)
 
-        def reader_thread():
-            """Hilo que lee stdout/stderr del subproceso linea por linea."""
-            try:
-                proc = subprocess.Popen(
-                    cmd,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    cwd=ROOT,
-                    universal_newlines=True,
-                    bufsize=1,  # Buffering linea por linea
-                )
-                self.running_proc = proc
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+                cwd=ROOT,
+            )
 
-                for line in proc.stdout:
-                    self.output_queue.put(line.rstrip('\n'))
-
-                proc.wait()
-                self.output_queue.put(f"\n═══ Proceso terminado (codigo: {proc.returncode}) ═══")
-            except Exception as e:
-                self.output_queue.put(f"\n═══ ERROR: {e} ═══")
-            finally:
-                self.done_event.set()
-                self.running_proc = None
-
-        t = threading.Thread(target=reader_thread, daemon=True)
-        t.start()
-
-    def _cancel_process(self):
-        """Cancela el subproceso activo si esta corriendo."""
-        if self.running_proc and self.running_proc.poll() is None:
-            try:
-                self.running_proc.terminate()
-                self.log_lines.append("\n═══ Proceso cancelado por el usuario ═══")
-            except Exception:
-                pass
-        self.done_event.set()
-
-    def _drain_queue(self):
-        """
-        Drena la cola de output y agrega las lineas al buffer de logs.
-        Retorna True si hay nuevas lineas (para actualizar la pantalla).
-        """
-        new_data = False
-        while not self.output_queue.empty():
-            try:
-                line = self.output_queue.get_nowait()
-                self.log_lines.append(line)
-                new_data = True
-            except queue.Empty:
-                break
-        return new_data
-
-    # ── Ejecucion de acciones ───────────────────────────────────────────────
-
-    def ejecutar_simulacion(self):
-        """Prepara y ejecuta la simulacion del modulo seleccionado."""
-        num, nombre, script, cia, cis, desc = MODULOS[self.selected]
-        dir_modulo = os.path.join(MODULOS_DIR, f"{num}_{nombre}")
-        script_path = os.path.join(dir_modulo, f"{script}.py")
-
-        if not os.path.exists(script_path):
-            self.log_lines = [f"═══ ERROR: {script_path} no encontrado ═══"]
-            self.done_event.set()
-            self.log_mode = True
-            return
-
-        self.log_mode = True
-        self._run_subprocess(script_path)
-
-    def ejecutar_defensa(self):
-        """Prepara y ejecuta la defensa del modulo seleccionado."""
-        num, nombre, script, cia, cis, desc = MODULOS[self.selected]
-        dir_modulo = os.path.join(MODULOS_DIR, f"{num}_{nombre}")
-        script_path = os.path.join(dir_modulo, "defensa.py")
-
-        if not os.path.exists(script_path):
-            self.log_lines = [f"═══ ERROR: {script_path} no encontrado ═══"]
-            self.done_event.set()
-            self.log_mode = True
-            return
-
-        self.log_mode = True
-        self._run_subprocess(script_path)
-
-    def ejecutar_clean(self):
-        """Prepara y ejecuta la limpieza del modulo seleccionado."""
-        num, nombre, script, cia, cis, desc = MODULOS[self.selected]
-        dir_modulo = os.path.join(MODULOS_DIR, f"{num}_{nombre}")
-        script_path = os.path.join(dir_modulo, f"{script}.py")
-
-        if not os.path.exists(script_path):
-            self.log_lines = [f"═══ ERROR: {script_path} no encontrado ═══"]
-            self.done_event.set()
-            self.log_mode = True
-            return
-
-        self.log_mode = True
-        self._run_subprocess(script_path, args=['--clean'])
-
-    # ── Loop principal ──────────────────────────────────────────────────────
-
-    def run(self):
-        """
-        Loop principal de la TUI.
-
-        Flujo:
-          1. Capturar input del teclado
-          2. Procesar acciones (navegar, ejecutar, salir)
-          3. Drenar output del subproceso activo (si hay)
-          4. Redibujar toda la pantalla
-          5. Repetir
-
-        El metodo curses.wrapper() se encarga de inicializar y restaurar
-        el estado de la terminal automaticamente.
-        """
-        while True:
-            # ── 1. Capturar input ───────────────────────────────────────
-            key = self.stdscr.getch()
-
-            # ── 2. Procesar teclas ──────────────────────────────────────
-            if self.log_mode:
-                # Modo log: solo permitir volver o salir
-                if key == ord('q') or key == ord('Q'):
-                    self._cancel_process()
+            # Leer output linea por linea
+            assert process.stdout is not None
+            while True:
+                raw_line = await process.stdout.readline()
+                if not raw_line:
                     break
-                elif key == 10:  # Enter
-                    if self.done_event.is_set():
-                        self.log_mode = False
-                        self.log_lines = []
-                    else:
-                        self._cancel_process()
-                elif key == ord('c') or key == ord('C'):
-                    self._cancel_process()
-                elif key == curses.KEY_UP:
-                    self.log_scroll = max(0, self.log_scroll - 1)
-                elif key == curses.KEY_DOWN:
-                    self.log_scroll += 1
-                elif key == curses.KEY_PPAGE:  # Page Up
-                    self.log_scroll = max(0, self.log_scroll - 10)
-                elif key == curses.KEY_NPAGE:  # Page Down
-                    self.log_scroll += 10
+                line = raw_line.decode("utf-8", errors="replace").rstrip("\n")
+                clean = strip_ansi(line)
+
+                # Colorizar segun contenido
+                if any(tag in line for tag in ("[CIFRADO]", "[ELIMINADO]", "[CORROMPIDO]")):
+                    log.write(f"[red]{clean}[/]")
+                elif any(tag in line for tag in ("[OK]", "[+] ", "eliminado:", "CREADO")):
+                    log.write(f"[green]{clean}[/]")
+                elif any(tag in line for tag in ("[!]", "ADVERTENCIA", "ERROR")):
+                    log.write(f"[yellow]{clean}[/]")
+                elif "FASE" in line or "===" in line:
+                    log.write(f"[bold cyan]{clean}[/]")
+                elif clean.strip():
+                    log.write(clean)
+
+            await process.wait()
+            rc = process.returncode
+            if rc == 0:
+                log.write(f"[bold green]Proceso terminado (codigo: {rc})[/]")
             else:
-                # Modo navegacion
-                if key == ord('q') or key == ord('Q'):
-                    break
-                elif key == curses.KEY_UP or key == ord('k'):
-                    self.selected = max(0, self.selected - 1)
-                elif key == curses.KEY_DOWN or key == ord('j'):
-                    self.selected = min(len(MODULOS) - 1, self.selected + 1)
-                elif key == curses.KEY_PPAGE:  # Page Up
-                    self.selected = max(0, self.selected - 10)
-                elif key == curses.KEY_NPAGE:  # Page Down
-                    self.selected = min(len(MODULOS) - 1, self.selected + 1)
-                elif key == curses.KEY_HOME:
-                    self.selected = 0
-                elif key == curses.KEY_END:
-                    self.selected = len(MODULOS) - 1
-                elif key == 10:  # Enter -> Ejecutar simulacion
-                    self.ejecutar_simulacion()
-                elif key == ord('d') or key == ord('D'):
-                    self.ejecutar_defensa()
-                elif key == ord('c') or key == ord('C'):
-                    self.ejecutar_clean()
+                log.write(f"[bold red]Proceso terminado con error (codigo: {rc})[/]")
 
-            # ── 3. Drenar output del subproceso ─────────────────────────
-            if self.log_mode:
-                self._drain_queue()
-
-            # ── 4. Redibujar pantalla ──────────────────────────────────
-            self.stdscr.erase()  # Limpiar buffer de pantalla completo
-
-            if self.log_mode:
-                self.draw_header()
-                self.draw_log_view()
-                self.draw_status_bar()
-                if not self.done_event.is_set():
-                    self.draw_executing_banner()
-            else:
-                max_y, max_x = self.stdscr.getmaxyx()
-                ancho_izq, ancho_der, alto_header, alto_status, alto_log, _ = \
-                    self.get_layout()
-
-                self.draw_header()
-                self.draw_module_list(ancho_izq)
-                self.draw_separator(ancho_izq)
-                self.draw_module_info(ancho_izq + 2, ancho_der)
-                self.draw_status_bar()
-
-            self.stdscr.refresh()
-
-            # ── 5. Pausa breve para no consumir 100% CPU ────────────────
-            # Cuando hay subproceso activo, polls mas frecuente para
-            # mostrar output en tiempo real. Sin subproceso, espera
-            # indefinidamente en getch() (ya configurado con timeout -1).
+        except Exception as e:
+            log.write(f"[bold red]ERROR:[/] {e}")
+        finally:
+            self.ejecutando = False
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -675,17 +503,15 @@ def main():
     """
     Punto de entrada de la TUI.
 
-    curses.wrapper() se encarga de:
-      1. Inicializar el modo curses
-      2. Restaurar la terminal al salir (incluso si hay excepcion)
-      3. Pasar el objeto stdscr a la funcion lambda
+    Ejecuta la aplicacion Textual. La terminal se restaura automaticamente
+    al salir (incluso con Ctrl+C o excepciones).
     """
     try:
-        curses.wrapper(lambda stdscr: LaboratorioTUI(stdscr).run())
+        app = LaboratorioTUI()
+        app.run()
     except KeyboardInterrupt:
         pass
     finally:
-        # Restaurar terminal limpio despues de salir de curses
         print("\n  Laboratorio cerrado. Ejecuta 'python -m core.tui' para reabrir.\n")
 
 
