@@ -1,7 +1,7 @@
 # Laboratorio de Malware Educativo
 
-Repositorio academico para el estudio de amenazas de seguridad informatica.
-14 modulos independientes en Python, cada uno con simulacion, defensa y documentacion.
+Repositorio académico para el estudio de amenazas de seguridad informática.
+14 módulos independientes en Python, cada uno con simulación, defensa y documentación.
 
 > **Solo para uso educativo en entorno controlado.**
 
@@ -9,16 +9,14 @@ Repositorio academico para el estudio de amenazas de seguridad informatica.
 
 ```mermaid
 graph TB
-    subgraph "Puntos de entrada"
-        TUI["python -m core.tui<br/>Interfaz visual (TUI)"]
-        CLI["python -m core.cli<br/>Linea de comandos"]
+    subgraph "Punto de entrada"
+        TUI["python -m core.tui<br/>Interfaz visual interactiva (Textual)"]
     end
 
     subgraph "core/ — Utilidades compartidas"
         COMMON["common.py<br/>log, colores, traversal, hashing"]
         SETUP["lab_setup.py<br/>generador de archivos de prueba"]
         TUIMOD["tui.py<br/>interfaz panel dividido (Textual)"]
-        CLIMOD["cli.py<br/>navegador por comandos"]
     end
 
     subgraph "modulos/ — 14 amenazas"
@@ -39,98 +37,93 @@ graph TB
     end
 
     TUI --> TUIMOD
-    CLI --> CLIMOD
     TUIMOD --> M01 & M02 & M03 & M04 & M05 & M06 & M07
     TUIMOD --> M08 & M09 & M10 & M11 & M12 & M13 & M14
-    CLIMOD --> M01 & M02 & M03 & M04 & M05 & M06 & M07
-    CLIMOD --> M08 & M09 & M10 & M11 & M12 & M13 & M14
     M01 & M02 & M03 & M04 & M05 & M06 & M07 --> COMMON
     M08 & M09 & M10 & M11 & M12 & M13 & M14 --> COMMON
     COMMON --> SETUP
+
 ```
 
 ## Requisitos
 
-- Python 3.10+
-- `textual` (solo para TUI): `pip install textual`
+* Python 3.10+
+* `textual`: `pip install textual`
 
-## Inicio rapido
+## Inicio rápido
 
 ```bash
 # 1. Generar archivos de prueba
 python core/lab_setup.py
 
-# 2. Abrir la interfaz visual (recomendado para estudiantes)
+# 2. Abrir la interfaz visual interactiva
 python -m core.tui
 
-# 3. O usar el CLI por comandos
-python -m core.cli
+# 3. Limpiar todo el entorno al finalizar
+python core/lab_setup.py --clean
 
-# 4. Ejecutar un modulo directamente
-python modulos/01_ransomware/ransomware.py
-
-# 5. Ejecutar defensa
-python modulos/01_ransomware/defensa.py
-
-# 6. Limpiar
-python modulos/01_ransomware/ransomware.py --clean
 ```
 
-## Modulos
+## Módulos y Matriz de Gobernanza (CIA vs. CIS)
 
-| # | Modulo | Tipo de amenaza | Archivos |
-| --- | -------- | ----------------- | ---------- |
-| 01 | [ransomware](modulos/01_ransomware/) | Cifrado de archivos + rescate | simulacion, defensa, README |
-| 02 | [wiper](modulos/02_wiper/) | Corrupcion/eliminacion de datos | simulacion, defensa, README |
-| 03 | [keylogger](modulos/03_keylogger/) | Captura de pulsaciones | simulacion, defensa, README |
-| 04 | [worm](modulos/04_worm/) | Auto-replicacion en red | simulacion, defensa, README |
-| 05 | [trojan](modulos/05_trojan/) | Disfraz + payload oculto | simulacion, defensa, README |
-| 06 | [backdoor](modulos/06_backdoor/) | Acceso persistente + C2 | simulacion, defensa, README |
-| 07 | [rootkit](modulos/07_rootkit/) | Ocultacion de procesos | simulacion, defensa, README |
-| 08 | [botnet](modulos/08_botnet/) | Red de bots + DDoS | simulacion, defensa, README |
-| 09 | [steganography](modulos/09_steganography/) | Datos ocultos en imagenes | simulacion, defensa, README |
-| 10 | [fileless](modulos/10_fileless/) | Sin archivos en disco | simulacion, defensa, README |
-| 11 | [logic_bomb](modulos/11_logic_bomb/) | Payload condicional | simulacion, defensa, README |
-| 12 | [cryptominer](modulos/12_cryptominer/) | Mineria CPU fraudulenta | simulacion, defensa, README |
-| 13 | [supply_chain](modulos/13_supply_chain/) | Compromiso de dependencias | simulacion, defensa, README |
-| 14 | [dns_tunneling](modulos/14_dns_tunneling/) | Exfiltracion via DNS | simulacion, defensa, README |
+Cada módulo es autocontenido e incluye el script de emulación (`{nombre}.py`), el script de remediación (`defensa.py`) y su documentación teórica profunda.
 
-## Flujo de ejecucion
+| # | Módulo | Vector de Amenaza | Pilar CIA Afectado | Control CIS de Mitigación |
+| :--- | :--- | :--- | :---: | :--- |
+| **01** | [ransomware](modulos/01_ransomware/) | Cifrado criptográfico de archivos locales | **Disponibilidad** | **CIS 11:** Recuperación de Datos (Backups) |
+| **02** | [wiper](modulos/02_wiper/) | Destrucción y corrupción masiva del disco | **Disponibilidad** | **CIS 11:** Resiliencia y Restauración |
+| **03** | [keylogger](modulos/03_keylogger/) | Intercepción de periféricos de entrada | **Confidencialidad** | **CIS 05:** Protección de Credenciales |
+| **04** | [worm](modulos/04_worm/) | Autoreplicación lateral en red local | **Disponibilidad** | **CIS 12:** Gestión de Infraestructura de Red |
+| **05** | [trojan](modulos/05_trojan/) | Ofuscación de carga útil en binario legítimo | **Integridad** | **CIS 02:** Inventario de Activos de Software |
+| **06** | [backdoor](modulos/06_backdoor/) | Persistencia oculta y conexión reversa C2 | **Confidencialidad** | **CIS 04:** Gestión de Accesos Seguros |
+| **07** | [rootkit](modulos/07_rootkit/) | Evasión por manipulación de llamadas al sistema | **Integridad** | **CIS 10:** Defensas ante Malware (EDR/Heurística) |
+| **08** | [botnet](modulos/08_botnet/) | Reclutamiento zombi y orquestación DDoS | **Disponibilidad** | **CIS 13:** Monitoreo y Control de Redes |
+| **09** | [steganography](modulos/09_steganography/) | Exfiltración encubierta de datos en medios | **Confidencialidad** | **CIS 03:** Protección de Datos (DLP) |
+| **10** | [fileless](modulos/10_fileless/) | Ejecución volátil residente en memoria | **Integridad** | **CIS 10:** Monitoreo del Comportamiento en Memoria |
+| **11** | [logic_bomb](modulos/11_logic_bomb/) | Detonación de carga por condición lógica/tiempo | **Disponibilidad** | **CIS 08:** Gestión de Registros de Auditoría |
+| **12** | [cryptominer](modulos/12_cryptominer/) | Secuestro y degradación de recursos de CPU | **Disponibilidad** | **CIS 08:** Auditoría y Monitoreo de Procesos |
+| **13** | [supply_chain](modulos/13_supply_chain/) | Inyección maliciosa en dependencias | **Integridad** | **CIS 15:** Gestión de Proveedores de Servicio |
+| **14** | [dns_tunneling](modulos/14_dns_tunneling/) | Canal encubierto de C2 saltando el Firewall | **Confidencialidad** | **CIS 13:** Filtrado de Conexiones y DNS |
+
+## Flujo de ejecución
 
 ```mermaid
 sequenceDiagram
     participant E as Estudiante
-    participant C as core/cli.py
+    participant T as core/tui.py (Textual)
     participant S as core/lab_setup.py
     participant M as modulos/XX/
 
-    E->>C: python -m core.cli
-    C->>E: Lista 14 modulos
-    E->>C: Selecciona modulo 01
-    C->>S: Verifica archivos de prueba
-    S-->>C: Archivos listos
-    C->>M: Ejecuta script del modulo
-    M->>E: Muestra fase por fase
-    E->>C: Selecciona defensa
-    C->>M: Ejecuta defensa.py
-    M->>E: Detecta + limpia artefactos
+    E->>T: python -m core.tui
+    T->>E: Renderiza interfaz visual (Paneles + Datos CIA/CIS)
+    E->>T: Selecciona módulo y presiona [Enter]
+    T->>S: Verifica que existan archivos de prueba
+    T->>M: Ejecuta subproceso (simulacion.py) de forma asíncrona
+    M-->>T: Envía salida estándar en tiempo real
+    T->>E: Muestra output en el panel de logs
+    E->>T: Presiona [D] para mitigar
+    T->>M: Ejecuta subproceso (defensa.py)
+    M-->>T: Limpieza y restauración completada
+    T->>E: Actualiza panel de logs con éxito
+
 ```
 
-## Estructura de cada modulo
+## Estructura de cada módulo
 
 ```text
 modulos/XX_nombre/
-├── README.md         # Teoria profunda + Mermaid diagrams
-├── {nombre}.py       # Codigo educativo ejecutable
-└── defensa.py        # Deteccion + mitigacion + limpieza
+├── README.md         # Teoría profunda (Tríada CIA + Controles CIS)
+├── {nombre}.py       # Código educativo ejecutable
+└── defensa.py        # Detección + mitigación + limpieza
+
 ```
 
-Cada script de simulacion soporta:
+Cada script de simulación soporta de forma interna:
 
-- `--help` — muestra ayuda
-- `--clean` — elimina artefactos generados
+* `--help` — muestra ayuda
+* `--clean` — elimina artefactos generados
 
-## Principios de diseno
+## Principios de diseño
 
 ```mermaid
 flowchart LR
@@ -142,20 +135,21 @@ flowchart LR
     DRY --> SETUP["lab_setup.py unico"]
     DRY --> COMMON["common.py unico"]
     SAFE --> CHECK["verifica archivos de prueba"]
-    SAFE --> CLEAN["--clean reversa todo"]
-    EDU --> BANNER["banner informativo"]
-    EDU --> STEP["output fase por fase"]
+    SAFE --> CLEAN["TUI/Setup reversa todo"]
+    EDU --> BANNER["información en panel TUI"]
+    EDU --> STEP["output asíncrono en logs"]
     MOD --> ISOLATE["cada modulo autocontenido"]
+
 ```
 
 ## Uso en aula
 
-1. Clonar el repositorio
-2. Ejecutar `python core/lab_setup.py` para generar archivos de prueba
-3. Navegar modulos con `python -m core.cli` o ejecutar directamente
-4. Cada modulo incluye README con teoria, diagramas Mermaid y bibliografia
-5. Al finalizar: `python core/lab_setup.py --clean` para limpiar
+1. Clonar el repositorio.
+2. Ejecutar `python core/lab_setup.py` para generar el entorno seguro con archivos de prueba.
+3. Navegar el laboratorio visual interactivo mediante `python -m core.tui`.
+4. Cada módulo cuenta con documentación que profundiza en la teoría del malware, su impacto de gobernanza y bibliografía.
+5. Al finalizar la práctica, limpiar el entorno con: `python core/lab_setup.py --clean`.
 
 ## Licencia
 
-MIT — Uso exclusivamente educativo y academico.
+MIT — Uso exclusivamente educativo y académico
