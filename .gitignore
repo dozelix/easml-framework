@@ -4,6 +4,7 @@ __pycache__/
 *.exe
 *.log
 .env
+.venv/
 *.locked
 *.tmp
 *.bak
@@ -21,7 +22,6 @@ persistence.reg
 startup.bat
 process_list.txt
 sbom_report.json
-requirements.txt
 package.json
 package-lock.json
 keylog.log

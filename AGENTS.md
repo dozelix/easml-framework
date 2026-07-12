@@ -14,7 +14,7 @@ graph
   core --> common["common.py\n(log, colores, traversal, hashing, cleanup)"]
   core --> lab_setup["lab_setup.py\n(Generador unico de archivos de prueba 12 archivos)"]
   core --> cli["cli.py\n(CLI por comandos)"]
-  core --> tui["tui.py\n(TUI panel dividido con curses)"]
+  core --> tui["tui.py\n(TUI con Textual — layout flexbox reactivo)"]
   root --> modulos["modulos/\n(14 amenazas)"]
   modulos --> rans["01_ransomware/\n(Cifrado XOR + nota de rescate)"]
   modulos --> wiper["02_wiper/\n(Corrupcion de archivos)"]
