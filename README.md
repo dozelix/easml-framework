@@ -9,14 +9,16 @@ Repositorio academico para el estudio de amenazas de seguridad informatica.
 
 ```mermaid
 graph TB
-    subgraph "Punto de entrada"
-        CLI["python -m core.cli"]
+    subgraph "Puntos de entrada"
+        TUI["python -m core.tui<br/>Interfaz visual (TUI)"]
+        CLI["python -m core.cli<br/>Linea de comandos"]
     end
 
     subgraph "core/ — Utilidades compartidas"
         COMMON["common.py<br/>log, colores, traversal, hashing"]
         SETUP["lab_setup.py<br/>generador de archivos de prueba"]
-        CLIMOD["cli.py<br/>navegador interactivo"]
+        TUIMOD["tui.py<br/>interfaz panel dividido"]
+        CLIMOD["cli.py<br/>navegador por comandos"]
     end
 
     subgraph "modulos/ — 14 amenazas"
@@ -36,7 +38,10 @@ graph TB
         M14["14_dns_tunneling"]
     end
 
+    TUI --> TUIMOD
     CLI --> CLIMOD
+    TUIMOD --> M01 & M02 & M03 & M04 & M05 & M06 & M07
+    TUIMOD --> M08 & M09 & M10 & M11 & M12 & M13 & M14
     CLIMOD --> M01 & M02 & M03 & M04 & M05 & M06 & M07
     CLIMOD --> M08 & M09 & M10 & M11 & M12 & M13 & M14
     M01 & M02 & M03 & M04 & M05 & M06 & M07 --> COMMON
@@ -55,17 +60,20 @@ graph TB
 # 1. Generar archivos de prueba
 python core/lab_setup.py
 
-# 2. Ejecutar un modulo
+# 2. Abrir la interfaz visual (recomendado para estudiantes)
+python -m core.tui
+
+# 3. O usar el CLI por comandos
+python -m core.cli
+
+# 4. Ejecutar un modulo directamente
 python modulos/01_ransomware/ransomware.py
 
-# 3. Ejecutar defensa
+# 5. Ejecutar defensa
 python modulos/01_ransomware/defensa.py
 
-# 4. Limpiar
+# 6. Limpiar
 python modulos/01_ransomware/ransomware.py --clean
-
-# 5. Usar el CLI interactivo
-python -m core.cli
 ```
 
 ## Modulos

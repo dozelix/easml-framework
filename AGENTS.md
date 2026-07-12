@@ -13,7 +13,8 @@ graph
   core --> init["__init__.py"]
   core --> common["common.py\n(log, colores, traversal, hashing, cleanup)"]
   core --> lab_setup["lab_setup.py\n(Generador unico de archivos de prueba 12 archivos)"]
-  core --> cli["cli.py\n(CLI interactivo para navegar modulos)"]
+  core --> cli["cli.py\n(CLI por comandos)"]
+  core --> tui["tui.py\n(TUI panel dividido con curses)"]
   root --> modulos["modulos/\n(14 amenazas)"]
   modulos --> rans["01_ransomware/\n(Cifrado XOR + nota de rescate)"]
   modulos --> wiper["02_wiper/\n(Corrupcion de archivos)"]
@@ -39,6 +40,7 @@ graph
 ```bash
 python core/lab_setup.py              # Generar 12 archivos de prueba
 python core/lab_setup.py --clean      # Limpiar archivos generados
+python -m core.tui                    # TUI visual (recomendado)
 python -m core.cli                    # CLI interactivo
 python -m core.cli --list             # Listar modulos
 python -m core.cli 01                 # Ejecutar ransomware
