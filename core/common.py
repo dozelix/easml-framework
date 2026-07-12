@@ -9,6 +9,26 @@ import hashlib
 import glob
 
 
+def find_lab_dir(start=None):
+    """Devuelve la ruta absoluta de directorio_pruebas desde la raíz del laboratorio."""
+    base = start or os.getcwd()
+    if os.path.isfile(base):
+        base = os.path.dirname(base)
+
+    current = os.path.abspath(base)
+    while True:
+        candidate = os.path.join(current, 'directorio_pruebas')
+        if os.path.isdir(candidate):
+            return candidate
+        parent = os.path.dirname(current)
+        if parent == current:
+            break
+        current = parent
+
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(repo_root, 'directorio_pruebas')
+
+
 COLORS = {
     'reset':   '\033[0m',
     'red':     '\033[91m',
@@ -48,7 +68,9 @@ def banner(modulo_name, descripcion):
 
 def traverse_lab_files(directory=None):
     if directory is None:
-        directory = os.getcwd()
+        directory = find_lab_dir()
+    if not os.path.isdir(directory):
+        return []
     files = []
     for f in sorted(os.listdir(directory)):
         path = os.path.join(directory, f)

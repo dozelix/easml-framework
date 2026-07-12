@@ -18,8 +18,7 @@ import shutil
 import argparse
 import time
 
-# ── Configuracion de rutas ──────────────────────────────────────────────────
-# Insertar la raiz del proyecto al path para importar core.common
+# ── Configuracion de rutas absolutas robustas ───────────────────────────────
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DIR_RAIZ)
 
@@ -29,24 +28,19 @@ from core.common import (
     LOG_LINES,
 )
 
-# ── Constantes ──────────────────────────────────────────────────────────────
-# Directorio aislado donde trabaja la simulacion. NUNCA toca archivos raiz.
-DIR_SIMULACION = os.path.join(os.getcwd(), 'directorio_pruebas')
+# ── Constantes fijadas a la raíz ────────────────────────────────────────────
+# Ahora DIR_SIMULACION usa _DIR_RAIZ para asegurar que siempre apunte al lugar correcto
+DIR_SIMULACION = os.path.join(_DIR_RAIZ, 'directorio_pruebas')
 
-# Extension anadida a los archivos "cifrados" (invertidos)
 EXTENSION_LOCKED = '.locked'
-
-# Nombre del archivo de rescate que el ransomware dejaria para la victima
 NOTA_RESCATE = 'README_RESCATE.txt'
 
-# Solo los 12 archivos generados por lab_setup.py (nunca tocar archivos del repo)
 ARCHIVOS_LAB = {
     'documento.txt', 'notas.txt', 'script.py', 'index.html',
     'datos.csv', 'leeme.md', 'imagen.png', 'imagen.jpg',
     'audio.mp3', 'documento.docx', 'planilla.xlsx', 'presentacion.pptx',
 }
 
-# Extensiones de texto que el ransomware puede "cifrar" (invertir)
 EXTENSIONES_TEXTO = {'.txt', '.py', '.html', '.csv', '.md'}
 
 
@@ -56,38 +50,24 @@ def paso_fase(fase_num, titulo):
     """Imprime un encabezado de fase con formato visual llamativo."""
     safe_print(color(f"\n  [FASE {fase_num}] {titulo}", 'yellow'))
     safe_print(color(f"  {'─' * 55}", 'yellow'))
-    time.sleep(0.3)
+    time.sleep(0.1) # Reducido un poco para mayor fluidez en la TUI
 
 
 def invertir_texto(texto):
-    """
-    Invierte el orden de caracteres de cada linea del texto.
-
-    En un ransomware REAL se usaria AES-256 + RSA-2048. Aqui simulamos
-    el "cifrado" invirtiendo el texto — es trivialmente reversible
-    (volver a invertir restaura el contenido original).
-    """
+    """Invierte el orden de caracteres de cada linea del texto."""
     lineas = texto.split('\n')
     lineas_invertidas = [linea[::-1] for linea in lineas]
     return '\n'.join(lineas_invertidas)
 
 
 def preparar_directorio():
-    """
-    Crea directorio_pruebas/ y copia los archivos del laboratorio ahi.
-
-    Razon de seguridad: NUNCA debemos modificar los archivos originales
-    del laboratorio. Siempre trabajamos sobre copias en directorio_pruebas/.
-    """
-    # Crear directorio si no existe
+    """Crea directorio_pruebas/ de forma absoluta y copia las plantillas."""
     os.makedirs(DIR_SIMULACION, exist_ok=True)
 
-    # Copiar SOLO los 12 archivos de lab (nunca archivos del repo)
     archivos_lab = traverse_lab_files(_DIR_RAIZ)
     copiados = 0
     for archivo in archivos_lab:
         nombre = os.path.basename(archivo)
-        # Solo copiar archivos que pertenecen al laboratorio
         if nombre not in ARCHIVOS_LAB:
             continue
         destino = os.path.join(DIR_SIMULACION, nombre)
@@ -102,12 +82,7 @@ def preparar_directorio():
 
 
 def crear_nota_rescate():
-    """
-    Genera el archivo de rescate tipico de un ransomware.
-
-    En un ataque real, esta nota instruiria a la victima sobre como pagar
-    el rescate. Aqui es puramente educativo.
-    """
+    """Genera la nota de rescate demostrativa."""
     contenido = (
         "╔══════════════════════════════════════════════════════════════════╗\n"
         "║              ¡¡¡TUS ARCHIVOS HAN SIDO CIFRADOS!!!              ║\n"
@@ -148,7 +123,6 @@ def listar_objetivos():
         if not os.path.isfile(ruta):
             continue
         _, ext = os.path.splitext(nombre)
-        # Solo archivos del lab, de texto, y sin nota de rescate
         if nombre in ARCHIVOS_LAB and ext.lower() in EXTENSIONES_TEXTO and nombre != NOTA_RESCATE:
             objetivos.append(ruta)
     return objetivos
@@ -168,10 +142,22 @@ def ejecutar_simulacion():
         'cyan',
     ))
 
-    # Verificar que existan archivos de prueba en la raiz
-    if not is_lab_ready():
-        safe_print(color("  [!] No se encontraron archivos del laboratorio.", 'red'))
-        safe_print(color("  Ejecuta primero: python core/lab_setup.py", 'red'))
+# Comprobación robusta adaptada al entorno de ejecución de la TUI
+    # Si ya tienes los archivos en directorio_pruebas o si el lab base está listo, el entorno es válido.
+    lab_listo = False
+    try:
+        # Intenta pasarle la raíz fija si la función lo soporta
+        lab_listo = is_lab_ready(_DIR_RAIZ)
+    except TypeError:
+        # Si la función no acepta argumentos, revisa si ya tienes archivos en el directorio de pruebas
+        if os.path.exists(DIR_SIMULACION) and len(os.listdir(DIR_SIMULACION)) >= 12:
+            lab_listo = True
+        else:
+            lab_listo = is_lab_ready()
+
+    if not lab_listo:
+        safe_print(color("  [!] No se encontraron los archivos base del laboratorio.", 'red'))
+        safe_print(color("  Ejecuta la inicialización manual usando la tecla [Q] en la TUI.", 'red'))
         sys.exit(1)
 
     # ── FASE 1: Preparacion del entorno ─────────────────────────────────────
@@ -183,19 +169,22 @@ def ejecutar_simulacion():
         'cyan',
     ))
     preparar_directorio()
-    time.sleep(0.5)
+    time.sleep(0.3)
 
     # ── FASE 2: Reconocimiento ──────────────────────────────────────────────
     paso_fase(2, "RECONOCIMIENTO — Enumerando archivos de texto")
     log("Fase 2: Reconocimiento")
     safe_print(color("  El ransomware busca archivos con extensiones objetivo:\n", 'cyan'))
-    objetivos = listar_objetivo() if False else listar_objetivos()
+    
+    # CORREGIDO: Eliminado el typo que causaba fallos en el parser
+    objetivos = listar_objetivos()
+    
     for ruta in objetivos:
         nombre = os.path.basename(ruta)
         tamano = os.path.getsize(ruta)
         safe_print(color(f"    [+] {nombre} ({tamano} bytes) — OBJETIVO", 'green'))
     safe_print(color(f"\n  Total archivos objetivo: {len(objetivos)}", 'yellow'))
-    time.sleep(0.5)
+    time.sleep(0.3)
 
     # ── FASE 3: Cifrado simulado (inversion de texto) ───────────────────────
     paso_fase(3, "CIFRADO — Invirtiendo contenido de archivos de texto")
@@ -208,16 +197,12 @@ def ejecutar_simulacion():
     archivos_cifrados = []
     for ruta in objetivos:
         nombre = os.path.basename(ruta)
-        # Leer contenido original
         with open(ruta, 'r', encoding='utf-8', errors='replace') as f:
             contenido_original = f.read()
 
         hash_original = hash_file(ruta)
-
-        # Invertir el texto (simular cifrado)
         contenido_invertido = invertir_texto(contenido_original)
 
-        # Crear archivo .locked con el contenido invertido
         ruta_locked = ruta + EXTENSION_LOCKED
         with open(ruta_locked, 'w', encoding='utf-8') as f:
             f.write(contenido_invertido)
@@ -228,7 +213,7 @@ def ejecutar_simulacion():
         safe_print(color(f"             SHA-256 original: {hash_display}", 'blue'))
         log(f"  Cifrado: {nombre} -> {nombre}{EXTENSION_LOCKED} (hash: {hash_display})")
 
-    time.sleep(0.5)
+    time.sleep(0.3)
 
     # ── FASE 4: Dejar nota de rescate ───────────────────────────────────────
     paso_fase(4, "RESCATE — Dejando nota para la victima")
@@ -239,7 +224,7 @@ def ejecutar_simulacion():
         'cyan',
     ))
     crear_nota_rescate()
-    time.sleep(0.5)
+    time.sleep(0.3)
 
     # ── FASE 5: Resumen ─────────────────────────────────────────────────────
     paso_fase(5, "RESUMEN DEL ATAQUE")
@@ -254,7 +239,6 @@ def ejecutar_simulacion():
     safe_print(color("  - Un backup actualizado es la mejor defensa contra ransomware.", 'cyan'))
     safe_print(color("  - La nota de rescate es el indicador clave para identificarlo.\n", 'cyan'))
 
-    # ── Guardar log ─────────────────────────────────────────────────────────
     write_log("ransomware_sim", list(LOG_LINES))
 
 
@@ -263,15 +247,12 @@ def limpiar():
     banner("RANSOMWARE — LIMPIEZA", "Eliminando artefactos de la simulacion")
     removed = 0
 
-    # Eliminar directorio completo de simulacion
     if os.path.isdir(DIR_SIMULACION):
         shutil.rmtree(DIR_SIMULACION)
         safe_print(color(f"  eliminado: directorio_pruebas/ (entero)", 'green'))
         removed += 1
 
-    # Eliminar logs residuales en la raiz
     removed += cleanup(patterns=[NOTA_RESCATE, 'ransomware_sim.log'])
-
     safe_print(color(f"\n  Limpieza completada: {removed} artefactos eliminados.\n", 'green'))
 
 
