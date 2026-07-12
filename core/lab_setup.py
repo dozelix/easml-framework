@@ -14,7 +14,8 @@ import zlib
 import zipfile
 import io
 
-DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DIR = os.path.join(BASE_DIR, 'directorio_pruebas')
 
 LAB_FILES = [
     'documento.txt', 'notas.txt', 'script.py', 'index.html',
