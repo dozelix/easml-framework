@@ -1,145 +1,161 @@
-# Proyecto Creeper — Virus Educativo Multi-Lenguaje
+# Laboratorio de Malware Educativo
 
-Implementación del primer virus informático de la historia (Creeper, 1971) en 6 lenguajes de programación, para fines educativos en entornos de laboratorio controlados.
+Repositorio academico para el estudio de amenazas de seguridad informatica.
+14 modulos independientes en Python, cada uno con simulacion, defensa y documentacion.
 
-> ⚠ **ADVERTENCIA**: Este código es SOLO para fines educativos. Ejecutar únicamente en entornos aislados (máquinas virtuales, laboratorios). El virus opera exclusivamente dentro de su propio directorio y nunca escapa.
+> **Solo para uso educativo en entorno controlado.**
 
----
+## Arquitectura del Laboratorio
 
-## Estructura
+```mermaid
+graph TB
+    subgraph "Puntos de entrada"
+        TUI["python -m core.tui<br/>Interfaz visual (TUI)"]
+        CLI["python -m core.cli<br/>Linea de comandos"]
+    end
 
+    subgraph "core/ — Utilidades compartidas"
+        COMMON["common.py<br/>log, colores, traversal, hashing"]
+        SETUP["lab_setup.py<br/>generador de archivos de prueba"]
+        TUIMOD["tui.py<br/>interfaz panel dividido"]
+        CLIMOD["cli.py<br/>navegador por comandos"]
+    end
+
+    subgraph "modulos/ — 14 amenazas"
+        M01["01_ransomware"]
+        M02["02_wiper"]
+        M03["03_keylogger"]
+        M04["04_worm"]
+        M05["05_trojan"]
+        M06["06_backdoor"]
+        M07["07_rootkit"]
+        M08["08_botnet"]
+        M09["09_steganography"]
+        M10["10_fileless"]
+        M11["11_logic_bomb"]
+        M12["12_cryptominer"]
+        M13["13_supply_chain"]
+        M14["14_dns_tunneling"]
+    end
+
+    TUI --> TUIMOD
+    CLI --> CLIMOD
+    TUIMOD --> M01 & M02 & M03 & M04 & M05 & M06 & M07
+    TUIMOD --> M08 & M09 & M10 & M11 & M12 & M13 & M14
+    CLIMOD --> M01 & M02 & M03 & M04 & M05 & M06 & M07
+    CLIMOD --> M08 & M09 & M10 & M11 & M12 & M13 & M14
+    M01 & M02 & M03 & M04 & M05 & M06 & M07 --> COMMON
+    M08 & M09 & M10 & M11 & M12 & M13 & M14 --> COMMON
+    COMMON --> SETUP
 ```
-malwares/
-├── python/creeper/   — Implementación original (Python 3.7+)
-├── rust/creeper/     — Versión Rust (rustc 1.97+)
-├── go/creeper/       — Versión Go (go 1.26+)
-├── nim/creeper/      — Versión Nim (nim 2.0+)
-├── c/creeper/        — Versión C (C11 / C17)
-├── cpp/creeper/      — Versión C++ (C++17)
-├── python/creeper/setup_lab.py  — Generador de archivos de prueba (compartido)
-└── README.md
-```
 
-Cada directorio `*/creeper/` contiene:
-- `setup_lab.py` — enlace simbólico o copia del generador
-- 12 archivos de usuario: `.txt`, `.csv`, `.html`, `.md`, `.py`, `.png`, `.jpg`, `.mp3`, `.docx`, `.xlsx`, `.pptx`
-- El virus compilado/interpretado correspondiente
+## Requisitos
 
----
+- Python 3.7+
+- Sin dependencias externas
 
-## Requisitos (toolchains)
-
-| Lenguaje | Comando | Instalación (Windows) |
-|----------|---------|-----------------------|
-| Python   | `python` | Ya incluido |
-| Rust     | `rustc`  | `winget install Rustlang.Rustup` → `rustup default stable-x86_64-pc-windows-gnu` |
-| Go       | `go`     | `winget install GoLang.Go` |
-| Nim      | `nim`    | `winget install nim.nim` + MinGW |
-| C        | `gcc`    | `winget install MartinStorsjo.LLVM-MinGW.UCRT` |
-| C++      | `g++`    | (incluido con LLVM MinGW) |
-
----
-
-## Cómo usar
-
-### 1. Generar archivos de prueba (12 archivos de usuario)
+## Inicio rapido
 
 ```bash
-# Desde cualquier directorio */creeper/:
-python ../../python/creeper/setup_lab.py
+# 1. Generar archivos de prueba
+python core/lab_setup.py
+
+# 2. Abrir la interfaz visual (recomendado para estudiantes)
+python -m core.tui
+
+# 3. O usar el CLI por comandos
+python -m core.cli
+
+# 4. Ejecutar un modulo directamente
+python modulos/01_ransomware/ransomware.py
+
+# 5. Ejecutar defensa
+python modulos/01_ransomware/defensa.py
+
+# 6. Limpiar
+python modulos/01_ransomware/ransomware.py --clean
 ```
 
-Esto crea 12 archivos: 2 `.txt`, 1 `.csv`, 1 `.html`, 1 `.md`, 1 `.py`, 1 `.png`, 1 `.jpg`, 1 `.mp3`, 1 `.docx`, 1 `.xlsx`, 1 `.pptx`.
+## Modulos
 
-### 2. Ejecutar el virus
+| # | Modulo | Tipo de amenaza | Archivos |
+| --- | -------- | ----------------- | ---------- |
+| 01 | [ransomware](modulos/01_ransomware/) | Cifrado de archivos + rescate | simulacion, defensa, README |
+| 02 | [wiper](modulos/02_wiper/) | Corrupcion/eliminacion de datos | simulacion, defensa, README |
+| 03 | [keylogger](modulos/03_keylogger/) | Captura de pulsaciones | simulacion, defensa, README |
+| 04 | [worm](modulos/04_worm/) | Auto-replicacion en red | simulacion, defensa, README |
+| 05 | [trojan](modulos/05_trojan/) | Disfraz + payload oculto | simulacion, defensa, README |
+| 06 | [backdoor](modulos/06_backdoor/) | Acceso persistente + C2 | simulacion, defensa, README |
+| 07 | [rootkit](modulos/07_rootkit/) | Ocultacion de procesos | simulacion, defensa, README |
+| 08 | [botnet](modulos/08_botnet/) | Red de bots + DDoS | simulacion, defensa, README |
+| 09 | [steganography](modulos/09_steganography/) | Datos ocultos en imagenes | simulacion, defensa, README |
+| 10 | [fileless](modulos/10_fileless/) | Sin archivos en disco | simulacion, defensa, README |
+| 11 | [logic_bomb](modulos/11_logic_bomb/) | Payload condicional | simulacion, defensa, README |
+| 12 | [cryptominer](modulos/12_cryptominer/) | Mineria CPU fraudulenta | simulacion, defensa, README |
+| 13 | [supply_chain](modulos/13_supply_chain/) | Compromiso de dependencias | simulacion, defensa, README |
+| 14 | [dns_tunneling](modulos/14_dns_tunneling/) | Exfiltracion via DNS | simulacion, defensa, README |
 
-```bash
-# Python
-cd python/creeper
-python creeper.py
+## Flujo de ejecucion
 
-# Rust
-cd rust/creeper
-rustc creeper.rs -o creeper.exe && creeper.exe
+```mermaid
+sequenceDiagram
+    participant E as Estudiante
+    participant C as core/cli.py
+    participant S as core/lab_setup.py
+    participant M as modulos/XX/
 
-# Go
-cd go/creeper
-go build -o creeper.exe creeper.go && creeper.exe
-
-# Nim
-cd nim/creeper
-nim c -d:release --opt:size creeper.nim && creeper.exe
-
-# C
-cd c/creeper
-gcc creeper.c -o creeper.exe && creeper.exe
-
-# C++
-cd cpp/creeper
-g++ -std=c++17 creeper.cpp -o creeper.exe && creeper.exe
+    E->>C: python -m core.cli
+    C->>E: Lista 14 modulos
+    E->>C: Selecciona modulo 01
+    C->>S: Verifica archivos de prueba
+    S-->>C: Archivos listos
+    C->>M: Ejecuta script del modulo
+    M->>E: Muestra fase por fase
+    E->>C: Selecciona defensa
+    C->>M: Ejecuta defensa.py
+    M->>E: Detecta + limpia artefactos
 ```
 
-### 3. Limpiar después de la ejecución
+## Estructura de cada modulo
 
-```bash
-# Eliminar archivos infectados y RTL clones:
-rm infection.log
-rm "README0<U+202E>txt.py" "README1<U+202E>txt.py" "README2<U+202E>txt.py"
-
-# Regenerar archivos limpios:
-python ../../python/creeper/setup_lab.py
+```text
+modulos/XX_nombre/
+├── README.md         # Teoria profunda + Mermaid diagrams
+├── {nombre}.py       # Codigo educativo ejecutable
+└── defensa.py        # Deteccion + mitigacion + limpieza
 ```
 
----
+Cada script de simulacion soporta:
 
-## Comportamiento del virus
+- `--help` — muestra ayuda
+- `--clean` — elimina artefactos generados
 
-Cada réplica sigue el mismo patrón del Creeper original:
+## Principios de diseno
 
-### Fase 1 — RECON (lectura)
-Lee los 12 archivos de usuario (excluye `.exe`, `setup_lab.py` y su propio fuente) e imprime metadata:
-- `.txt` → bytes y líneas
-- `.csv` → filas
-- `.html` → tags HTML
-- `.md` → headers
-- `.py` → líneas de script
-- `.png`, `.jpg`, `.mp3` → tipo y tamaño
-- `.docx`, `.xlsx`, `.pptx` → tipo y tamaño
+```mermaid
+flowchart LR
+    DRY["DRY<br/>core/ compartido"]
+    SAFE["SAFE<br/>solo en directorio lab"]
+    EDU["EDU<br/>paso a paso explicado"]
+    MOD["MODULAR<br/>14 modulos independientes"]
 
-### Fase 2 — INFECT (infección)
-- `.py` → antepone el código fuente del virus
-- `.txt` → sobrescribe con el código fuente
-- `.jpg` → inserta marcador antes del EOI (`FF D9`)
-- `.png` → inserta marcador después del chunk IEND
-- `.mp3` → appendea marcador al final
-- `.docx`, `.xlsx`, `.pptx` → solo en Go (ZIP injection: agrega marcador dentro del archivo ZIP)
+    DRY --> SETUP["lab_setup.py unico"]
+    DRY --> COMMON["common.py unico"]
+    SAFE --> CHECK["verifica archivos de prueba"]
+    SAFE --> CLEAN["--clean reversa todo"]
+    EDU --> BANNER["banner informativo"]
+    EDU --> STEP["output fase por fase"]
+    MOD --> ISOLATE["cada modulo autocontenido"]
+```
 
-Cada archivo infectado recibe un marcador `[CREEPER-INFECTED]` con timestamp para evitar reinfección.
+## Uso en aula
 
-### Fase 3 — RTL clones
-Crea 3 archivos con nombre `README{N}‮txt.py`
+1. Clonar el repositorio
+2. Ejecutar `python core/lab_setup.py` para generar archivos de prueba
+3. Navegar modulos con `python -m core.cli` o ejecutar directamente
+4. Cada modulo incluye README con teoria, diagramas Mermaid y bibliografia
+5. Al finalizar: `python core/lab_setup.py --clean` para limpiar
 
-(usan el carácter U+202E RIGHT-TO-LEFT OVERRIDE). En Windows Explorer se ven como `README{N}.txt` pero en realidad son scripts Python ejecutables.
+## Licencia
 
-### Fase 4 — LOG
-Escribe `infection.log` con resumen de la operación.
-
----
-
-## Diferencias entre lenguajes
-
-| Característica        | Python | Rust | Go | Nim | C | C++ |
-|-----------------------|--------|------|----|-----|----|-----|
-| ZIP injection         | ✗      | ✗    | ✅ | ✗   | ✗  | ✗   |
-| Binario compilado     | ✗      | ✅   | ✅ | ✅  | ✅ | ✅  |
-| Dependencias externas | ninguna| rustc | go | nim+gcc | gcc | g++ |
-| Infecta Office docs   | ✗      | ✗    | ✅ | ✗   | ✗  | ✗   |
-
----
-
-## Notas
-
-- Python 3.7.9 es la versión disponible en el laboratorio
-- Rust usa toolchain `stable-x86_64-pc-windows-gnu` (no MSVC) porque el linker MSVC no está instalado
-- LLVM MinGW es compartido por Nim, C y C++
-- El generador `setup_lab.py` usa `os.getcwd()` para crear archivos en cualquier directorio
+MIT — Uso exclusivamente educativo y academico.

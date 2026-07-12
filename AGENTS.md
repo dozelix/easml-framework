@@ -1,81 +1,72 @@
 # AGENTS.md
 
-## What this repo is
+## Que es este repo
 
-Multi-language implementation of the Creeper virus (1971) for educational purposes.
-Six independent implementations sharing the same behavior spec, each in `*/creeper/`.
+Laboratorio educativo de malware en Python. 14 modulos independientes que simulan amenazas reales en un entorno controlado, cada uno con simulacion, defensa y documentacion academica.
 
-## Repo structure
+## Estructura
 
+```mermaid
+graph
+  root("malwares/")
+  root --> core["core/\n(Utilidades compartidas DRY)"]
+  core --> init["__init__.py"]
+  core --> common["common.py\n(log, colores, traversal, hashing, cleanup)"]
+  core --> lab_setup["lab_setup.py\n(Generador unico de archivos de prueba 12 archivos)"]
+  core --> cli["cli.py\n(CLI por comandos)"]
+  core --> tui["tui.py\n(TUI panel dividido con curses)"]
+  root --> modulos["modulos/\n(14 amenazas)"]
+  modulos --> rans["01_ransomware/\n(Cifrado XOR + nota de rescate)"]
+  modulos --> wiper["02_wiper/\n(Corrupcion de archivos)"]
+  modulos --> keylogger["03_keylogger/\n(Captura de pulsaciones simulada)"]
+  modulos --> worm["04_worm/\n(Auto-replicacion entre directorios)"]
+  modulos --> trojan["05_trojan/\n(Disfraz + payload oculto)"]
+  modulos --> backdoor["06_backdoor/\n(C2 simulado + persistencia)"]
+  modulos --> rootkit["07_rootkit/\n(Ocultacion de archivos/procesos)"]
+  modulos --> botnet["08_botnet/\n(Red de bots + metricas DDoS)"]
+  modulos --> steg["09_steganography/\n(LSB embedding en imagenes)"]
+  modulos --> fileless["10_fileless/\n(Ejecucion sin archivos en disco)"]
+  modulos --> logic["11_logic_bomb/\n(Payload con detonantes condicionales)"]
+  modulos --> miner["12_cryptominer/\n(Mineria CPU simulada)"]
+  modulos --> supply["13_supply_chain/\n(Compromiso de dependencias)"]
+  modulos --> dns["14_dns_tunneling/\n(Exfiltracion via DNS)"]
+  root --> readme["README.md\n(Documentacion principal con Mermaid)"]
+  root --> agents["AGENTS.md\n(Este archivo)"]
+  root --> gitignore[".gitignore"]
 ```
-python/creeper/   — Python 3.7+ (interpreted, no build step)
-rust/creeper/     — Rust (rustc, no Cargo)
-go/creeper/       — Go (go build, no go.mod)
-nim/creeper/      — Nim 2.0+
-c/creeper/        — C11/C17 (gcc from LLVM MinGW)
-cpp/creeper/      — C++17 (g++ from LLVM MinGW)
-```
 
-Each `*/creeper/` is self-contained: source, `setup_lab.py`, and 12 test user files.
-
-## Build & run (from within each `*/creeper/` directory)
+## Comandos
 
 ```bash
-# Python (no compilation)
-python creeper.py
-
-# Rust (GNU toolchain required — see below)
-rustc creeper.rs -o creeper.exe && ./creeper.exe
-
-# Go
-go build -o creeper.exe creeper.go && ./creeper.exe
-
-# Nim
-nim c -d:release --opt:size creeper.nim && ./creeper.exe
-
-# C
-gcc creeper.c -o creeper.exe && ./creeper.exe
-
-# C++
-g++ -std=c++17 creeper.cpp -o creeper.exe && ./creeper.exe
+python core/lab_setup.py              # Generar 12 archivos de prueba
+python core/lab_setup.py --clean      # Limpiar archivos generados
+python -m core.tui                    # TUI visual (recomendado)
+python -m core.cli                    # CLI interactivo
+python -m core.cli --list             # Listar modulos
+python -m core.cli 01                 # Ejecutar ransomware
+python -m core.cli 01 --defensa       # Ejecutar defensa del ransomware
+python -m core.cli all                # Ejecutar todos los modulos
+python -m core.cli all --clean        # Limpiar todos los modulos
+python modulos/01_ransomware/ransomware.py          # Ejecucion directa
+python modulos/01_ransomware/ransomware.py --clean   # Limpiar
+python modulos/01_ransomware/defensa.py             # Defensa directa
 ```
 
-## Generate test files
+## Convenciones
 
-```bash
-# From any */creeper/ directory:
-python ../../python/creeper/setup_lab.py
-```
+- **Idioma**: Codigo y documentacion en espanol
+- **Nomenclatura**: `<nombre_modulo>.py` (ej. `ransomware.py`, `wiper.py`), `defensa.py`, `README.md`
+- **Imports**: Siempre desde `core.common` y `core.lab_setup`
+- **Independencia**: Cada modulo es autocontenido, no depende de otros modulos
+- **Seguridad**: Todas las simulaciones operan solo sobre archivos del lab
+- **Limpieza**: Todo modulo soporta `--clean` para revertir efectos
+- **DRY**: `core/lab_setup.py` es el unico generador de archivos de prueba
+- **Mermaid**: Usar diagramas Mermaid en READMEs para visualizacion
 
-Creates 12 user files (txt, csv, html, md, py, png, jpg, mp3, docx, xlsx, pptx).
-Must run before each test execution since infection overwrites some files.
+## Reglas de seguridad
 
-## Critical gotchas
-
-- **Rust toolchain must be GNU, not MSVC.** Set with: `rustup default stable-x86_64-pc-windows-gnu`
-- **No Cargo.toml, go.mod, or any package manifests.** All compilers are invoked directly.
-- **No build system, no tests, no linting, no CI.** Everything is manual one-liners.
-- **LLVM MinGW** (`MartinStorsjo.LLVM-MinGW.UCRT`) is shared by Nim, C, and C++.
-- **RTL override characters** (U+202E) in generated filenames — these are intentional, not bugs.
-- **`*.exe` and `infection.log` are gitignored** but some were committed before `.gitignore` was added.
-
-## Cleanup after a run
-
-```bash
-Remove-Item infection.log, "README*txt.py" -ErrorAction SilentlyContinue
-python ../../python/creeper/setup_lab.py   # regenerate clean test files
-```
-
-## Language differences (only Go supports Office ZIP injection)
-
-| Feature            | Python | Rust | Go | Nim | C | C++ |
-|--------------------|--------|------|----|-----|---|-----|
-| ZIP injection      | ✗      | ✗    | ✅  | ✗   | ✗ | ✗   |
-| Compiled binary    | ✗      | ✅   | ✅  | ✅  | ✅| ✅  |
-| Infects Office     | ✗      | ✗    | ✅  | ✗   | ✗ | ✗   |
-
-## Docs
-
-- `README.md` (root) — full project documentation in Spanish
-- `python/creeper/README.md`, `rust/creeper/README.md` — per-language notes
-- All documentation is in Spanish; code comments vary per language
+- NUNCA ejecutar fuera del directorio del laboratorio
+- NUNCA crear archivos maliciosos reales
+- NUNCA hacer conexiones de red reales
+- TODAS las simulaciones son reversibles con `--clean`
+- Los archivos de prueba se generan con `core/lab_setup.py`
