@@ -38,6 +38,8 @@ from textual.widgets import (
 # ── Rutas del proyecto ──────────────────────────────────────────────────────
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULOS_DIR = os.path.join(ROOT, 'modulos')
+DIR_PRUEBAS = os.path.join(ROOT, 'directorio_pruebas')
+SCRIPT_SETUP = os.path.join(ROOT, 'core', 'lab_setup.py')
 
 # ── Base de datos de modulos ────────────────────────────────────────────────
 # Cada tupla: (id, nombre_directorio, nombre_script, pilar_cia, control_cis, desc_corta)
@@ -251,29 +253,22 @@ class LaboratorioTUI(App):
         yield Footer()
 
     def on_mount(self) -> None:
-        """
-        Se ejecuta despues de montar la interfaz.
-        Verifica si existe el directorio de pruebas y muestra advertencia.
-        """
-        lab_dir = os.path.join(ROOT, 'directorio_pruebas')
+        """Se ejecuta despues de montar la interfaz."""
         log = self.query_one("#consola-logs", RichLog)
         log.write("[bold cyan]E.A.S.M.L — Educational Advanced Simulation Malware Laboratory[/]")
         log.write("[dim]Panel de Control — Laboratorio Educativo de Ciberseguridad[/]")
         log.write("")
 
-        if not os.path.isdir(lab_dir):
+        if not os.path.isdir(DIR_PRUEBAS) or not os.listdir(DIR_PRUEBAS):
             log.write(
-                "[bold yellow]ADVERTENCIA:[/] No se encontro el directorio de pruebas "
-                f"[bold]{lab_dir}[/]."
+                "[bold yellow]AVISO:[/] 'directorio_pruebas' no detectado o vacío."
             )
             log.write(
-                "[dim]Ejecuta [bold]python core/lab_setup.py[/bold] para generar "
-                "los archivos de prueba antes de usar las simulaciones.[/]"
+                "[dim]Se generará automáticamente al inicializar la primera simulación.[/]"
             )
         else:
-            # Contar archivos de prueba
-            count = sum(1 for f in os.listdir(lab_dir)
-                        if os.path.isfile(os.path.join(lab_dir, f)))
+            count = sum(1 for f in os.listdir(DIR_PRUEBAS)
+                        if os.path.isfile(os.path.join(DIR_PRUEBAS, f)))
             log.write(
                 f"[green]Directorio de pruebas encontrado:[/] {count} archivos"
             )
@@ -285,25 +280,19 @@ class LaboratorioTUI(App):
     # ── Renderizado del panel de info ────────────────────────────────────
 
     def _render_modulo_info(self, index: int) -> str:
-        """
-        Genera el texto formateado para el panel de info del modulo.
-
-        Retorna un string con formato Rich markup para el widget Static.
-        """
+        """Genera el texto formateado para el panel de info del modulo."""
         if index < 0 or index >= len(MODULOS):
             return "[dim]Selecciona un modulo[/]"
 
         num, nombre, script, cia, cis, desc = MODULOS[index]
         icono = _cia_icon(cia)
 
-        # Verificar existencia de archivos
         dir_modulo = os.path.join(MODULOS_DIR, f"{num}_{nombre}")
         script_path = os.path.join(dir_modulo, f"{script}.py")
         defensa_path = os.path.join(dir_modulo, "defensa.py")
         sim_ok = "[green]v[/]" if os.path.exists(script_path) else "[red]x[/]"
         def_ok = "[green]v[/]" if os.path.exists(defensa_path) else "[red]x[/]"
 
-        # Indicadores de la triada CIA
         triada_lines = []
         for pillar, letra in [("Confidencialidad", "C"), ("Integridad", "I"),
                               ("Disponibilidad", "A")]:
@@ -333,19 +322,10 @@ class LaboratorioTUI(App):
 
         return "\n".join(lines)
 
-    def _actualizar_info(self) -> None:
-        """Actualiza el panel de info del modulo seleccionado."""
-        info = self.query_one("#info-modulo", Static)
-        info.update(self._render_modulo_info(self.selected_index))
-
-    # ── Evento de seleccion en ListView ──────────────────────────────────
+    # ── Eventos de seleccion en ListView ──────────────────────────────────
 
     @on(ListView.Selected)
     def on_list_selected(self, event: ListView.Selected) -> None:
-        """
-        Se dispara cuando el usuario selecciona un modulo en la lista.
-        Actualiza el panel de info y registra en la consola.
-        """
         self.selected_index = event.index
 
     @on(ListView.Highlighted)
@@ -390,7 +370,13 @@ class LaboratorioTUI(App):
         modulo, _idx = self._get_selected_module()
         num, nombre, script, _cia, _cis, _desc = modulo
         script_path = os.path.join(MODULOS_DIR, f"{num}_{nombre}", f"{script}.py")
-        self._ejecutar_script(script_path, f"{num}_{nombre}/simulacion")
+        
+        # Iniciar flujo secuencial: primero verificar el entorno, luego el script
+        self.run_worker(
+            self._verificar_entorno_y_lanzar(script_path, f"{num}_{nombre}/simulacion"),
+            group="subprocess",
+            exclusive=True
+        )
 
     def action_ejecutar_defensa(self) -> None:
         """Ejecuta la defensa del modulo seleccionado."""
@@ -399,7 +385,12 @@ class LaboratorioTUI(App):
         modulo, _idx = self._get_selected_module()
         num, nombre, _script, _cia, _cis, _desc = modulo
         defensa_path = os.path.join(MODULOS_DIR, f"{num}_{nombre}", "defensa.py")
-        self._ejecutar_script(defensa_path, f"{num}_{nombre}/defensa")
+        
+        self.run_worker(
+            self._verificar_entorno_y_lanzar(defensa_path, f"{num}_{nombre}/defensa"),
+            group="subprocess",
+            exclusive=True
+        )
 
     def action_ejecutar_clean(self) -> None:
         """Ejecuta la limpieza del modulo seleccionado (--clean)."""
@@ -408,22 +399,17 @@ class LaboratorioTUI(App):
         modulo, _idx = self._get_selected_module()
         num, nombre, script, _cia, _cis, _desc = modulo
         script_path = os.path.join(MODULOS_DIR, f"{num}_{nombre}", f"{script}.py")
-        self._ejecutar_script(script_path, f"{num}_{nombre}/clean", args=["--clean"])
+        
+        self.run_worker(
+            self._verificar_entorno_y_lanzar(script_path, f"{num}_{nombre}/clean", args=["--clean"]),
+            group="subprocess",
+            exclusive=True
+        )
 
-    def _ejecutar_script(
+    async def _verificar_entorno_y_lanzar(
         self, script_path: str, label: str, args: list[str] | None = None
     ) -> None:
-        """
-        Inicia la ejecucion asincrona de un script Python como subproceso.
-
-        No bloquea la interfaz. El output se captura linea a linea y se
-        muestra en el RichLog en tiempo real.
-
-        Args:
-            script_path: Ruta absoluta al script .py
-            label: Etiqueta descriptiva para el log
-            args: Argumentos adicionales (ej: ['--clean'])
-        """
+        """Verifica la existencia del entorno de pruebas. Si no existe, invoca lab_setup.py"""
         if not os.path.exists(script_path):
             log = self.query_one("#consola-logs", RichLog)
             log.write(f"[bold red]ERROR:[/] Script no encontrado: {script_path}")
@@ -431,26 +417,50 @@ class LaboratorioTUI(App):
 
         self.ejecutando = True
         log = self.query_one("#consola-logs", RichLog)
+
+        # Si el directorio no existe o está vacío, ejecutamos el instalador automáticamente
+        if not os.path.exists(DIR_PRUEBAS) or not os.listdir(DIR_PRUEBAS):
+            log.write("[bold yellow]⚠️ 'directorio_pruebas' ausente o vacío. Creando entorno...[/]")
+            setup_cmd = [sys.executable, SCRIPT_SETUP]
+            try:
+                process_setup = await asyncio.create_subprocess_exec(
+                    *setup_cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.STDOUT,
+                    cwd=ROOT,
+                )
+                assert process_setup.stdout is not None
+                while True:
+                    linea = await process_setup.stdout.readline()
+                    if not linea:
+                        break
+                    texto = linea.decode("utf-8", errors="replace").rstrip("\n")
+                    if texto.strip():
+                        log.write(f"[dim][Setup] {strip_ansi(texto)}[/]")
+                
+                await process_setup.wait()
+                if process_setup.returncode != 0:
+                    log.write("[bold red]❌ Error crítico ejecutando core/lab_setup.py[/]")
+                    self.ejecutando = False
+                    return
+                log.write("[bold green]✅ Entorno de pruebas generado con éxito.[/]")
+            except Exception as e:
+                log.write(f"[bold red]ERROR inicializando entorno:[/] {e}")
+                self.ejecutando = False
+                return
+
+        # Una vez asegurado el entorno, lanzamos el script seleccionado
         log.write(f"[bold yellow]{'='*50}[/]")
         log.write(f"[bold yellow]Ejecutando:[/] {label}")
         log.write(f"[dim]{script_path}{' ' + ' '.join(args) if args else ''}[/]")
         log.write(f"[bold yellow]{'='*50}[/]")
 
-        self.run_worker(
-            self._run_subprocess(script_path, args),
-            group="subprocess",
-            exclusive=True,
-        )
+        await self._run_subprocess(script_path, args)
 
     async def _run_subprocess(
         self, script_path: str, args: list[str] | None = None
     ) -> None:
-        """
-        Ejecuta un subproceso de forma asincrona y escribe su output al RichLog.
-
-        Lee stdout/stderr linea por linea y las escribe inmediatamente
-        en el panel de logs para mostrar progreso en tiempo real.
-        """
+        """Ejecuta el script de malware asegurando que su contexto de trabajo sea ROOT."""
         log = self.query_one("#consola-logs", RichLog)
         cmd = [sys.executable, script_path]
         if args:
@@ -461,10 +471,9 @@ class LaboratorioTUI(App):
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
-                cwd=ROOT,
+                cwd=ROOT, # Se obliga a heredar MALWARES como el directorio activo de trabajo
             )
 
-            # Leer output linea por linea
             assert process.stdout is not None
             while True:
                 raw_line = await process.stdout.readline()
@@ -473,7 +482,6 @@ class LaboratorioTUI(App):
                 line = raw_line.decode("utf-8", errors="replace").rstrip("\n")
                 clean = strip_ansi(line)
 
-                # Colorizar segun contenido
                 if any(tag in line for tag in ("[CIFRADO]", "[ELIMINADO]", "[CORROMPIDO]")):
                     log.write(f"[red]{clean}[/]")
                 elif any(tag in line for tag in ("[OK]", "[+] ", "eliminado:", "CREADO")):
@@ -502,12 +510,6 @@ class LaboratorioTUI(App):
 #  PUNTO DE ENTRADA
 # ════════════════════════════════════════════════════════════════════════════
 def main():
-    """
-    Punto de entrada de la TUI.
-
-    Ejecuta la aplicacion Textual. La terminal se restaura automaticamente
-    al salir (incluso con Ctrl+C o excepciones).
-    """
     try:
         app = LaboratorioTUI()
         app.run()
