@@ -390,19 +390,20 @@ def make_pptx():
 
 def clean():
     cleaned = 0
-    for fname in LAB_FILES:
-        path = os.path.join(DIR, fname)
-        if os.path.exists(path):
-            try:
-                os.remove(path)
-                cleaned += 1
-                print(f"  eliminado: {fname}")
-            except Exception as e:
-                print(f"  error al eliminar {fname}: {e}")
+    if os.path.exists(DIR):
+        for fname in LAB_FILES:
+            path = os.path.join(DIR, fname)
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                    cleaned += 1
+                    print(f"  eliminado: {fname}")
+                except Exception as e:
+                    print(f"  error al eliminar {fname}: {e}")
 
     import glob as _glob
     for pattern in ['*.log', '__pycache__']:
-        for f in _glob.glob(os.path.join(DIR, pattern)):
+        for f in _glob.glob(os.path.join(BASE_DIR, pattern)):
             try:
                 if os.path.isdir(f):
                     import shutil
@@ -424,6 +425,8 @@ def main():
         return
 
     print("Generando archivos de usuario para el laboratorio...\n")
+
+    os.makedirs(DIR, exist_ok=True)
 
     write('documento.txt', make_documento_txt())
     write('notas.txt', make_notas_txt())
