@@ -71,7 +71,7 @@ python -m core.cli
 ## Modulos
 
 | # | Modulo | Tipo de amenaza | Archivos |
-|---|--------|-----------------|----------|
+| --- | -------- | ----------------- | ---------- |
 | 01 | [ransomware](modulos/01_ransomware/) | Cifrado de archivos + rescate | simulacion, defensa, README |
 | 02 | [wiper](modulos/02_wiper/) | Corrupcion/eliminacion de datos | simulacion, defensa, README |
 | 03 | [keylogger](modulos/03_keylogger/) | Captura de pulsaciones | simulacion, defensa, README |
@@ -110,7 +110,7 @@ sequenceDiagram
 
 ## Estructura de cada modulo
 
-```
+```text
 modulos/XX_nombre/
 ├── README.md         # Teoria profunda + Mermaid diagrams
 ├── {nombre}.py       # Codigo educativo ejecutable
@@ -118,6 +118,7 @@ modulos/XX_nombre/
 ```
 
 Cada script de simulacion soporta:
+
 - `--help` — muestra ayuda
 - `--clean` — elimina artefactos generados
 
