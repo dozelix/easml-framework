@@ -1,0 +1,26 @@
+=== NOTAS PERSONALES ===
+
+* Compras del supermercado:
+  - Leche (2)
+  - Pan integral
+  - Huevos (docena)
+  - Frutas variadas
+  - Cafe molido
+  - Arroz
+
+* Tareas pendientes:
+  - Llamar al medico para turno anual
+  - Pagar impuestos (vencen el 20/07)
+  - Enviar informe al jefe antes del viernes
+  - Comprar regalo cumpleanos de mama
+
+* Ideas para el proyecto:
+  - Implementar autenticacion 2FA
+  - Optimizar consultas a la base de datos
+  - Revisar vulnerabilidades de seguridad
+
+* Recordatorios:
+  - Renovar certificado SSL del servidor
+  - Backup semanal de la base de datos
+  - Actualizar dependencias del proyecto
+  - Password: mi_clave_segura_2026 (NO COMPARTIR)
