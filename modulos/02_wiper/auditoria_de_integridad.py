@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Defensa contra simulacion de Wiper — Modulo 02.
+Ejecutar Auditoría de Integridad de Archivos contra simulacion de Wiper — Modulo 02.
 
 Detecta archivos corruptos comparando hashes con el backup (.backup_wiper/),
 restaura el contenido original desde backup y muestra verificacion de integridad.
@@ -18,7 +18,7 @@ import argparse
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DIR_RAIZ)
 
-from core.common import (
+from modulos.common.utils import (
     log, safe_print, color, banner, traverse_lab_files,
     hash_file, cleanup, write_log,
 )

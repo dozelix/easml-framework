@@ -15,6 +15,10 @@ import zipfile
 import io
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+from modulos.common.paths import ensure_lab_data_dirs, resolve_lab_paths
 DIR = os.path.join(BASE_DIR, 'directorio_pruebas')
 
 LAB_FILES = [
@@ -420,6 +424,7 @@ def clean():
 
 
 def main():
+    ensure_lab_data_dirs(BASE_DIR)
     if '--clean' in sys.argv:
         clean()
         return

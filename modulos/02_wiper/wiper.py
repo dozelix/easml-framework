@@ -23,7 +23,7 @@ import time
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DIR_RAIZ)
 
-from core.common import (
+from modulos.common.utils import (
     log, safe_print, color, banner, traverse_lab_files,
     hash_file, read_file, cleanup, write_log, is_lab_ready,
     LOG_LINES, find_lab_dir,

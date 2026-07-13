@@ -8,25 +8,16 @@ import datetime
 import hashlib
 import glob
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+from modulos.common.paths import resolve_lab_paths
+
 
 def find_lab_dir(start=None):
     """Devuelve la ruta absoluta de directorio_pruebas desde la raíz del laboratorio."""
-    base = start or os.getcwd()
-    if os.path.isfile(base):
-        base = os.path.dirname(base)
-
-    current = os.path.abspath(base)
-    while True:
-        candidate = os.path.join(current, 'directorio_pruebas')
-        if os.path.isdir(candidate):
-            return candidate
-        parent = os.path.dirname(current)
-        if parent == current:
-            break
-        current = parent
-
-    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(repo_root, 'directorio_pruebas')
+    return resolve_lab_paths(start)['lab_dir']
 
 
 COLORS = {
@@ -99,8 +90,9 @@ def read_file(path):
 
 
 def is_lab_ready():
+    lab_dir = find_lab_dir()
     required = ['documento.txt', 'script.py', 'imagen.png']
-    return all(os.path.exists(f) for f in required)
+    return all(os.path.exists(os.path.join(lab_dir, name)) for name in required)
 
 
 def cleanup(files_to_remove=None, patterns=None):
