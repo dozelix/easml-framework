@@ -11,7 +11,7 @@ sabotaje corporativo.
 ### Diferencia clave con ransomware
 
 | Caracteristica | Ransomware | Wiper |
-|---------------|-----------|-------|
+| --------------- | ----------- | ------- |
 | Objetivo | Extorsion monetaria | Destruccion / sabotaje |
 | Cifrado | Si (reversible con clave) | No (corrupcion irreversible) |
 | Nota de rescate | Si | No |
@@ -21,8 +21,8 @@ sabotaje corporativo.
 
 ### Variantes historicas
 
-| Ano | Nombre | Contexto |
-|-----|--------|----------|
+| Año | Nombre | Contexto |
+| ----- | -------- | ---------- |
 | 2012 | Shamoon | Ataco Saudi Aramco, destruyo datos de 35.000+ computadoras con imagen de bandera de EEUU |
 | 2016 | Shamoon 2 | Segundo ataque a Saudi Aramco y otras empresas del Golfo |
 | 2022 | WhisperGate | Previo a la invasion rusa de Ucrania; se disfrazo como ransomware pero era un wiper |
@@ -43,7 +43,7 @@ representando el mayor despliegue coordinado de armas ciberneticas jamas visto.
 
 ### Flujo detallado de un ataque wiper
 
-```
+```text
 1. INFECCION INICIAL
    El wiper se instala en el sistema via: supply chain comprometida,
    phishing dirigido, explotacion de vulnerabilidad, o USB malicioso.
@@ -124,7 +124,7 @@ un wiper destruye datos sin necesidad de cifrarlos.
 
 ### Que hace `wiper.py`
 
-```
+```text
 1. PREPARACION
    - Crea directorio_pruebas/ y copia los 12 archivos del lab
 
@@ -151,7 +151,7 @@ un wiper destruye datos sin necesidad de cifrarlos.
 
 ### Que hace `defensa.py`
 
-```
+```text
 1. VERIFICACION DE BACKUP
    - Comprueba que .backup_wiper/ existe y tiene archivos
 

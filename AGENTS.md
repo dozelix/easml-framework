@@ -1,72 +1,48 @@
 # AGENTS.md
 
-## Que es este repo
+## Qué es este repo
 
-Laboratorio educativo de malware en Python. 14 modulos independientes que simulan amenazas reales en un entorno controlado, cada uno con simulacion, defensa y documentacion academica.
-
-## Estructura
-
-```mermaid
-graph
-  root("malwares/")
-  root --> core["core/\n(Utilidades compartidas DRY)"]
-  core --> init["__init__.py"]
-  core --> common["common.py\n(log, colores, traversal, hashing, cleanup)"]
-  core --> lab_setup["lab_setup.py\n(Generador unico de archivos de prueba 12 archivos)"]
-  core --> cli["cli.py\n(CLI por comandos)"]
-  core --> tui["tui.py\n(TUI con Textual — layout flexbox reactivo)"]
-  root --> modulos["modulos/\n(14 amenazas)"]
-  modulos --> rans["01_ransomware/\n(Cifrado XOR + nota de rescate)"]
-  modulos --> wiper["02_wiper/\n(Corrupcion de archivos)"]
-  modulos --> keylogger["03_keylogger/\n(Captura de pulsaciones simulada)"]
-  modulos --> worm["04_worm/\n(Auto-replicacion entre directorios)"]
-  modulos --> trojan["05_trojan/\n(Disfraz + payload oculto)"]
-  modulos --> backdoor["06_backdoor/\n(C2 simulado + persistencia)"]
-  modulos --> rootkit["07_rootkit/\n(Ocultacion de archivos/procesos)"]
-  modulos --> botnet["08_botnet/\n(Red de bots + metricas DDoS)"]
-  modulos --> steg["09_steganography/\n(LSB embedding en imagenes)"]
-  modulos --> fileless["10_fileless/\n(Ejecucion sin archivos en disco)"]
-  modulos --> logic["11_logic_bomb/\n(Payload con detonantes condicionales)"]
-  modulos --> miner["12_cryptominer/\n(Mineria CPU simulada)"]
-  modulos --> supply["13_supply_chain/\n(Compromiso de dependencias)"]
-  modulos --> dns["14_dns_tunneling/\n(Exfiltracion via DNS)"]
-  root --> readme["README.md\n(Documentacion principal con Mermaid)"]
-  root --> agents["AGENTS.md\n(Este archivo)"]
-  root --> gitignore[".gitignore"]
-```
+Laboratorio educativo de malware en Python. 14 módulos independientes en `modulos/` (cada uno con simulación + defensa + README), una TUI interactiva con Textual, y utilidades compartidas.
 
 ## Comandos
 
 ```bash
-python core/lab_setup.py              # Generar 12 archivos de prueba
-python core/lab_setup.py --clean      # Limpiar archivos generados
-python -m core.tui                    # TUI visual (recomendado)
-python -m core.cli                    # CLI interactivo
-python -m core.cli --list             # Listar modulos
-python -m core.cli 01                 # Ejecutar ransomware
-python -m core.cli 01 --defensa       # Ejecutar defensa del ransomware
-python -m core.cli all                # Ejecutar todos los modulos
-python -m core.cli all --clean        # Limpiar todos los modulos
-python modulos/01_ransomware/ransomware.py          # Ejecucion directa
-python modulos/01_ransomware/ransomware.py --clean   # Limpiar
-python modulos/01_ransomware/defensa.py             # Defensa directa
+python core/lab_setup.py              # Genera 12 archivos de prueba en directorio_pruebas/
+python core/lab_setup.py --clean      # Limpia todos los artefactos generados
+python tui.py                         # Lanza la TUI visual (NO usar `python -m core.tui` — no existe)
+python -m unittest discover tests     # Tests (unittest, no hay pytest)
 ```
+
+## Arquitectura (lo que un agente no adivina)
+
+- **Dos paquetes de utilidades compartidas**, no confundir:
+  - `modulos/common/` — paths, utils, cleanup, generators (el que usan todos los módulos)
+  - `core/` — solo `base_module.py` (ABCs `BaseThreat`/`BaseDefense`) y `lab_setup.py`
+- **No existe `core/common.py`** — los imports van desde `modulos.common.*`
+- **Cada módulo hace `sys.path.insert(0, _DIR_RAIZ)`** al inicio para resolver rutas absolutas. Copiar este patrón al crear módulos nuevos.
+- **Entry point real**: `python tui.py` (raíz) → importa `tui.main.main()`. El README dice `python -m core.tui` pero esa ruta no existe.
+- **`tui/views.py` contiene CSS duplicado** de `tui/styles.py` (el que usa `main.py`). No agregar CSS ahí.
 
 ## Convenciones
 
-- **Idioma**: Codigo y documentacion en espanol
-- **Nomenclatura**: `<nombre_modulo>.py` (ej. `ransomware.py`, `wiper.py`), `defensa.py`, `README.md`
-- **Imports**: Siempre desde `core.common` y `core.lab_setup`
-- **Independencia**: Cada modulo es autocontenido, no depende de otros modulos
-- **Seguridad**: Todas las simulaciones operan solo sobre archivos del lab
-- **Limpieza**: Todo modulo soporta `--clean` para revertir efectos
-- **DRY**: `core/lab_setup.py` es el unico generador de archivos de prueba
-- **Mermaid**: Usar diagramas Mermaid en READMEs para visualizacion
+- **Idioma**: código y documentación en español
+- **Imports**: desde `modulos.common.utils` y `modulos.common.paths` (NO `core.common`)
+- Todo módulo debe soportar `--clean`
+- `core/lab_setup.py` es el único generador de archivos de prueba (DRY)
+- Cada módulo es autocontenido; no depender de otros módulos
 
-## Reglas de seguridad
+## Tests
 
-- NUNCA ejecutar fuera del directorio del laboratorio
-- NUNCA crear archivos maliciosos reales
-- NUNCA hacer conexiones de red reales
-- TODAS las simulaciones son reversibles con `--clean`
-- Los archivos de prueba se generan con `core/lab_setup.py`
+```bash
+python -m unittest discover tests     # Ejecuta todos
+python -m unittest tests.test_common  # Solo test_common
+```
+
+**Conocido roto**: `tests/test_common.py` importa `from core.common import find_lab_dir` pero `core/common.py` no existe. Debería importar `from modulos.common.utils import find_lab_dir`.
+
+## Seguridad
+
+- NUNCA ejecutar scripts fuera del directorio del laboratorio
+- NUNCA crear payloads o archivos dañinos reales
+- NUNCA conexiones de red reales al exterior (solo simulados/localhost)
+- TODA acción destructiva debe ser reversible con `--clean`

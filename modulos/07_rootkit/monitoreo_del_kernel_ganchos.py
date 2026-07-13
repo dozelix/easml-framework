@@ -17,13 +17,13 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from core.common import (
+from modulos.common.utils import (
     banner, color, safe_print, log, LOG_LINES,
-    write_log, hash_file, traverse_lab_files,
+    write_log, hash_file, traverse_lab_files, find_lab_dir,
 )
 
 # ── Ruta del directorio de pruebas ──
-LAB_DIR = os.path.join(ROOT, "directorio_pruebas")
+LAB_DIR = find_lab_dir(ROOT)
 
 # ── Marcador de deteccion ──
 ROOTKIT_MARKER = "ROOTKIT_SIMULATION"

@@ -21,13 +21,13 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from core.common import (
+from modulos.common.utils import (
     banner, color, safe_print, log, LOG_LINES,
-    write_log, cleanup, hash_file as _hash_file,
+    write_log, cleanup, hash_file as _hash_file, find_lab_dir,
 )
 
 # ── Ruta del directorio de pruebas ──
-LAB_DIR = os.path.join(ROOT, "directorio_pruebas")
+LAB_DIR = find_lab_dir(ROOT)
 
 # ── Marcadores de IOC ──
 C2_MARKER = "C2_BACKDOOR_SIMULATION"
