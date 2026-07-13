@@ -97,7 +97,7 @@ Cada nodo infectado se convierte en un nuevo vector de dispersion, generando cre
 
 * **CIS Control 13: Defensa de Red (Network Monitoring and Defense)**
 * **Concepto:** Este control establece la necesidad de monitorear y defender la red contra accesos no autorizados, trafico anomalo y amenazas de propagacion. Incluye la segmentacion de red, el monitoreo de trafico y la respuesta automatizada a incidentes.
-* **Implementacion Practica en Laboratorio:** El script `defensa.py` implementa este control de las siguientes formas:
+* **Implementacion Practica en Laboratorio:** El script `monitoreo_de_red.py` implementa este control de las siguientes formas:
   - **Deteccion de artefactos de propagacion**: Escanea todos los directorios compartidos en busca de copias del gusano, identificando cada nodo infectado y las rutas de transmision.
   - **Grafo de propagacion**: Reconstruye el arbol de infeccion mostrando que nodo origino la infeccion de que otro nodo, similar a como un analista de SOC reconstruiria un evento de propagacion real.
   - **Limpieza automatizada**: Elimina todas las copias del gusano y los directorios compartidos comprometidos, restaurando el estado original.
@@ -113,7 +113,7 @@ Cada nodo infectado se convierte en un nuevo vector de dispersion, generando cre
   5. Muestra un grafo visual de la propagacion y estadisticas finales.
   6. Todo operan dentro de `directorio_pruebas/` (lab_tmp/) sin tocar archivos del sistema real.
 
-* **Que hace `defensa.py`:**
+* **Que hace `monitoreo_de_red.py`:**
   1. Escanea todos los subdirectorios buscando archivos con el nombre `worm_sim.py`.
   2. Para cada copia encontrada, extrae el hash SHA-256 y el nodo de origen desde el contenido del archivo.
   3. Reconstruye y muestra el grafo de propagacion (que nodo infecto a que otro).

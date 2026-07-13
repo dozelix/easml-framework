@@ -64,7 +64,7 @@ antivirus tradicionales basados en firmas de archivos.
   fileless.
 
 * **Implementación Práctica en Laboratorio:**
-  `defensa.py` verifica la existencia de archivos temporales residuales en `/tmp`,
+  `inspeccion_de_memoria_volatile.py` verifica la existencia de archivos temporales residuales en `/tmp`,
   analiza timestamps de ejecución y muestra cómo un analista SOC buscaría rastros
   de ejecución fileless en un sistema real (logs de PowerShell, eventos WMI,
   procesos en memoria).
@@ -83,7 +83,7 @@ antivirus tradicionales basados en firmas de archivos.
 7. Registra la ejecución en fileless.log para análisis educativo.
 ```
 
-### Qué hace `defensa.py`
+### Qué hace `inspeccion_de_memoria_volatile.py`
 
 ```
 1. Busca archivos temporales residuales de la simulación en /tmp.
@@ -111,7 +111,7 @@ python modulos/10_fileless/fileless.py --help
 python modulos/10_fileless/fileless.py --clean
 
 # Detectar y limpiar desde defensa
-python modulos/10_fileless/defensa.py
+python modulos/10_fileless/inspeccion_de_memoria_volatile.py
 ```
 
 > **NOTA:** En un sistema real, este tipo de malware es extremadamente difícil de

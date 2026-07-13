@@ -87,7 +87,7 @@ porque implica calcular millones de hashes por segundo hasta encontrar uno valid
   y actividad de red para que un equipo de seguridad pueda identificar indicadores
   de compromiso (IOCs) de cryptojacking.
 
-* **Implementacion Practica en Laboratorio**: El script `defensa.py` implementa
+* **Implementacion Practica en Laboratorio**: El script `monitoreo_de_recursos_cpu.py` implementa
   auditoria de 6 vectores: (1) monitoreo de uso de CPU via `/proc/loadavg`,
   (2) busqueda de archivos de configuracion de minero, (3) deteccion de codigo
   de minado inyectado en scripts, (4) escaneo de archivos temporales sospechosos
@@ -109,7 +109,7 @@ porque implica calcular millones de hashes por segundo hasta encontrar uno valid
   un log de estadisticas de minado, y un script temporal que simula actividad
   sospechosa. Todo el proceso es reversble con `--clean`.
 
-* **Que hace `defensa.py`**:
+* **Que hace `monitoreo_de_recursos_cpu.py`**:
   Implementa un escaneo de deteccion de 6 verificaciones: (1) analisis de uso de CPU
   via `/proc/loadavg`, (2) busqueda de archivos de configuracion de minero en el
   directorio de artefactos, (3) verificacion de integridad de `script.py` buscando

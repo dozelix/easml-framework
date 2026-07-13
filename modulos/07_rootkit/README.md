@@ -94,7 +94,7 @@ El flujo de operacion de un rootkit se describe en los siguientes pasos:
 
 * **CIS Control 8: Auditoria de Cuentas (Audit Log Management)**
 * **Concepto:** Este control establece la necesidad de recopilar, almacenar, revisar y responder a registros de auditoria del sistema. Los logs son esenciales para detectar la presencia de rootkits, ya que un rootkit que manipula las vistas en tiempo real puede no poder alterar los logs que ya fueron escritos en disco.
-* **Implementacion Practica en Laboratorio:** El script `defensa.py` implementa este control de las siguientes formas:
+* **Implementacion Practica en Laboratorio:** El script `monitoreo_del_kernel_ganchos.py` implementa este control de las siguientes formas:
   - **Deteccion de archivos ocultos**: Lista todos los archivos con prefijo dot (.) en el directorio de pruebas, revelando archivos que un rootkit intentaria ocultar de una vista normal.
   - **Deteccion de marcadores de rootkit**: Escanea archivos buscando el marcador `ROOTKIT_SIMULATION`, similar a como un analista buscaria IOC de rootkits conocidos.
   - **Deteccion de manipulacion de procesos**: Identifica archivos que contienen referencias a procesos maliciosos ocultos, reconstruyendo la lista real de procesos.
@@ -113,7 +113,7 @@ El flujo de operacion de un rootkit se describe en los siguientes pasos:
   4. Guarda la lista de procesos manipulada en un archivo con el marcador `ROOTKIT_SIMULATION`.
   5. Explica las tecnicas de ocultamiento: prefijo dot, filtrado de procesos, intercepcion de API, DKOM.
 
-* **Que hace `defensa.py`:**
+* **Que hace `monitoreo_del_kernel_ganchos.py`:**
   1. Lista todos los archivos ocultos (prefijo dot) en el directorio de pruebas.
   2. Escanea archivos buscando el marcador `ROOTKIT_SIMULATION`.
   3. Detecta archivos con procesos ocultos simulados (rootkit_svc.exe, c2_beacon.exe, keylog_drv.sys).

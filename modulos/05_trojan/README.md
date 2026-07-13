@@ -97,7 +97,7 @@ sequenceDiagram
 
 * **CIS Control 7: Continuidad del Suministro (Email and Web Browser Protections)**
 * **Concepto:** Este control establece que las organizaciones deben proteger los sistemas de correo electronico y navegadores web, que son los vectores de entrega principales para troyanos. Incluye proteccion contra phishing, inspeccion de adjuntos, y verificacion de la legitimidad de archivos descargados.
-* **Implementacion Practica en Laboratorio:** El script `defensa.py` implementa este control de las siguientes formas:
+* **Implementacion Practica en Laboratorio:** El script `inspeccion_de_contenido.py` implementa este control de las siguientes formas:
   - **Deteccion de extensiones duales**: Identifica archivos con doble extension (ej: `.pdf.exe`, `.jpg.exe`) que son el sello clasico de un troyano.
   - **Analisis de marcadores de payload**: Escanea el contenido de archivos buscando indicadores de compromiso (marcadores de payload, direcciones C2).
   - **Verificacion de nombres sospechosos**: Detecta nombres tipicos de troyanos (update.exe, setup.exe, invoice.pdf.exe).
@@ -116,7 +116,7 @@ sequenceDiagram
   3. Incluye marcadores (`TROJAN_PAYLOAD_SIMULATION`, `C2_SERVER_ENDPOINT`) para que la defensa los detecte.
   4. Cada archivo contiene comentarios didacticos que explican la tecnica de disfraz utilizada.
 
-* **Que hace `defensa.py`:**
+* **Que hace `inspeccion_de_contenido.py`:**
   1. Escanea archivos buscando marcadores de payload (`TROJAN_PAYLOAD_SIMULATION`, `C2_SERVER_ENDPOINT`).
   2. Detecta nombres sospechosos y extensiones ejecutables.
   3. Identifica extensiones multiples (disfraz de troyano).

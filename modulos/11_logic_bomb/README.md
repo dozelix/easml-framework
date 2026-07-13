@@ -70,7 +70,7 @@ a que el "disparador" (trigger) se active.
   empleados internos.
 
 * **Implementación Práctica en Laboratorio:**
-  `defensa.py` detecta el archivo de marcador JSON que contiene las condiciones
+  `analisis_de_desencadenadores.py` detecta el archivo de marcador JSON que contiene las condiciones
   de activación de la bomba, analiza qué condiciones están cumplidas y
   neutraliza la bomba eliminando todos los artefactos generados.
 
@@ -92,7 +92,7 @@ a que el "disparador" (trigger) se active.
 6. Registra cada condición y su resultado en logic_bomb.log.
 ```
 
-### Qué hace `defensa.py`
+### Qué hace `analisis_de_desencadenadores.py`
 
 ```
 1. Escanea en busca de logic_bomb_marker.json y logic_bomb.log.
@@ -121,7 +121,7 @@ python modulos/11_logic_bomb/logic_bomb.py --help
 python modulos/11_logic_bomb/logic_bomb.py --clean
 
 # Analizar y neutralizar desde defensa
-python modulos/11_logic_bomb/defensa.py
+python modulos/11_logic_bomb/analisis_de_desencadenadores.py
 ```
 
 > **NOTA:** La detonación de la bomba en esta simulación es completamente

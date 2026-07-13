@@ -62,7 +62,7 @@ legítimo, convirtiéndose en un nodo de una infraestructura distribuida de ataq
   maliciosos.
 
 * **Implementación Práctica en Laboratorio:**
-  `defensa.py` analiza el archivo `bot_config.json` generado por la simulación,
+  `mitigacion_ddos_filtros.py` analiza el archivo `bot_config.json` generado por la simulación,
   extrae IPs, canales C2 y métricas de ataque, mostrando cómo un analista SOC
   correlacionaría estos artefactos para identificar la infraestructura de la botnet.
 
@@ -80,7 +80,7 @@ legítimo, convirtiéndose en un nodo de una infraestructura distribuida de ataq
 7. Muestra resumen visual paso a paso con colores en consola.
 ```
 
-### Qué hace `defensa.py`
+### Qué hace `mitigacion_ddos_filtros.py`
 
 ```
 1. Escanea directorio actual en busca de bot_config.json y botnet_c2.log.
@@ -108,7 +108,7 @@ python modulos/08_botnet/botnet.py --help
 python modulos/08_botnet/botnet.py --clean
 
 # Ejecutar defensa (detectar y limpiar)
-python modulos/08_botnet/defensa.py
+python modulos/08_botnet/mitigacion_ddos_filtros.py
 ```
 
 > **NOTA:** No se generan conexiones de red reales ni se contactan servidores externos.

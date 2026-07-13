@@ -112,7 +112,7 @@ un wiper destruye datos sin necesidad de cifrarlos.
   una copia offline o air-gapped.
 
 * **Implementacion Practica en Laboratorio:**
-  `defensa.py` implementa la verificacion de integridad comparando hashes
+  `auditoria_de_integridad.py` implementa la verificacion de integridad comparando hashes
   SHA-256 de los archivos actuales contra una copia segura en `.backup_wiper/`.
   Si detecta diferencias, restaura los archivos desde el backup y verifica
   que los hashes coincidan post-restauracion. Esto demuestra el flujo que un
@@ -149,7 +149,7 @@ un wiper destruye datos sin necesidad de cifrarlos.
    - Explica las diferencias clave entre ambos tipos
 ```
 
-### Que hace `defensa.py`
+### Que hace `auditoria_de_integridad.py`
 
 ```text
 1. VERIFICACION DE BACKUP

@@ -9,7 +9,7 @@ Laboratorio educativo de malware en Python. 14 módulos independientes en `modul
 ```bash
 python core/lab_setup.py              # Genera 12 archivos de prueba en directorio_pruebas/
 python core/lab_setup.py --clean      # Limpia todos los artefactos generados
-python tui.py                         # Lanza la TUI visual (NO usar `python -m core.tui` — no existe)
+python tui.py                         # Lanza la TUI visual
 python -m unittest discover tests     # Tests (unittest, no hay pytest)
 ```
 
@@ -20,8 +20,8 @@ python -m unittest discover tests     # Tests (unittest, no hay pytest)
   - `core/` — solo `base_module.py` (ABCs `BaseThreat`/`BaseDefense`) y `lab_setup.py`
 - **No existe `core/common.py`** — los imports van desde `modulos.common.*`
 - **Cada módulo hace `sys.path.insert(0, _DIR_RAIZ)`** al inicio para resolver rutas absolutas. Copiar este patrón al crear módulos nuevos.
-- **Entry point real**: `python tui.py` (raíz) → importa `tui.main.main()`. El README dice `python -m core.tui` pero esa ruta no existe.
-- **`tui/views.py` contiene CSS duplicado** de `tui/styles.py` (el que usa `main.py`). No agregar CSS ahí.
+- **Entry point real**: `python tui.py` (raíz) → importa `tui.main.main()`.
+- **CSS está exclusivamente en `tui/styles.py`**. `tui/views.py` solo contiene funciones que generan strings Markdown.
 
 ## Convenciones
 
@@ -30,15 +30,15 @@ python -m unittest discover tests     # Tests (unittest, no hay pytest)
 - Todo módulo debe soportar `--clean`
 - `core/lab_setup.py` es el único generador de archivos de prueba (DRY)
 - Cada módulo es autocontenido; no depender de otros módulos
+- Scripts de defensa tienen nombre personalizado por módulo (NO `defensa.py`)
 
 ## Tests
 
 ```bash
 python -m unittest discover tests     # Ejecuta todos
 python -m unittest tests.test_common  # Solo test_common
+python -m unittest tests.test_smoke   # Smoke tests por módulo
 ```
-
-**Conocido roto**: `tests/test_common.py` importa `from core.common import find_lab_dir` pero `core/common.py` no existe. Debería importar `from modulos.common.utils import find_lab_dir`.
 
 ## Seguridad
 

@@ -10,13 +10,20 @@ Repositorio académico para el estudio de amenazas de seguridad informática.
 ```mermaid
 graph TB
     subgraph "Punto de entrada"
-        TUI["python -m core.tui<br/>Interfaz visual interactiva (Textual)"]
+        TUI["python tui.py<br/>Interfaz visual interactiva (Textual)"]
     end
 
-    subgraph "core/ — Utilidades compartidas"
-        COMMON["common.py<br/>log, colores, traversal, hashing"]
+    subgraph "core/"
         SETUP["lab_setup.py<br/>generador de archivos de prueba"]
-        TUIMOD["tui.py<br/>interfaz panel dividido (Textual)"]
+        BASE["base_module.py<br/>ABCs BaseThreat / BaseDefense"]
+    end
+
+    subgraph "modulos/common/ — Utilidades compartidas"
+        COMMON["paths.py, utils.py<br/>cleanup.py, generators.py"]
+    end
+
+    subgraph "tui/"
+        TUIMOD["main.py, views.py<br/>styles.py, config.py"]
     end
 
     subgraph "modulos/ — 14 amenazas"
@@ -41,7 +48,7 @@ graph TB
     TUIMOD --> M08 & M09 & M10 & M11 & M12 & M13 & M14
     M01 & M02 & M03 & M04 & M05 & M06 & M07 --> COMMON
     M08 & M09 & M10 & M11 & M12 & M13 & M14 --> COMMON
-    COMMON --> SETUP
+    TUIMOD --> SETUP
 
 ```
 
@@ -57,7 +64,7 @@ graph TB
 python core/lab_setup.py
 
 # 2. Abrir la interfaz visual interactiva
-python -m core.tui
+python tui.py
 
 # 3. Limpiar todo el entorno al finalizar
 python core/lab_setup.py --clean
@@ -66,7 +73,7 @@ python core/lab_setup.py --clean
 
 ## Módulos y Matriz de Gobernanza (CIA vs. CIS)
 
-Cada módulo es autocontenido e incluye el script de emulación (`{nombre}.py`), el script de remediación (`defensa.py`) y su documentación teórica profunda.
+Cada módulo es autocontenido e incluye el script de emulación (`{nombre}.py`), el script de remediación (`{defensa}.py`) y su documentación teórica profunda.
 
 | # | Módulo | Vector de Amenaza | Pilar CIA Afectado | Control CIS de Mitigación |
 | :--- | :--- | :--- | :---: | :--- |
@@ -90,11 +97,11 @@ Cada módulo es autocontenido e incluye el script de emulación (`{nombre}.py`),
 ```mermaid
 sequenceDiagram
     participant E as Estudiante
-    participant T as core/tui.py (Textual)
+    participant T as tui.py (Textual)
     participant S as core/lab_setup.py
     participant M as modulos/XX/
 
-    E->>T: python -m core.tui
+    E->>T: python tui.py
     T->>E: Renderiza interfaz visual (Paneles + Datos CIA/CIS)
     E->>T: Selecciona módulo y presiona [Enter]
     T->>S: Verifica que existan archivos de prueba
@@ -102,7 +109,7 @@ sequenceDiagram
     M-->>T: Envía salida estándar en tiempo real
     T->>E: Muestra output en el panel de logs
     E->>T: Presiona [D] para mitigar
-    T->>M: Ejecuta subproceso (defensa.py)
+    T->>M: Ejecuta subproceso ({defensa}.py)
     M-->>T: Limpieza y restauración completada
     T->>E: Actualiza panel de logs con éxito
 
@@ -112,9 +119,9 @@ sequenceDiagram
 
 ```text
 modulos/XX_nombre/
-├── README.md         # Teoría profunda (Tríada CIA + Controles CIS)
-├── {nombre}.py       # Código educativo ejecutable
-└── defensa.py        # Detección + mitigación + limpieza
+├── README.md              # Teoría profunda (Tríada CIA + Controles CIS)
+├── {nombre}.py            # Código educativo ejecutable
+└── {defensa}.py           # Detección + mitigación + limpieza
 
 ```
 
@@ -127,13 +134,13 @@ Cada script de simulación soporta de forma interna:
 
 ```mermaid
 flowchart LR
-    DRY["DRY<br/>core/ compartido"]
+    DRY["DRY<br/>modulos/common/ compartido"]
     SAFE["SAFE<br/>solo en directorio lab"]
     EDU["EDU<br/>paso a paso explicado"]
     MOD["MODULAR<br/>14 modulos independientes"]
 
     DRY --> SETUP["lab_setup.py unico"]
-    DRY --> COMMON["common.py unico"]
+    DRY --> COMMON["paths.py, utils.py<br/>cleanup.py, generators.py"]
     SAFE --> CHECK["verifica archivos de prueba"]
     SAFE --> CLEAN["TUI/Setup reversa todo"]
     EDU --> BANNER["información en panel TUI"]
@@ -146,7 +153,7 @@ flowchart LR
 
 1. Clonar el repositorio.
 2. Ejecutar `python core/lab_setup.py` para generar el entorno seguro con archivos de prueba.
-3. Navegar el laboratorio visual interactivo mediante `python -m core.tui`.
+3. Navegar el laboratorio visual interactivo mediante `python tui.py`.
 4. Cada módulo cuenta con documentación que profundiza en la teoría del malware, su impacto de gobernanza y bibliografía.
 5. Al finalizar la práctica, limpiar el entorno con: `python core/lab_setup.py --clean`.
 

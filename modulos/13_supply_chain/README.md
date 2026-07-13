@@ -85,7 +85,7 @@ herramientas, dependencias o procesos de distribucion.
   dependencias. Las organizaciones deben mantener un SBOM (Software Bill of
   Materials) y verificar hashes de paquetes contra registros oficiales.
 
-* **Implementacion Practica en Laboratorio**: El script `defensa.py` implementa
+* **Implementacion Practica en Laboratorio**: El script `verificacion_de_dependencias_sca.py` implementa
   6 verificaciones: (1) analisis de `requirements.txt` contra lista de paquetes
   maliciosos conocidos y patrones de version anormal, (2) inspeccion de
   `package.json` para dependencias sospechosas, (3) revision de `package-lock.json`
@@ -107,7 +107,7 @@ herramientas, dependencias o procesos de distribucion.
   compromise (SolarWinds-style). Genera un SBOM (Software Bill of Materials) falso
   que incluye metadatos de tipo de ataque. Todo es reversble con `--clean`.
 
-* **Que hace `defensa.py`**:
+* **Que hace `verificacion_de_dependencias_sca.py`**:
   Implementa un escaneo de 6 verificaciones: (1) analisis de `requirements.txt`
   buscando paquetes maliciosos conocidos (flask-utils, enterprise-tool) y patrones
   de version anormal, (2) inspeccion de `package.json` para dependencias con

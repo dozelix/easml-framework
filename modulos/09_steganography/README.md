@@ -83,7 +83,7 @@ Una imagen de 32×32 píxeles con 3 canales (RGB) ofrece:
   datos sensibles, incluyendo controles contra exfiltración no autorizada.
 
 * **Implementación Práctica en Laboratorio:**
-  `defensa.py` analiza la distribución estadística de LSB en imágenes PNG para
+  `analisis_esteganografico.py` analiza la distribución estadística de LSB en imágenes PNG para
   detectar patrones anómalos (ratio ~0.5 sugiere datos ocultos). También
   restaura la imagen original desde un backup y elimina las copias modificadas,
   demostrando cómo un equipo de seguridad verificaría la integridad de archivos
@@ -105,7 +105,7 @@ Una imagen de 32×32 píxeles con 3 canales (RGB) ofrece:
 8. Compara hashes SHA-256 de original vs modificada para demostrar diferencias.
 ```
 
-### Qué hace `defensa.py`
+### Qué hace `analisis_esteganografico.py`
 
 ```
 1. Escanea el directorio en busca de imagen_steg.png y backups .bak_steg.
@@ -134,7 +134,7 @@ python modulos/09_steganography/steganography.py --help
 python modulos/09_steganography/steganography.py --clean
 
 # Analizar y limpiar desde defensa
-python modulos/09_steganography/defensa.py
+python modulos/09_steganography/analisis_esteganografico.py
 ```
 
 > **NOTA:** La imagen modificada es visualmente idéntica a la original. La técnica

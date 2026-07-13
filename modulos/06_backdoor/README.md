@@ -109,7 +109,7 @@ graph LR
 
 * **CIS Control 4: Seguridad de Dispositivos (Secure Configuration of Enterprise Assets and Software)**
 * **Concepto:** Este control establece la necesidad de configurar y mantener los dispositivos de empresa con configuraciones seguras, incluyendo la deshabilitacion de servicios innecesarios, el cierre de puertos abiertos y la auditoria periodica de configuraciones. Un sistema correctamente configurado reduce significativamente la superficie de ataque para backdoors.
-* **Implementacion Practica en Laboratorio:** El script `defensa.py` implementa este control de las siguientes formas:
+* **Implementacion Practica en Laboratorio:** El script `auditoria_de_persistencia.py` implementa este control de las siguientes formas:
   - **Deteccion de configuraciones C2**: Analiza archivos JSON en busca de direcciones IP y puertos sospechosos configurados para comunicacion C2.
   - **Deteccion de persistencia**: Identifica archivos de registro (.reg) y scripts de inicio (.bat) que configuran ejecucion automatica.
   - **Deteccion de reverse shell**: Escanea logs en busca de patrones de sesiones de shell remota.
@@ -126,7 +126,7 @@ graph LR
   6. **NO** establece conexiones de red reales — todo es texto plano.
   7. **NO** modifica el registro real del sistema — los archivos .reg son solo texto.
 
-* **Que hace `defensa.py`:**
+* **Que hace `auditoria_de_persistencia.py`:**
   1. Escanea archivos en busca de marcadores `C2_BACKDOOR_SIMULATION` y `SHELL_SIMULATION`.
   2. Analiza archivos JSON buscando IPs y puertos sospechosos configurados como C2.
   3. Detecta archivos de persistencia (.reg, .bat) con patrones de ejecucion automatica.

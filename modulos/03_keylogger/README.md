@@ -135,7 +135,7 @@ reconstruye la actividad del usuario.
   por canales inseguros (como un teclado monitoreado).
 
 * **Implementacion Practica en Laboratorio:**
-  `defensa.py` implementa la deteccion analizando archivos de log en busca de
+  `cazador_de_amenazas.py` implementa la deteccion analizando archivos de log en busca de
   patrones de datos sensibles: expresiones regulares para DNIs, numeros de
   tarjeta, emails, y contrasenas. Tambien monitorea procesos sospechosos
   y recomienda medidas preventivas como 2FA, gestores de contrasenas, y
@@ -174,7 +174,7 @@ reconstruye la actividad del usuario.
    - Credenciales, datos bancarios, mensajes privados
 ```
 
-### Que hace `defensa.py`
+### Que hace `cazador_de_amenazas.py`
 
 ```
 1. ESCANEO DE ARCHIVOS

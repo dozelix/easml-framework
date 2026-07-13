@@ -97,7 +97,7 @@ exfiltrados, y puede enviar comandos de retorno codificados en las respuestas DN
   consultas al mismo dominio, y presencia de codificacion (base32/base64) en
   consultas DNS.
 
-* **Implementacion Practica en Laboratorio**: El script `defensa.py` implementa
+* **Implementacion Practica en Laboratorio**: El script `deteccion_de_anomalias_dns.py` implementa
   5 verificaciones: (1) busqueda de archivos de logs DNS y scripts payload,
   (2) analisis de contenido de logs DNS buscando trafico tunneled (labels largos,
   dominios .evil, base32), (3) deteccion de scripts con funciones de codificacion
@@ -121,7 +121,7 @@ exfiltrados, y puede enviar comandos de retorno codificados en las respuestas DN
   (whoami, id, hostname). Incluye un panel de deteccion que muestra los indicadores
   que veria un analista de SOC. Genera logs de trafico DNS y un script payload.
 
-* **Que hace `defensa.py`**:
+* **Que hace `deteccion_de_anomalias_dns.py`**:
   Implementa un escaneo de 5 verificaciones: (1) busqueda de archivos de logs DNS y
   scripts payload en `logs_dns/` y `scripts_dns/`, (2) analisis de contenido de logs
   DNS buscando labels largos, dominios .evil, y secuencias base32 validas, (3) deteccion

@@ -123,7 +123,7 @@ el concepto de "perder acceso" al contenido original.
   diferentes, con 1 copia fuera de linea o remota.
 
 * **Implementacion Practica en Laboratorio:**
-  `defensa.py` implementa la fase de recuperacion verificando la integridad
+  `respuesta_a_incidentes.py` implementa la fase de recuperacion verificando la integridad
   de los archivos y restaurando el contenido original mediante la inversion
   del texto (reverso del cifrado simulado). Luego muestra hashes SHA-256
   para confirmar que los archivos restaurados son correctos. En produccion,
@@ -160,7 +160,7 @@ el concepto de "perder acceso" al contenido original.
    - Explica la diferencia entre cifrado real e inversion de texto
 ```
 
-### Que hace `defensa.py`
+### Que hace `respuesta_a_incidentes.py`
 
 ```
 1. VERIFICACION
