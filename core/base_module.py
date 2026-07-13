@@ -1,43 +1,24 @@
+# core/base_module.py
 from abc import ABC, abstractmethod
-import argparse
 
-class BaseLabModule(ABC):
-    """Clase base abstracta que define la estructura obligatoria de cada módulo del laboratorio."""
-
-    def __init__(self, nombre: str, codigo: str):
-        self.nombre = nombre
-        self.codigo = codigo
-
+class BaseThreat(ABC):
+    """Interfaz obligatoria para todos los scripts de simulación de amenazas."""
+    
     @abstractmethod
-    def simular(self) -> None:
-        """Lógica principal que ejecuta la simulación de la amenaza."""
+    def ejecutar(self) -> None:
+        """Lanza la simulación del malware."""
         pass
 
     @abstractmethod
-    def defender(self) -> None:
-        """Lógica principal que ejecuta las contramedidas o mitigación."""
+    def limpiar(self) -> None:
+        """Revierte los efectos del malware (opción --clean)."""
         pass
 
+
+class BaseDefense(ABC):
+    """Interfaz obligatoria para todos los scripts de respuesta y defensa."""
+    
     @abstractmethod
-    def revertir(self) -> None:
-        """Equivalente a --clean. Deja el entorno de pruebas exactamente como estaba."""
+    def analizar_y_mitigar(self) -> None:
+        """Ejecuta el escaneo, detección y restauración."""
         pass
-
-    def ejecutar_cli(self) -> None:
-        """Manejador común de argumentos por si los scripts se lanzan directamente."""
-        parser = argparse.ArgumentParser(description=f"Módulo {self.codigo}: {self.nombre}")
-        parser.add_argument("--simular", action="store_true", help="Ejecuta la simulación")
-        parser.add_argument("--defender", action="store_true", help="Ejecuta la defensa")
-        parser.add_argument("--clean", action="store_true", help="Limpia los efectos del módulo")
-        
-        args = parser.parse_args()
-        
-        if args.clean:
-            self.revertir()
-        elif args.defender:
-            self.defender()
-        elif args.simular:
-            self.simular()
-        else:
-            # Comportamiento por defecto al llamarlo plano
-            self.simular()
