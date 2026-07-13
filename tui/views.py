@@ -1,63 +1,3 @@
-"""Estilos CSS para la interfaz Textual."""
-
-TUI_CSS = """
-Screen {
-    layout: horizontal;
-}
-
-#panel-izquierdo {
-    width: 30%;
-    min-width: 26;
-    height: 100%;
-    border: solid $accent;
-    padding: 0 1;
-}
-
-#panel-derecho {
-    width: 70%;
-    height: 100%;
-}
-
-#info-modulo {
-    height: 1fr;
-    border: solid $accent;
-    padding: 1 2;
-    overflow-y: scroll;
-}
-
-#consola-logs {
-    height: 1fr;
-    border: solid $accent;
-}
-
-Screen.modo-lectura #info-modulo {
-    height: 100%;
-}
-Screen.modo-lectura #consola-logs {
-    display: none;
-}
-
-#lista-modulos {
-    height: 1fr;
-    overflow-y: scroll;
-}
-
-#lista-modulos > ListItem {
-    padding: 0 1;
-}
-
-#lista-modulos > ListItem.-active {
-    background: $accent;
-    color: $text;
-}
-
-.titulo-panel {
-    text-style: bold;
-    color: $accent;
-    margin-bottom: 0;
-}
-"""
-
 """Generadores de contenido Markdown para la TUI."""
 
 import os
@@ -90,9 +30,11 @@ def render_modulo_info(index: int, modulos_dir: str) -> str:
     icono_cia = cia_icon(cia)
     nombre_defensa_tecnico = NOMBRES_DEFENSA.get(num, "defensa")
 
+    nombre_defensa_archivo = NOMBRES_DEFENSA.get(num, "defensa").lower().replace(' ', '_')
+
     dir_modulo = os.path.join(modulos_dir, f"{num}_{nombre}")
     sim_ok = "🟢" if os.path.exists(os.path.join(dir_modulo, f"{script}.py")) else "🔴"
-    def_ok = "🟢" if os.path.exists(os.path.join(dir_modulo, "defensa.py")) else "🔴"
+    def_ok = "🟢" if os.path.exists(os.path.join(dir_modulo, f"{nombre_defensa_archivo}.py")) else "🔴"
     md_ok  = "🟢" if os.path.exists(os.path.join(dir_modulo, "README.md")) else "🟡"
 
     return f"""

@@ -20,7 +20,7 @@ import argparse
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DIR_RAIZ)
 
-from core.common import (
+from modulos.common.utils import (
     log, safe_print, color, banner, cleanup, write_log,    find_lab_dir,)
 
 # ── Constantes ──────────────────────────────────────────────────────────────

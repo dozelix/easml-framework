@@ -22,7 +22,7 @@ import subprocess
 # ── Configurar path para importar core.common ──
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from core.common import (
+from modulos.common.utils import (
     log, safe_print, color, banner, cleanup, write_log, find_lab_dir
 )
 

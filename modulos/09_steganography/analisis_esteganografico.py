@@ -22,7 +22,7 @@ import shutil
 # ── Configurar path para importar core.common ──
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from core.common import log, safe_print, color, banner, cleanup, write_log, hash_file, find_lab_dir
+from modulos.common.utils import log, safe_print, color, banner, cleanup, write_log, hash_file, find_lab_dir
 
 # ── Directorio de trabajo de la simulación ──
 LAB_DIR = find_lab_dir(os.path.dirname(os.path.abspath(__file__)))

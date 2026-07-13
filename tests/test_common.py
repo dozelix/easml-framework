@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from core.common import find_lab_dir
+from modulos.common.utils import find_lab_dir
 from modulos.common.paths import resolve_lab_paths
 
 

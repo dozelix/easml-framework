@@ -25,8 +25,8 @@ import shutil
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from core.common import log, safe_print, color, banner, traverse_lab_files
-from core.common import hash_file, read_file, cleanup, write_log, is_lab_ready, find_lab_dir
+from modulos.common.utils import log, safe_print, color, banner, traverse_lab_files, LOG_LINES
+from modulos.common.utils import hash_file, read_file, cleanup, write_log, is_lab_ready, find_lab_dir
 
 MODULO_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.join(MODULO_DIR, '..', '..')
@@ -233,7 +233,7 @@ def simular_minado(duracion=30, num_workers=2):
 
     # Guardar registro
     log_path = os.path.join(DIR_SIMULACION, 'cryptominer.log')
-    write_log("CRYPTOMINER-SIM", log, log_path)
+    write_log("CRYPTOMINER-SIM", LOG_LINES, log_path)
 
 
 def _generar_artefactos(pool, wallet):
