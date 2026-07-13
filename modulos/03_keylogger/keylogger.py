@@ -20,13 +20,14 @@ import argparse
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DIR_RAIZ)
 
-from core.common import (
+from modulos.common.utils import (
     log, safe_print, color, banner, cleanup, write_log, LOG_LINES,
+    find_lab_dir,
 )
 
 # ── Constantes ──────────────────────────────────────────────────────────────
 # Directorio donde se genera el keylog
-DIR_SIMULACION = os.path.join(os.getcwd(), 'directorio_pruebas')
+DIR_SIMULACION = find_lab_dir(_DIR_RAIZ)
 
 # Nombre del archivo de log del keylogger
 LOG_KEYLOG = 'keylog.log'
