@@ -27,3 +27,4 @@ package-lock.json
 keylog.log
 dns_tunnel_log.txt
 directorio_pruebas/
+assets/generate_icons.py
