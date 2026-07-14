@@ -72,6 +72,7 @@ class LaboratorioTUI(App):
             self.viendo_dashboard = False
             self.leyendo_readme = False
             self.remove_class("modo-lectura")
+            self.remove_class("modo-readme")
             
             lv = self.query_one("#lista-modulos", ListView)
             if lv.index is not None:
@@ -83,6 +84,7 @@ class LaboratorioTUI(App):
         self.viendo_dashboard = False
         self.leyendo_readme = False
         self.remove_class("modo-lectura")
+        self.remove_class("modo-readme")
         lv = self.query_one("#lista-modulos", ListView)
         if lv.index is not None:
             self.query_one("#info-modulo", Markdown).update(render_modulo_info(lv.index, MODULOS_DIR))
@@ -93,12 +95,14 @@ class LaboratorioTUI(App):
         self.viendo_tutorial, self.viendo_dashboard = True, False
         self.leyendo_readme = False
         self.remove_class("modo-lectura")
+        self.remove_class("modo-readme")
         self.query_one("#info-modulo", Markdown).update(render_tutorial())
 
     def action_mostrar_dashboard(self) -> None:
         self.viendo_dashboard, self.viendo_tutorial = True, False
         self.leyendo_readme = False
         self.remove_class("modo-lectura")
+        self.remove_class("modo-readme")
         self.query_one("#info-modulo", Markdown).update(render_dashboard())
 
     def action_explicar_modulo(self) -> None:
@@ -117,7 +121,7 @@ class LaboratorioTUI(App):
         if os.path.exists(readme_path):
             with open(readme_path, "r", encoding="utf-8") as f:
                 self.leyendo_readme = True
-                self.add_class("modo-lectura")
+                self.add_class("modo-readme")
                 md_widget.update(f"# 📖 TEORÍA Y CONOCIMIENTO: {num}_{nombre}\n---\n{f.read()}")
         else:
             md_widget.update(f"# Aviso\n\nEl módulo **{num}_{nombre}** no cuenta con un archivo README.md todavía.")
