@@ -121,5 +121,26 @@ El flujo de operacion de un rootkit se describe en los siguientes pasos:
   5. Elimina todos los artefactos detectados.
   6. Muestra recomendaciones: EDR con proteccion kernel, Secure Boot, analisis offline desde USB.
 
+### Cuándo aplicar esta defensa
+
+- **Archivos ocultos con prefijo dot en directorios del sistema**: Cuando herramientas de auditoria encuentran archivos ocultos (prefijo `.`) en directorios donde no deberian existir, o cuando `ls -la` revela archivos que `ls` normal no muestra
+- **Inconsistencias entre herramientas de monitoreo**: Cuando `tasklist` muestra un numero de procesos diferente al que reporta un analizador de procesos de bajo nivel, o cuando `netstat` no muestra conexiones que un firewall si detecta — estas inconsistencias son el sello de un rootkit que filtra la salida
+- **Drivers no firmados o sospechosos**: Deteccion de archivos `.sys` o modulos de kernel sin firma digital valida, o que estan cargados en memoria pero no aparecen en la lista de drivers del sistema
+- **Modificaciones en tablas de syscall**: Herramientas de integridad del kernel que detectan cambios en la SSDT (System Service Descriptor Table) o en las tablas de interrupciones
+- **Escenario real**: Un administrador nota que un servidor consume mucha CPU pero `tasklist` no muestra ningun proceso con alto consumo. Un analisis offline desde un USB de rescate revela procesos ocultos que el rootkit estaba filtrando de la vista del sistema
+
+### Por qué funciona esta defensa
+
+- **Analisis offline evita la manipulacion del rootkit**: Un rootkit solo puede filtrar la salida de herramientas que se ejecutan DENTRO del sistema comprometido. Un analisis desde un USB de rescate o un entorno de recuperacion offline opera fuera del alcance del rootkit, revelando la verdadera estado del sistema
+- **Verificacion de integridad del kernel**: Los controles de integridad (Secure Boot, UEFI) verifican que los componentes del kernel no hayan sido modificados desde la compilacion. Si un rootkit intenta modificar el kernel, estos controles detectan la alteracion y bloquean el arranque
+- **EDR con proteccion de kernel**: Los EDR modernos operan a nivel de kernel pero con protecciones contra modificaciones. Pueden detectar hooks de syscall, DKOM y otras tecnicas de rootkit porque monitorean las estructuras del kernel desde un contexto protegido
+- **Deteccion por ausencia**: Un rootkit exitoso se define por lo que OCULTA. La estrategia de defensa es comparar multiples fuentes de informacion: si una fuente reporta algo que otra no, la discrepancia indica manipulacion
+
+### Ejercicios practicos de defensa
+
+1. **Revelar archivos ocultos**: Ejecuta `python rootkit.py` para crear los archivos ocultos y la lista de procesos manipulada. Luego ejecuta `python monitoreo_del_kernel_ganchos.py` y analiza los archivos ocultos descubiertos: que tipo de archivo simula cada uno (.hidden_system, .config_sys.dat, .rootkit_payload, .driver_sim.sys) y que papel jugaria en un rootkit real
+2. **Comparar vistas del sistema**: Antes de ejecutar el rootkit, lista los archivos y procesos con comandos normales. Despues de ejecutarlo, compara con los hallazgos de `monitoreo_del_kernel_ganchos.py`. Documenta las diferencias: que archivos/procesos adicionales revela la herramienta de auditoria que el sistema normal no muestra
+3. **Diseno de estrategia de deteccion**: Basandote en las tecnicas de ocultamiento observadas (prefijo dot, filtrado de procesos, intercepcion de API), diseña un protocolo de deteccion de rootkits para un servidor critico. Incluye: analisis offline programado, verificacion de integridad del kernel, monitoreo de drivers, y respuesta ante inconsistencias detectadas
+
 ---
 > **Disclaimer:** Este modulo es estrictamente educativo. Los archivos creados son texto plano inofensivo. No se modifican procesos reales del sistema ni se cargan drivers en el kernel.

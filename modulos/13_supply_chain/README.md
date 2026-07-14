@@ -95,6 +95,56 @@ herramientas, dependencias o procesos de distribucion.
 
 ---
 
+### Cuándo aplicar esta defensa
+
+- **Actualización o instalación de dependencias nuevas:** Después de cada
+  `npm install`, `pip install` o actualización de dependencias, ejecutar el
+  análisis SCA para verificar que no se han introducido paquetes maliciosos.
+  Especialmente crítico cuando se actualizan paquetes de terceros frecuentemente
+  utilizados.
+- **Alerta de typosquatting en registries públicos:** Cuando un desarrollador
+  reporta un paquete con nombre sospechosamente similar a uno legítimo, o
+  cuando un scanner de seguridad detecta paquetes no verificados en el
+  `requirements.txt` o `package.json`, activar la auditoría completa de
+  dependencias.
+- **Nuevo colaborador o cambio de maintainers:** Cuando un paquete cambia de
+  maintainer o cuando se incorpora un nuevo desarrollador con acceso al
+  repositorio, revisar las dependencias del proyecto para detectar posibles
+  backdoors o dependencias nuevas no autorizadas.
+- **Auditorías de seguridad periódicas:** Ejecutar el análisis SCA como parte
+  del pipeline CI/CD en cada commit, especialmente antes de despliegues a
+  producción, para detectar cambios en la cadena de suministro.
+
+### Por qué funciona esta defensa
+
+- **Verificación de integridad en múltiples capas:** Al analizar
+  `requirements.txt`, `package.json`, `package-lock.json` y scripts de hook
+  simultáneamente, se detectan amenazas en cada etapa del proceso de
+  instalación de dependencias, no solo al momento de la descarga.
+- **Detección de patrones de ataque conocidos:** La comparación contra listas
+  de paquetes maliciosos conocidos (flask-utils, enterprise-tool) y patrones de
+  version anormal permite identificar ataques de supply chain documentados
+  antes de que el payload sea ejecutado.
+- **SBOM como línea de defensa:** El Software Bill of Materials proporciona un
+  inventario completo de todas las dependencias del proyecto, permitiendo
+  rastrear rápidamente qué componentes están comprometidos cuando se publica
+  una nueva vulnerabilidad (como Log4Shell).
+
+### Ejercicios prácticos de defensa
+
+1. **Análisis de typosquatting:** Ejecuta `supply_chain.py` y revisa los
+   archivos `requirements.txt` y `package.json` generados. Luego ejecuta
+   `verificacion_de_dependencias_sca.py` e identifica qué paquetes son
+   legítimos y cuáles son typosquatting (ej: `flask-utils` vs `flask`).
+2. **Auditoría de hooks de instalación:** Revisa los scripts de hook generados
+   por la simulación. Identifica los patrones sospechosos (`exec()`,
+   `subprocess`, `os.system`) que el script de defensa detecta. Compara con
+   hooks legítimos de paquetes populares.
+3. **Verificación de SBOM:** Analiza el SBOM generado y verifica que contiene
+   los metadatos de tipo de ataque. En un entorno real, este SBOM se usaría
+   para cumplir con regulaciones de seguridad de software y para responder
+   rápidamente a nuevas CVEs afectando dependencias del proyecto.
+
 ## 5. Detalles de la Simulacion Educativa (Python)
 
 * **Que hace `supply_chain.py`**:

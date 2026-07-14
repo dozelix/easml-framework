@@ -66,6 +66,49 @@ legítimo, convirtiéndose en un nodo de una infraestructura distribuida de ataq
   extrae IPs, canales C2 y métricas de ataque, mostrando cómo un analista SOC
   correlacionaría estos artefactos para identificar la infraestructura de la botnet.
 
+### Cuándo aplicar esta defensa
+
+- **Tráfico C2 periódico (beaconing):** Cuando se detecta un host que realiza
+  conexiones regulares a un mismo destino IP o dominio cada pocos segundos
+  (heartbeat), es un indicador fuerte de un bot registrado en una botnet.
+- **Picos de tráfico saliente inusuales:** Un aumento repentino de tráfico
+  saliente desde un servidor o estación de trabajo que normalmente no genera
+  tráfico externo sugiere que está participando en un ataque DDoS o exfiltrando
+  datos.
+- **Alertas de DDoS en capa 7:** Cuando un servidor web reporta saturación de
+  conexiones HTTP/HTTPS con patrones repetitivos (mismo User-Agent, mismo
+  intervalo), activar la inspección de hosts internos que puedan ser bots.
+- **Detección de canales C2 conocidos:** Si el IDS/IPS identifica tráfico hacia
+  IPs o dominios en listas de threat intelligence (Feodo Tracker, AlienVault OTX),
+  activar el análisis forense de los hosts involucrados.
+
+### Por qué funciona esta defensa
+
+- **Visibilidad del tráfico:** El monitoreo continuo de red (CIS Control 13)
+  proporciona la capacidad de ver patrones de tráfico que de otra forma pasarían
+  desapercibidos. La correlación de flujos de red permite identificar la
+  infraestructura C2 sin depender de firmas antivirus.
+- **Desarticulación de la cadena de mando:** Al detectar y bloquear las
+  comunicaciones C2, se corta el canal entre el botmaster y los bots, eliminando
+  la capacidad del atacante de enviar comandos de ataque DDoS o exfiltración.
+- **Principio de defensa en profundidad:** La combinación de monitoreo de
+  tráfico, análisis de logs y correlación de eventos permite detectar la botnet
+  en múltiples capas, haciendo que la evasión sea significativamente más difícil.
+
+### Ejercicios prácticos de defensa
+
+1. **Análisis de artefactos C2:** Ejecuta `botnet.py` y luego analiza el
+   archivo `bot_config.json` con `mitigacion_ddos_filtros.py`. Observa las IPs,
+   canales y métricas extraídas. Intenta identificar qué patrones de beaconing
+   indicarían un bot activo en un entorno real.
+2. **Correlación de logs:** Revisa `botnet_c2.log` y busca comandos del tipo
+   `ATTACK` o `SCAN`. En un entorno real, estos registros se correlacionarían
+   con alertas de IDS para determinar el momento exacto del ataque y los bots
+   participantes.
+3. **Evaluación de impacto:** Con las métricas generadas (paq/seg, Mbps, bots),
+   calcula el ancho de banda total del ataque simulado. Compara con la capacidad
+   de enlace de tu red para dimensionar la mitigación necesaria.
+
 ## 🚀 5. Detalles de la Simulación Educativa (Python)
 
 ### Qué hace `botnet.py`

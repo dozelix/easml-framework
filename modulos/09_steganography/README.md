@@ -89,6 +89,53 @@ Una imagen de 32×32 píxeles con 3 canales (RGB) ofrece:
   demostrando cómo un equipo de seguridad verificaría la integridad de archivos
   multimedia en un entorno corporativo.
 
+### Cuándo aplicar esta defensa
+
+- **Archivos multimedia en departamentos sensibles:** Cuando se detecta que
+  usuarios de áreas con alta exposición a datos clasificados (RRHH, finanzas,
+  I+D) suben o comparten imágenes PNG/JPEG fuera de la organización, activar el
+  análisis esteganográfico.
+- **Alerta de DLP por contenido encriptado o comprimido:** Si un sistema DLP
+  detecta archivos con entropía inusualmente alta en regiones de imagen, o si
+  hay discrepancias en metadatos (tamaño de archivo anómalo para las
+  dimensiones declaradas), activar el análisis estadístico de LSB.
+- **Investigación forense post-breach:** Tras una brecha de datos, revisar todas
+  las imágenes compartidas externamente durante el período de compromiso. La
+  esteganografía es un vector frecuente de exfiltración por APTs.
+- **Monitoreo de uploads a redes sociales:** Si un empleado muestra patrones
+  inusuales de subida de imágenes a plataformas públicas, evaluar si podría
+  estar exfiltrando datos ocultos en LSB.
+
+### Por qué funciona esta defensa
+
+- **Detección estadística, no de firmas:** El análisis de distribución de bits
+  LSB funciona porque la inserción de datos aleatorios tiende a igualar la
+  proporción de bits 0 y 1 en los LSB (ratio ~0.5). Imágenes naturales tienen
+  distribuciones de LSB predecibles, por lo que esta desviación es un indicador
+  confiable de manipulación.
+- **Rompe el canal de exfiltración:** Al restaurar la imagen original desde
+  backups y eliminar las copias modificadas, se invalida el canal de
+  comunicación oculta, haciendo que los datos exfiltrados sean inutilizables
+  para el atacante.
+- **Principio de mínima sorpresa:** El análisis estadístico no requiere conocer
+  la técnica específica de esteganografía usada — funciona contra LSB, y puede
+  extenderse a otras técnicas verificando entropía y distribuciones de bytes.
+
+### Ejercicios prácticos de defensa
+
+1. **Comparación de entropía:** Ejecuta `steganography.py` para generar la
+   imagen modificada. Luego ejecuta `analisis_esteganografico.py` y observa el
+   ratio de LSB. Compara con el hash SHA-256 de ambas imágenes para cuantificar
+   las diferencias a nivel de bits.
+2. **Análisis forense manual:** Abre `imagen.png` e `imagen_steg.png` con
+   cualquier visor de imágenes. Verifica que son visualmente idénticas. Luego
+   ejecuta el script de defensa para demostrar que solo el análisis estadístico
+   puede revelar la manipulación.
+3. **Detección de artefactos:** Después de ejecutar `--clean` en ambos scripts,
+   verifica que no quedan archivos `.bak_steg` ni copias modificadas. En un
+   entorno real, este paso de limpieza es crítico para eliminar evidencia
+   forense del atacante.
+
 ## 🚀 5. Detalles de la Simulación Educativa (Python)
 
 ### Qué hace `steganography.py`

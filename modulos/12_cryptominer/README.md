@@ -97,6 +97,53 @@ porque implica calcular millones de hashes por segundo hasta encontrar uno valid
 
 ---
 
+### Cuándo aplicar esta defensa
+
+- **Uso de CPU anormalmente alto sostenido:** Cuando el monitoreo de recursos
+  reporta un consumo de CPU superior al 90% durante períodos prolongados sin
+  una carga de trabajo legítima asociada, activar la inspección de procesos y
+  conexiones de red.
+- **Procesos con nombres similares a mineros conocidos:** La detección de
+  procesos como `xmrig`, `minerd`, `cpuminer`, o variantes con nombres
+  ofuscados (ej: `xmr-stak`, `kthreaddi`) activa la investigación forense
+  inmediata.
+- **Conexiones a puertos de minado:** Tráfico de salida hacia los puertos
+  típicos de pools de minado (3333, 4444, 5555, 8888, 9999) es un IOC fuerte
+  de cryptojacking que requiere respuesta inmediata.
+- **Archivos de configuración de minero:** La presencia de archivos JSON con
+  campos como `pool`, `wallet`, `algo`, `threads` en directorios temporales o
+  del usuario es un indicador directo de actividad minera maliciosa.
+
+### Por qué funciona esta defensa
+
+- **Múltiples vectores de detección:** La auditoría de 6 vectores simultáneos
+  (CPU, archivos de config, código inyectado, procesos, conexiones, archivos
+  temporales) asegura que la detección no dependa de un solo indicador,
+  reduciendo la probabilidad de falsos negativos.
+- **Correlación de artefactos:** Un criptominero genera múltiples artefactos
+  simultáneos (alto consumo CPU + conexión a puerto de minado + archivos de
+  configuración). La correlación de estos indicadores proporciona una señal
+  más fuerte que cualquiera de ellos individualmente.
+- **Principio de least privilege aplicado a monitoreo:** Al auditar recursos,
+  procesos y red simultáneamente, se implementa un modelo de defensa que cubre
+  las tres dimensiones principales donde un minero puede ser detectado, haciendo
+  que la evasión requiera comprometer los tres vectores a la vez.
+
+### Ejercicios prácticos de defensa
+
+1. **Análisis de artefactos:** Ejecuta `cryptominer.py` y observa las métricas
+   de hashrate generadas. Luego ejecuta `monitoreo_de_recursos_cpu.py` y
+   verifica cuáles de las 6 verificaciones detectan los artefactos de la
+   simulación. Compara los resultados con lo que verías en un sistema real.
+2. **Escaneo de configuración:** Inspecciona el archivo de configuración JSON
+   generado por la simulación. Identifica los campos que revelarían la dirección
+   del pool y la wallet del atacante. En un entorno real, estos datos se
+   usarían para atribuir el ataque y bloquear las IPs del pool.
+3. **Prueba de limpieza:** Ejecuta `monitoreo_de_recursos_cpu.py --clean` y
+   verifica que se eliminan todos los artefactos (configuración JSON, logs,
+   scripts temporales). Luego ejecuta la verificación de procesos para confirmar
+   que no queda ningún proceso sospechoso activo.
+
 ## 5. Detalles de la Simulacion Educativa (Python)
 
 * **Que hace `cryptominer.py`**:

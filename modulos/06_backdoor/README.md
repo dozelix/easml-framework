@@ -134,5 +134,26 @@ graph LR
   5. Elimina todos los artefactos detectados.
   6. Muestra recomendaciones de defensa: monitoreo de conexiones salientes, segmentacion de red, listas blancas de aplicaciones.
 
+### Cuándo aplicar esta defensa
+
+- **Conexiones C2 periodicas detectadas**: Cuando el monitoreo de red identifica un patron de heartbeats (conexiones regulares y repetitivas) desde un host interno hacia IPs o dominios externos desconocidos, especialmente en puertos como 443 (HTTPS) o 53 (DNS) que son comunes para camuflar trafico C2
+- **Archivos de configuracion con IPs/puertos sospechosos**: Cuando se descubren archivos JSON, INI o XML que contienen direcciones IP, puertos o URLs de servidores de comando y control, particularmente si el software instalado no deberia tener esas configuraciones
+- **Archivos de persistencia no autorizados**: Deteccion de scripts .reg, .bat o .ps1 en directorios de inicio, tareas programadas o claves de registro que ejecutan codigo al arrancar el sistema sin autorizacion del administrador
+- **Patrones de reverse shell en logs**: Cuando los logs del sistema muestran sesiones de shell interactivas que no corresponden a sesiones SSH legitimas o administracion autorizada
+- **Escenario real**: Un analista de SOC detecta que un servidor interno realiza consultas DNS periodicas a un dominio registrado hace 2 dias. El dominio resuelve a una IP en un pais desconocido. Se activa la investigacion de posible backdoor
+
+### Por qué funciona esta defensa
+
+- **Configuracion segura reduce la superficie de ataque**: Al deshabilitar servicios innecesarios, cerrar puertos abiertos y aplicar el principio de minimo privilegio, se eliminan multiples vectores que una backdoor podria usar para establecer comunicacion C2 o persistencia
+- **Monitoreo de conexiones salientes detecta C2**: A diferencia del monitoreo de conexiones entrantes (firewall tradicional), el monitoreo de trafico saliente identifica cuando un host interno esta comunicandose activamente con un servidor externo no autorizado, que es el patron clasico de una backdoor
+- **Segmentacion de red contiene la propagacion lateral**: Si la red esta correctamente segmentada, un sistema comprometido no puede comunicarse libremente con otros hosts, limitando la capacidad del atacante para moverse lateralmente y escaladar privilegios
+- **Auditoria de persistencia revela modificaciones**: La comparacion periodica de las configuraciones de arranque, registros y tareas programadas contra un baseline conocido revela cualquier modificacion no autorizada que una backdoor haya implementado
+
+### Ejercicios practicos de defensa
+
+1. **Detectar artefactos de backdoor**: Ejecuta `python backdoor.py` para crear los archivos C2 simulados. Luego ejecuta `python auditoria_de_persistencia.py` y analiza cada hallazgo: que configuraciones C2 se detectaron, que archivos de persistencia existen, y que patrones de reverse shell se encontraron
+2. **Analisis de configuracion C2**: Abre el archivo `c2_config.json` generado y analiza las direcciones IP y puertos configurados. Identifica por que son sospechosos (IPs en rangos privados vs publicas, puertos inusuales, intervalos de heartbeat). Compara con patrones de C2 conocidos de frameworks como Cobalt Strike
+3. **Evaluacion de monitoreo de red**: Basandote en los patrones de comunicacion C2 observados, diseña una estrategia de monitoreo para una red corporativa que incluya: que trafico se monitorea, que alertas se generan, como se responde a cada nivel de severidad, y que herramientas se utilizan (firewall, IDS, SIEM)
+
 ---
 > **Disclaimer:** Este modulo es estrictamente educativo. No se establecen conexiones de red reales. Todos los archivos generados son texto plano inofensivo con marcadores simulados de IOC.

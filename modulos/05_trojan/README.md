@@ -124,5 +124,26 @@ sequenceDiagram
   5. Elimina todos los artefactos detectados.
   6. Muestra recomendaciones de defensa: mostrar extensiones reales, verificar firmas, no abrir adjuntos no solicitados.
 
+### Cuándo aplicar esta defensa
+
+- **Archivos con doble extension**: Cuando el sistema de archivos o un antivirus reporta archivos con extensiones duales como `.pdf.exe`, `.jpg.exe`, `.doc.exe` — este es el sello clasico de un troyano que intenta disfrazarse de documento inofensivo
+- **Marcadores de payload en contenido**: Cuando herramientas de DLP o analisis de contenido detectan patrones como `TROJAN_PAYLOAD_SIMULATION`, `C2_SERVER_ENDPOINT` o URLs de servidores C2 embebidas en archivos que supuestamente son documentos normales
+- **Nombres de archivos tipicos de troyano**: Alertas sobre archivos con nombres como `update.exe`, `setup.exe`, `invoice.exe`, `flash_player.exe` descargados desde fuentes no verificadas
+- **Actividad sospechosa post-ejecucion**: Cuando un archivo descargado ejecuta procesos adicionales, establece conexiones de red o modifica configuraciones del sistema despues de ser abierto
+- **Escenario real**: Un usuario recibe un email con un adjunto "factura_2026.pdf" que en realidad es un ejecutable. El sistema de correo no lo detecta, pero la politica de extensiones del Endpoint lo bloquea al intentar ejecutarse
+
+### Por qué funciona esta defensa
+
+- **Inspeccion de contenido revela la verdad**: Mientras el nombre y la extension del archivo intentan engañar al usuario, el analisis del contenido real (firmas binarias, marcadores de payload, estructura del archivo) revela si es un documento legitimo o un ejecutable malicioso
+- **Verificacion de extensiones expone el disfraz**: Los sistemas operativos pueden configurarse para mostrar las extensiones reales de los archivos, eliminando la capacidad del troyano de ocultar su naturaleza ejecutable detras de una extension falsa
+- **Deteccion de marcadores de IOC**: Los patrones de indicadores de compromiso (C2 endpoints, payloads conocidos) permiten identificar troyanos incluso cuando no existen firmas de antivirus conocidas para ellos
+- **Limpieza automatizada reduce el riesgo humano**: La eliminacion automatica de artefactos detectados evita que un usuario menos informado intente abrir o ejecutar el archivo sospechoso
+
+### Ejercicios practicos de defensa
+
+1. **Analisis de archivos troyano**: Ejecuta `python trojan.py` para crear los archivos simulados. Luego ejecuta `python inspeccion_de_contenido.py` y analiza cada hallazgo: que extension real tiene cada archivo, que marcadores de payload contiene, y que tipo de troyano simula (actualizacion, imagen, factura)
+2. **Comparacion de extensiones**: Antes de ejecutar la limpieza, lista los archivos en `directorio_pruebas/` con `ls -la` y observa las extensiones reales. Despues de la limpieza, verifica que todos los artefactos fueron eliminados. Documenta que archivos pasarian desapercibidos para un usuario no tecnico
+3. **Diseno de politica de extensiones**: Basandote en los tipos de troyanos detectados, diseña una politica de seguridad para el correo electronico de una empresa que incluya: filtros de extensiones permitidas, inspeccion de adjuntos, y entrenamiento para usuarios sobre como identificar archivos sospechosos
+
 ---
 > **Disclaimer:** Este modulo es estrictamente educativo. Los archivos generados son texto plano inofensivo que no contiene codigo malicioso ejecutable. Los marcadores simulan indicadores de compromiso para fines de demostracion.

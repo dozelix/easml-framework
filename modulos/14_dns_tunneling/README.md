@@ -109,6 +109,52 @@ exfiltrados, y puede enviar comandos de retorno codificados en las respuestas DN
 
 ---
 
+### Cuándo aplicar esta defensa
+
+- **Subdominios inusualmente largos (>30 caracteres):** Cuando el análisis de
+  logs DNS revela consultas con labels que exceden la longitud normal de
+  subdominios (típicamente 5-15 caracteres), es un IOC fuerte de DNS tunneling
+  ya que los datos codificados en base32/base64 requieren espacio extra.
+- **Alta frecuencia de consultas al mismo dominio:** Si un host realiza decenas
+  o cientos de consultas DNS al mismo dominio en un período corto (minutos),
+  sugiere que está fragmentando datos para exfiltrarlos a través del canal DNS.
+- **Consultas con patrones de codificación:** La presencia de caracteres válidos
+  en base32/base64 (A-Z, 2-7, +, /) en subdominios de consultas DNS es un
+  indicador de que se están encapsulando datos en el protocolo.
+- **Tráfico TXT record anómalo:** Las consultas de tipo TXT son el vector más
+  frecuente para DNS tunneling bidireccional. Un volumen inusual de consultas
+  TXT hacia un dominio específico activa la inspección profunda.
+
+### Por qué funciona esta defensa
+
+- **Análisis de dimensionalidad anómala:** El DNS tunneling requiere labels más
+  largos y más frecuentes que el tráfico DNS legítimo. Al establecer umbrales
+  de longitud y frecuencia, se detecta la desviación del comportamiento normal
+  sin necesidad de inspeccionar el contenido cifrado de las consultas.
+- **Correlación multi-vector:** La combinación de análisis de logs DNS,
+  detección de scripts con funciones de codificación y escaneo de patrones
+  base32 proporciona visibilidad desde múltiples ángulos, haciendo que la
+  evasión sea significativamente más difícil para el atacante.
+- **Desarticulación del canal C2:** Al identificar y bloquear el dominio
+  utilizado para el tunelDNS, se corta tanto la exfiltración de datos como el
+  canal de comandos C2, neutralizando completamente la operación del atacante.
+
+### Ejercicios prácticos de defensa
+
+1. **Análisis de logs DNS:** Ejecuta `dns_tunneling.py` y revisa los logs
+   generados en `logs_dns/`. Identifica los chunks codificados en base32 y
+   calcula la longitud de los labels. Luego ejecuta
+   `deteccion_de_anomalias_dns.py` y verifica que detecta los patrones de
+   tunneling.
+2. **Detección de dominios C2:** Busca en los archivos generados referencias a
+   `evil-server.example.com`. En un entorno real, este dominio se bloquearía
+   en el DNS resolver y se agregaría a una lista de Indicators of Compromise
+   para bloqueo perimetral.
+3. **Prueba de limpieza:** Ejecuta `deteccion_de_anomalias_dns.py --clean` y
+   verifica que se eliminan los logs DNS, scripts payload y artefactos de
+   tunneling. Luego ejecuta una segunda pasada para confirmar que no quedan
+   evidencias de la actividad maliciosa.
+
 ## 5. Detalles de la Simulacion Educativa (Python)
 
 * **Que hace `dns_tunneling.py`**:

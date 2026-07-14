@@ -130,6 +130,27 @@ el concepto de "perder acceso" al contenido original.
   esto equivale a restaurar desde un backup verificado despues de un ataque
   ransomware.
 
+### Cuándo aplicar esta defensa
+
+- **Deteccion de cifrado masivo**: Cuando un EDR o antivirus alerta sobre multiples archivos siendo modificados en un corto periodo de tiempo (modificacion de extensiones a `.locked`, `.encrypted`, `.WNCRY`, etc.)
+- **Comandos de eliminacion de backups**: Alertas generadas por la ejecucion de `vssadmin delete shadows`, `bcdedit /set recoveryenabled No` o `wbadmin delete catalog` — estos son indicadores casi concluyentes de un ransomware en ejecucion
+- **Aparicion de notas de rescate**: La presencia de archivos como `README_RESCATE.txt`, `DECRYPT_INSTRUCTIONS.html` o `HOW_TO_RECOVER.txt` en multiples directorios
+- **Deteccion de patrones de cifrado**: Cuando herramientas de monitoreo detectan que un proceso esta abriendo y modificando un volumen inusual de archivos con extensiones de documento
+- **Escenario real**: Un empleado reporta que no puede abrir sus archivos y encuentra un archivo de texto con instrucciones de pago. El equipo de seguridad activa el protocolo de respuesta a incidentes ransomware
+
+### Por qué funciona esta defensa
+
+- **Backup offline es inalcanzable**: Un backup fuera de linea (air-gapped) o en la nube con versionado no puede ser alcanzado por el ransomware porque este opera dentro del perimeter de la red comprometida. La regla 3-2-1 garantiza que siempre existe una copia que el malware no puede cifrar
+- **Verificacion de integridad con hashes**: El uso de SHA-256 permite confirmar que los archivos restaurados no han sido modificados ni corruptos durante la recuperacion. Si el hash del backup coincide con el original, la integridad esta garantizada
+- **Ruptura de la cadena de extorsion**: La restauracion desde backup elimina el incentivo del atacante: si la victima puede recuperar sus datos sin pagar, el modelo economico del ransomware colapsa. Esto es la base de la estrategia "no pagar"
+- **Tiempo de recuperacion predecible**: Tener backups verificados reduce el RTO (Recovery Time Objective) de dias/semanas a horas, minimizando el impacto operativo
+
+### Ejercicios practicos de defensa
+
+1. **Flujo completo de ataque y recuperacion**: Ejecuta `python ransomware.py` sobre `directorio_pruebas/`, observa como los archivos se cifran (texto invertido) y aparece la nota de rescate. Luego ejecuta `python respuesta_a_incidentes.py` y verifica que cada archivo restaurado tiene el mismo hash SHA-256 que el original. Documenta el tiempo que toma el proceso completo
+2. **Analisis de diferencias antes/despues**: Antes de ejecutar el ransomware, calcula los hashes SHA-256 de todos los archivos en `directorio_pruebas/` con `sha256sum *`. Despues del cifrado, calcula los hashes de los archivos `.locked` y compara. Observa como el contenido cambia completamente pero el tamano se mantiene similar
+3. **Evaluacion del plan de recuperacion**: Simula un escenario donde solo tienes 8 de los 12 archivos originales como backup. Ejecuta la restauracion y analiza que archivos se recuperaron y cuales se perdieron permanentemente. Discute como la regla 3-2-1 habria evitado esta perdida
+
 ---
 
 ## 🚀 5. Detalles de la Simulacion Educativa (Python)

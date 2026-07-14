@@ -141,6 +141,27 @@ reconstruye la actividad del usuario.
   y recomienda medidas preventivas como 2FA, gestores de contrasenas, y
   teclados virtuales.
 
+### Cuándo aplicar esta defensa
+
+- **Deteccion de hooks de teclado no autorizados**: Cuando un EDR reporta que un proceso ha registrado un hook de teclado (`SetWindowsHookEx` con `WH_KEYBOARD_LL`) que no corresponde a un software legitimo conocido
+- **Archivos de log con datos sensibles**: Cuando se descubren archivos de log que contienen patrones de DNIs, numeros de tarjeta de credito, credenciales de acceso o mensajes privados — esto indica que un keylogger esta capturando la actividad del usuario
+- **Procesos sospechosos en memoria**: Procesos sin firma digital, con nombres genéricos (svchost.exe duplicados), o que consumen recursos de forma inusual pueden alojar keyloggers
+- **Alertas de red inusuales**: Conexiones salientes periodicas a servidores desconocidos, especialmente via DNS tunneling o HTTPS a IPs no estandar, pueden indicar exfiltracion de datos capturados por un keylogger
+- **Escenario real**: Un departamento de finanzas reporta que su portal bancario detecta accesos sospechosos desde ubicaciones desconocidas. El equipo de seguridad sospecha de un keylogger y activa la busqueda de artefactos
+
+### Por qué funciona esta defensa
+
+- **Clasificacion reduce la superficie de ataque**: Si los datos sensibles (credenciales, datos financieros) nunca viajan por canales que un keylogger pueda monitorear (teclado fisico), la captura se vuelve inutil. Gestores de contrasenas y autenticadores 2FA eliminan la necesidad de escribir credenciales
+- **DLP bloquea la exfiltracion**: Incluso si un keylogger captura datos, un sistema DLP (Data Loss Prevention) puede detectar y bloquear el envio de informacion clasificada a destinos no autorizados, cortando la cadena de robo
+- **Deteccion por patrones regulatorios**: Las expresiones regulares para DNIs, tarjetas y emails funcionan porque estos datos tienen formatos estandarizados. Un keylogger que capture este tipo de informacion inevitablemente creara patrones detectables en sus logs
+- **2FA mitiga el impacto**: Si la autenticacion de dos factores esta habilitada, las credenciales robadas por un keylogger son insuficientes para acceder a las cuentas, reduciendo dramaticamente el valor del ataque
+
+### Ejercicios practicos de defensa
+
+1. **Caza de datos sensibles en logs**: Ejecuta `python keylogger.py` para generar el log simulado. Luego ejecuta `python cazador_de_amenazas.py` y analiza los patrones detectados: emails, DNIs, numeros de tarjeta, contrasenas. Documenta que tipo de informacion se revelaria en un escenario real y que dano causaria
+2. **Evaluacion de controles preventivos**: Revisa el informe generado por `cazador_de_amenazas.py` sobre procesos sospechosos. Para cada tipo de proceso identificado, investiga como se veria en un sistema real (nombre, consumo de recursos, puertos abiertos) y que herramienta de deteccion lo identificaria
+3. **Diseno de politica de datos sensibles**: Basandote en los patrones detectados por la herramienta, diseña una politica de proteccion de datos para un equipo de 20 personas. Incluye: cuales datos se clasifican como sensibles, que herramientas se usan para protegerlos (gestor de contrasenas, 2FA, teclado virtual), y como se entrena a los usuarios
+
 ---
 
 ## 🚀 5. Detalles de la Simulacion Educativa (Python)
