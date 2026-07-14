@@ -2,6 +2,7 @@ import datetime
 import glob
 import hashlib
 import os
+import re
 import shutil
 from typing import Iterable, Optional
 
@@ -133,29 +134,25 @@ def cleanup(files_to_remove: Optional[Iterable[str]] = None, patterns: Optional[
 
 def write_log(modulo_name, log_lines, filename=None):
     """
-    Escribe el registro de ejecución garantizando que se guarde de manera
-    permanente dentro del directorio dinámico 'lab_data/logs/'.
+    Escribe el registro de ejecución dentro de lab_data/logs/.
+    
+    Siempre resuelve la ruta destino a lab_data/logs/ sin importar
+    la ruta que se pase en 'filename'. Solo se usa el nombre base
+    del archivo para determinar el nombre del log.
     """
-    try:
-        # Encontrar el directorio base de lab_data dinámicamente
-        lab_dir = find_lab_dir()
-        lab_data_root = os.path.dirname(lab_dir)
-        dir_logs = os.path.join(lab_data_root, 'logs')
-        
-        # Garantizar la existencia de la carpeta de logs
-        os.makedirs(dir_logs, exist_ok=True)
+    # Encontrar el directorio base de lab_data dinámicamente
+    lab_dir = find_lab_dir()
+    lab_data_root = os.path.dirname(lab_dir)
+    dir_logs = os.path.join(lab_data_root, 'logs')
+    os.makedirs(dir_logs, exist_ok=True)
 
-        # Configurar la ruta final del log limpia
-        if filename is None:
-            nombre_base = os.path.basename(modulo_name).replace('.log', '')
-            path_final_log = os.path.join(dir_logs, f"{nombre_base}.log")
-        else:
-            nombre_base = os.path.basename(filename)
-            path_final_log = os.path.join(dir_logs, nombre_base)
-            
-    except Exception:
-        # Fallback de emergencia si la resolución dinámica falla
-        path_final_log = filename if filename else f"{modulo_name}.log"
+    # Extraer solo el nombre base del archivo (sin ruta)
+    if filename is not None:
+        nombre_base = os.path.basename(filename).replace('.log', '')
+    else:
+        nombre_base = os.path.basename(str(modulo_name)).replace('.log', '')
+
+    path_final_log = os.path.join(dir_logs, f"{nombre_base}.log")
 
     # Escribir el reporte en disco
     with open(path_final_log, 'w', encoding='utf-8') as handle:
@@ -164,5 +161,12 @@ def write_log(modulo_name, log_lines, filename=None):
         for line in log_lines:
             handle.write(line + '\n')
         handle.write(f"{'='*40}\n")
-        
+
     safe_print(color(f"\n  registro guardado en: {path_final_log}", 'green'))
+
+
+_ANSI_RE = re.compile(r'\x1b\[[0-9;]*m')
+
+
+def strip_ansi(text: str) -> str:
+    return _ANSI_RE.sub('', text)
