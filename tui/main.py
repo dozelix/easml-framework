@@ -31,7 +31,7 @@ class LaboratorioTUI(App):
         Binding("r",      "explicar_modulo",     "Readme Max", show=True),
         Binding("d",      "limpiar_consola",     "Clean",      show=True),
         Binding("h",      "mostrar_tutorial",    "Tutorial",   show=True),
-        Binding("escape", "quit",                "Salir",      show=True),
+        Binding("escape", "confirmar_salida",    "Salir",      show=True),
         Binding("up",     "scroll_lista(-1)",    "Subir",      show=False),
         Binding("down",   "scroll_lista(1)",     "Bajar",      show=False),
     ]
@@ -161,6 +161,13 @@ class LaboratorioTUI(App):
     def on_mouse_scroll_down(self, event) -> None:
         """Rueda del ratón hacia abajo — desplazar lista de módulos."""
         self.action_scroll_lista(1)
+
+    async def action_confirmar_salida(self) -> None:
+        """Muestra modal de confirmación antes de cerrar la TUI."""
+        from tui.confirmacion import ConfirmacionSalida
+        resultado = await self.push_screen_wait(ConfirmacionSalida())
+        if resultado:
+            self.exit()
 
     # ── Controladores Asíncronos Internos (Delegadores) ──────────────────
 
