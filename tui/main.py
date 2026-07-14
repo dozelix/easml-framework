@@ -11,7 +11,7 @@ from textual.containers import Horizontal, Vertical
 # Módulos internos heredados y nuevos
 from tui.config import MODULOS
 from tui.styles import TUI_CSS
-from tui.views import render_tutorial, render_modulo_info
+from tui.views import render_tutorial, render_dashboard, render_modulo_info
 from tui.runner import run_lab_script
 
 # ── Configuración de Entorno ────────────────────────────────────────────────
@@ -32,6 +32,7 @@ class LaboratorioTUI(App):
         Binding("d",      "limpiar_consola",     "Clean",      show=True),
         Binding("h",      "mostrar_tutorial",    "Tutorial",   show=True),
         Binding("escape", "confirmar_salida",    "Salir",      show=True),
+        Binding("b",      "mostrar_dashboard",   "Dashboard",  show=True),
         Binding("up",     "scroll_lista(-1)",    "Subir",      show=False),
         Binding("down",   "scroll_lista(1)",     "Bajar",      show=False),
     ]
@@ -39,7 +40,8 @@ class LaboratorioTUI(App):
     CSS = TUI_CSS
     ejecutando: reactive[bool] = reactive(False)
     leyendo_readme: reactive[bool] = reactive(False)
-    viendo_tutorial: reactive[bool] = reactive(True)
+    viendo_tutorial: reactive[bool] = reactive(False)
+    viendo_dashboard: reactive[bool] = reactive(True)
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
@@ -58,7 +60,7 @@ class LaboratorioTUI(App):
 
     def on_mount(self) -> None:
         self.query_one("#lista-modulos", ListView).index = None
-        self.action_mostrar_tutorial()
+        self.action_mostrar_dashboard()
 
     # ── Manejo de Eventos Reactivos ──────────────────────────────────────
 
@@ -67,6 +69,7 @@ class LaboratorioTUI(App):
     def manejar_cambio_seleccion(self, event: ListView.Selected | ListView.Highlighted) -> None:
         if event.item is not None:
             self.viendo_tutorial = False
+            self.viendo_dashboard = False
             self.leyendo_readme = False
             self.remove_class("modo-lectura")
             
@@ -77,6 +80,7 @@ class LaboratorioTUI(App):
     def _restaurar_vista_info(self) -> None:
         """Restaura la vista normal de información del módulo sin depender de un evento de interfaz."""
         self.viendo_tutorial = False
+        self.viendo_dashboard = False
         self.leyendo_readme = False
         self.remove_class("modo-lectura")
         lv = self.query_one("#lista-modulos", ListView)
@@ -86,9 +90,16 @@ class LaboratorioTUI(App):
     # ── Atajos de Teclado (Acciones) ─────────────────────────────────────
 
     def action_mostrar_tutorial(self) -> None:
-        self.viendo_tutorial, self.leyendo_readme = True, False
+        self.viendo_tutorial, self.viendo_dashboard = True, False
+        self.leyendo_readme = False
         self.remove_class("modo-lectura")
         self.query_one("#info-modulo", Markdown).update(render_tutorial())
+
+    def action_mostrar_dashboard(self) -> None:
+        self.viendo_dashboard, self.viendo_tutorial = True, False
+        self.leyendo_readme = False
+        self.remove_class("modo-lectura")
+        self.query_one("#info-modulo", Markdown).update(render_dashboard())
 
     def action_explicar_modulo(self) -> None:
         lv = self.query_one("#lista-modulos", ListView)

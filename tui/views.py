@@ -1,10 +1,108 @@
 """Generadores de contenido Markdown para la TUI."""
 
 import os
+from collections import Counter
 from tui.config import MODULOS, NOMBRES_DEFENSA
+
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 def cia_icon(cia: str) -> str:
     return {"Confidencialidad": "🔒 C", "Integridad": "🛡️ I", "Disponibilidad": "⚡ A"}.get(cia, "?")
+
+
+def _contar_archivos(directorio: str) -> int:
+    """Cuenta archivos regulares en un directorio (no recursivo)."""
+    if not os.path.isdir(directorio):
+        return 0
+    return len([f for f in os.listdir(directorio) if os.path.isfile(os.path.join(directorio, f))])
+
+
+def _barra(cantidad: int, maximo: int, largo: int = 15) -> str:
+    """Genera una barra de texto proporcional."""
+    if maximo == 0:
+        return "░" * largo
+    llenos = int((cantidad / maximo) * largo)
+    return "█" * llenos + "░" * (largo - llenos)
+
+
+def render_dashboard() -> str:
+    """Dashboard principal con datos reales del laboratorio."""
+    dir_lab = os.path.join(ROOT, 'directorio_pruebas')
+    dir_logs = os.path.join(ROOT, 'lab_data', 'logs')
+    dir_samples = os.path.join(ROOT, 'lab_data', 'samples')
+    dir_evidencia = os.path.join(ROOT, 'lab_data', 'evidencia')
+    dir_reportes = os.path.join(ROOT, 'lab_data', 'reportes')
+
+    # Conteos
+    archivos_lab = _contar_archivos(dir_lab)
+    logs_lab = len([f for f in os.listdir(dir_logs) if f.endswith('.log')]) if os.path.isdir(dir_logs) else 0
+    samples = _contar_archivos(dir_samples)
+    evidencia = _contar_archivos(dir_evidencia)
+    reportes = _contar_archivos(dir_reportes)
+
+    # Conteo por pilar CIA
+    cia_counter = Counter(m[3] for m in MODULOS)
+    max_cia = max(cia_counter.values()) if cia_counter else 1
+
+    # Estado del laboratorio
+    if archivos_lab == 0:
+        estado_lab = "🔴 Vacío — Presiona [Q] para preparar"
+    else:
+        estado_lab = f"🟢 Activo — {archivos_lab} archivos listos"
+
+    # Últimos logs (los 5 más recientes)
+    ultimos_logs = ""
+    if os.path.isdir(dir_logs):
+        logs_ordenados = sorted(
+            [f for f in os.listdir(dir_logs) if f.endswith('.log')],
+            key=lambda f: os.path.getmtime(os.path.join(dir_logs, f)),
+            reverse=True
+        )[:5]
+        if logs_ordenados:
+            for log_file in logs_ordenados:
+                tamaño = os.path.getsize(os.path.join(dir_logs, log_file))
+                ultimos_logs += f"*   `{log_file}` ({tamaño} bytes)\n"
+        else:
+            ultimos_logs = "*   _No hay logs registrados_\n"
+    else:
+        ultimos_logs = "*   _Directorio de logs no disponible_\n"
+
+    return f"""# 📊 Dashboard — Laboratorio E.A.S.M.L
+
+---
+
+## Estado del Laboratorio
+
+**{estado_lab}**
+
+| Directorio | Archivos |
+|---|---|
+| `directorio_pruebas/` | {archivos_lab} |
+| `lab_data/logs/` | {logs_lab} |
+| `lab_data/samples/` | {samples} |
+| `lab_data/evidencia/` | {evidencia} |
+| `lab_data/reportes/` | {reportes} |
+
+---
+
+## Módulos por Pilar CIA
+
+| Pilar | Cantidad | Distribución |
+|---|---|---|
+| 🔒 Confidencialidad | {cia_counter.get('Confidencialidad', 0)} | {_barra(cia_counter.get('Confidencialidad', 0), max_cia)} |
+| 🛡️ Integridad | {cia_counter.get('Integridad', 0)} | {_barra(cia_counter.get('Integridad', 0), max_cia)} |
+| ⚡ Disponibilidad | {cia_counter.get('Disponibilidad', 0)} | {_barra(cia_counter.get('Disponibilidad', 0), max_cia)} |
+
+---
+
+## Últimos Registros
+
+{ultimos_logs}---
+
+> **[Q]** Setup · **[W]** Simular · **[E]** Defensa · **[R]** Readme · **[D]** Clean · **[H]** Tutorial
+"""
 
 
 def render_tutorial() -> str:
