@@ -32,6 +32,8 @@ class LaboratorioTUI(App):
         Binding("d",      "limpiar_consola",     "Clean",      show=True),
         Binding("h",      "mostrar_tutorial",    "Tutorial",   show=True),
         Binding("escape", "quit",                "Salir",      show=True),
+        Binding("up",     "scroll_lista(-1)",    "Subir",      show=False),
+        Binding("down",   "scroll_lista(1)",     "Bajar",      show=False),
     ]
 
     CSS = TUI_CSS
@@ -142,6 +144,23 @@ class LaboratorioTUI(App):
             self.query_one("#consola-logs", RichLog).write("[bold green]🧹 Entorno limpiado desde el módulo dedicado.[/]")
         except Exception as exc:
             self.query_one("#consola-logs", RichLog).write(f"[bold red]Error al limpiar el entorno:[/] {exc}")
+
+    def action_scroll_lista(self, direccion: int) -> None:
+        """Desplaza la lista de módulos hacia arriba (-1) o abajo (+1)."""
+        lv = self.query_one("#lista-modulos", ListView)
+        if lv.index is None:
+            lv.index = 0
+        else:
+            nuevo = max(0, min(len(lv.children) - 1, lv.index + direccion))
+            lv.index = nuevo
+
+    def on_mouse_scroll_up(self, event) -> None:
+        """Rueda del ratón hacia arriba — desplazar lista de módulos."""
+        self.action_scroll_lista(-1)
+
+    def on_mouse_scroll_down(self, event) -> None:
+        """Rueda del ratón hacia abajo — desplazar lista de módulos."""
+        self.action_scroll_lista(1)
 
     # ── Controladores Asíncronos Internos (Delegadores) ──────────────────
 
