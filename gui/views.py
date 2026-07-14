@@ -3,7 +3,7 @@
 import os
 import re
 from collections import Counter
-from tui.config import MODULOS, NOMBRES_DEFENSA
+from gui.config import MODULOS, NOMBRES_DEFENSA
 
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

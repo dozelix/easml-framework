@@ -5,7 +5,7 @@ import subprocess
 import sys
 import threading
 
-from tui.utils import strip_ansi
+from modulos.common.utils import strip_ansi
 
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

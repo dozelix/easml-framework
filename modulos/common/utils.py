@@ -2,6 +2,7 @@ import datetime
 import glob
 import hashlib
 import os
+import re
 import shutil
 from typing import Iterable, Optional
 
@@ -162,3 +163,10 @@ def write_log(modulo_name, log_lines, filename=None):
         handle.write(f"{'='*40}\n")
 
     safe_print(color(f"\n  registro guardado en: {path_final_log}", 'green'))
+
+
+_ANSI_RE = re.compile(r'\x1b\[[0-9;]*m')
+
+
+def strip_ansi(text: str) -> str:
+    return _ANSI_RE.sub('', text)
