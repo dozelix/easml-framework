@@ -1,6 +1,7 @@
 """Generadores de contenido para la GUI."""
 
 import os
+import re
 from collections import Counter
 from tui.config import MODULOS, NOMBRES_DEFENSA
 
@@ -87,3 +88,18 @@ def leer_readme(index: int) -> str | None:
         with open(readme_path, "r", encoding="utf-8") as f:
             return f.read()
     return None
+
+
+def md_to_html(md_text: str) -> str:
+    try:
+        import markdown
+        html = markdown.markdown(md_text, extensions=['fenced_code', 'codehilite'])
+    except ImportError:
+        html = f"<pre>{md_text}</pre>"
+    html = re.sub(r'<h(\d)>', r'<h\1 style="color:#7aa2f7;font-family:JetBrains Mono;">', html)
+    html = re.sub(r'<h(\d) ', r'<h\1 style="color:#7aa2f7;font-family:JetBrains Mono;" ', html)
+    html = html.replace('<pre>', '<pre style="background:#0a0c10;color:#9ece6a;padding:10px;border-radius:4px;">')
+    html = html.replace('<code>', '<code style="background:#0a0c10;color:#f7768e;padding:2px 4px;border-radius:2px;">')
+    html = f"""<body style="background:#1a1d27;color:#c0caf5;font-family:JetBrains Mono;font-size:10pt;
+padding:14px;">{html}</body>"""
+    return html

@@ -11,7 +11,13 @@ sys.path.insert(0, _DIR_RAIZ)
 from tui.config import MODULOS, NOMBRES_DEFENSA
 from tui.laboratorio import DESAFIOS_POR_MODULO
 from gui.styles import *
-from gui.views import dashboard, tutorial, modulo_info, leer_readme
+from gui.views import dashboard, tutorial, modulo_info, leer_readme, md_to_html
+
+try:
+    from tkhtmlview import HTMLLabel
+    HAS_HTML = True
+except ImportError:
+    HAS_HTML = False
 from gui.runner import ScriptRunner
 from gui.desafio import DesafioWindow
 
@@ -124,10 +130,19 @@ class LaboratorioGUI(tk.Tk):
         self.lbl_cis.pack(side=tk.RIGHT, padx=10)
 
         # Área de contenido
-        self.contenido = tk.Text(der, bg=BG_PANEL, fg=TEXTO, font=FUENTE,
+        self.content_frame = tk.Frame(der, bg=BG)
+        self.content_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.contenido = tk.Text(self.content_frame, bg=BG_PANEL, fg=TEXTO, font=FUENTE,
                                  wrap=tk.WORD, relief="flat", padx=14, pady=10,
                                  insertbackground=ACCENT, state=tk.DISABLED)
         self.contenido.pack(fill=tk.BOTH, expand=True)
+
+        self.html_readme = None
+        if HAS_HTML:
+            self.html_readme = HTMLLabel(self.content_frame, html="",
+                                         background=BG_PANEL, font=FUENTE)
+            self.html_readme.fit_height = True
 
         # Barra de acciones
         bacc = tk.Frame(der, bg=BG, height=48)
@@ -170,7 +185,19 @@ class LaboratorioGUI(tk.Tk):
 
     # ── Métodos de contenido ────────────────────────────────────────────────
 
+    def _mostrar_texto(self):
+        if self.html_readme:
+            self.html_readme.pack_forget()
+        self.contenido.pack(fill=tk.BOTH, expand=True)
+
+    def _mostrar_html(self, html: str):
+        self.contenido.pack_forget()
+        if self.html_readme:
+            self.html_readme.set_html(html)
+            self.html_readme.pack(fill=tk.BOTH, expand=True)
+
     def _set_contenido(self, texto: str):
+        self._mostrar_texto()
         self.contenido.configure(state=tk.NORMAL)
         self.contenido.delete("1.0", tk.END)
         self.contenido.insert("1.0", texto)
@@ -217,7 +244,10 @@ class LaboratorioGUI(tk.Tk):
             self._set_contenido("⚠️ Este módulo no tiene documentación aún.")
             return
         self.viendo_readme = True
-        self._set_contenido(md)
+        if self.html_readme:
+            self._mostrar_html(md_to_html(md))
+        else:
+            self._set_contenido(md)
 
     def _restaurar(self):
         self.viendo_readme = False
