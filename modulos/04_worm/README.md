@@ -121,5 +121,26 @@ Cada nodo infectado se convierte en un nuevo vector de dispersion, generando cre
   5. Elimina todas las copias del gusano y los directorios compartidos.
   6. Muestra recomendaciones de defensa: firewalls SMB, IDS/IPS, segmentacion de red, parchado.
 
+### Cuándo aplicar esta defensa
+
+- **Multiples copias de un mismo archivo en la red**: Cuando se detecta que un archivo identico (mismo hash SHA-256) aparece en multiples directorios compartidos o nodos de red, esto indica propagacion automatica caracteristica de un gusano
+- **Escaneo de puertos en logs de red**: Alertas de IDS/IPS que muestran un host escaneando multiples puertos (SMB 445, SSH 22, RDP 3389) en rangos de IP de la red local — el patron tipico de reconocimiento de un gusano
+- **Consumo inusual de ancho de banda**: Monitoreo de red que detecta un incremento dramatico en el trafico entre hosts de la red local, especialmente en protocolos de transferencia de archivos
+- **Deteccion de marcadores de payload**: Cuando herramientas de analisis encuentran firmas conocidas de malware (como `WORM_PAYLOAD_SIMULATION`) en archivos del sistema o compartidos
+- **Escenario real**: Un administrador de red detecta que un servidor esta intentando conectarse a cientos de IPs en la subred cada minuto. Un IDS reporta trafico SMB anormal. Se activa la contencion inmediata del gusano
+
+### Por qué funciona esta defensa
+
+- **Segmentacion de red contiene la propagacion**: Si la red esta dividida en segmentos (VLANs) con firewalls entre ellos, un gusano propagandose en un segmento no puede alcanzar los demas, limitando el dano alarea de propagacion
+- **IDS/IPS detecta patrones de escaneo**: Los sistemas de deteccion de intrusiones identifican el patron de escaneo de puertos caracteristico de los gusanos (multiples conexiones TCP a puertos comunes en corto tiempo) y generan alertas que permiten la contencion temprana
+- **Parchado elimina el vector de explotacion**: La mayoria de gusanos explotan vulnerabilidades conocidas con parches disponibles. El parchado oportuno (control CIS 7) elimina la superficie de ataque, haciendo que el gusano no pueda propagarse
+- **Monitoreo reconstruye la cadena de infeccion**: La reconstruccion del grafo de propagacion permite identificar el nodo cero (primer infectado) y trazar la ruta completa de la infeccion, facilitando la limpieza sistematica
+
+### Ejercicios practicos de defensa
+
+1. **Simular y observar la propagacion**: Ejecuta `python worm.py` y observa como el gusano se replica en 3 rondas a traves de los directorios compartidos (shareA, shareB, shareC). Documenta el patron de propagacion: cuantos nodos se infectaron en cada ronda y por que el crecimiento es exponencial
+2. **Reconstruccion forense del grafo**: Ejecuta `python monitoreo_de_red.py` para detectar todas las copias del gusano. Analiza el grafo de propagacion generado: identifica el nodo cero, las rutas de transmision, y que hashes corresponden a cada copia. Compara los hashes para confirmar que todas las copias son identicas
+3. **Evaluacion de segmentacion de red**: Basandote en el patron de propagacion observado, diseña una arquitectura de red segmentada para una oficina con 3 departamentos (ventas, TI, contabilidad). Define que segmentos necesitan comunicarse entre si y donde colocar firewalls para contener un gusano similar al simulado
+
 ---
 > **Disclaimer:** Este modulo es estrictamente educativo. Los archivos generados son texto plano inofensivo. No se realizan conexiones de red reales ni se explotan vulnerabilidades verdaderas.

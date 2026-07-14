@@ -69,6 +69,52 @@ antivirus tradicionales basados en firmas de archivos.
   de ejecución fileless en un sistema real (logs de PowerShell, eventos WMI,
   procesos en memoria).
 
+### Cuándo aplicar esta defensa
+
+- **Procesos PowerShell con codificación Base64:** Cuando se detecta un proceso
+  de PowerShell ejecutando argumentos codificados en Base64 (parámetro
+  `-EncodedCommand` o `-enc`), activar la inspección inmediata de memoria y
+  eventos del sistema.
+- **Creación y borrado inmediato de archivos en /tmp:** Si el monitoreo de
+  integridad de archivos detecta que un archivo temporal fue creado y eliminado
+  en un intervalo menor a 1 segundo, es un indicador de ejecución fileless.
+- **Actividad WMI anómala:** Eventos de suscripción WMI creados por procesos no
+  autorizados o con nombres sospechosos (ej: `wscript.exe` ejecutando scripts
+  desde registros del sistema) activan la investigación forense en memoria.
+- **Procesos con hollowing detectado:** Si un EDR reporta que un proceso legítimo
+  (explorer.exe, svchost.exe) tiene secciones de memoria con permisos RWX
+  (read-write-execute) inusuales, activar el análisis de inyección de código.
+
+### Por qué funciona esta defensa
+
+- **Supervivencia forense:** Aunque el malware fileless no deja archivos en
+  disco, genera artefactos transitorios (logs de PowerShell, eventos WMI,
+  entradas en `/tmp`) que pueden capturarse si el monitoreo está activo antes
+  de que el código se auto-elimine de memoria.
+- **Detección comportamental:** La inspección de memoria volatile permite
+  identificar procesos que contienen código no autorizado en sus espacios de
+  direcciones, algo que los antivirus basados en firmas no pueden hacer ya que
+  no hay archivo estático que escanear.
+- **Principio de assume breach:** Esta defensa asume que la prevención fallará
+  (el archivo no existe en disco) y se enfoca en detectar la ejecución activa,
+  lo cual es el único momento en que el malware fileless es observable.
+
+### Ejercicios prácticos de defensa
+
+1. **Rastro temporal:** Ejecuta `fileless.py` y observa la creación y
+   eliminación inmediata del script en `/tmp`. Luego ejecuta
+   `inspeccion_de_memoria_volatile.py` para buscar residuos. Intenta ejecutar
+   el script de defensa más rápido que la limpieza del malware para capturar
+   el archivo en tránsito.
+2. **Análisis de logs:** Revisa `fileless.log` y extrae los timestamps de
+   creación y borrado del script temporal. Calcula la diferencia para demostrar
+   la velocidad de la auto-limpieza. En un entorno real, estos logs se
+   correlacionarían con eventos de Sysmon (Event ID 1: Process Create).
+3. **Simulación de EDR:** Crea un script que monitoree `/tmp` cada 100ms durante
+   la ejecución de `fileless.py`. Intenta detectar el archivo temporal antes de
+   que sea eliminado. Esto simula el comportamiento de un EDR con monitoreo en
+   tiempo real.
+
 ## 🚀 5. Detalles de la Simulación Educativa (Python)
 
 ### Qué hace `fileless.py`

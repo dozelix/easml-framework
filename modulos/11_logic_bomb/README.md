@@ -74,6 +74,56 @@ a que el "disparador" (trigger) se active.
   de activación de la bomba, analiza qué condiciones están cumplidas y
   neutraliza la bomba eliminando todos los artefactos generados.
 
+### Cuándo aplicar esta defensa
+
+- **Cambios en código fuente por empleados en proceso de desvinculación:** Cuando
+  un empleado notificado de baja realiza modificaciones inusuales al código
+  fuente o a archivos de configuración, activar la revisión de integridad de
+  código de forma inmediata.
+- **Archivos de marcador o configuración anómalos:** La presencia de archivos
+  JSON o de configuración con estructuras de condiciones de activación (fechas,
+  archivos trigger, variables de entorno) en directorios de producción es un
+  IOC directo de bomba lógica.
+- **Disparadores de condiciones ambientales:** Si se detecta la creación de
+  archivos trigger (archivos vacíos o de marcador) en directorios críticos,
+  o modificaciones a variables de entorno del sistema, activar la inspección
+  completa de código.
+- **Auditorías de código periódicas:** En organizaciones con acceso privilegiado
+  al código fuente, las revisiones periódicas de diff contra la última versión
+  conocida pueden revelar condicionales maliciosos insertados silenciosamente.
+
+### Por qué funciona esta defensa
+
+- **Detección de la condición latente:** La bomba lógica requiere que su
+  condición de activación sea evaluada en cada ejecución del programa. Al
+  identificar estos marcadores (archivos JSON de estado, archivos trigger), se
+  puede neutralizar la bomba antes de que se cumplan las condiciones de
+  activación.
+- **Principio de segregación de deberes:** La combinación de revisión de código
+  fuente con monitoreo de integridad asegura que ningún individuo pueda insertar
+  código malicioso sin ser detectado por al menos otro revisor, reduciendo
+  significativamente el riesgo de insider threat.
+- **Desarticulación del payload:** Al eliminar los archivos de marcador, los
+  trigger y los logs asociados, se corta la cadena de evaluación de condiciones,
+  haciendo que la bomba nunca se active independientemente de si las condiciones
+  ambientales se cumplen.
+
+### Ejercicios prácticos de defensa
+
+1. **Análisis de condiciones:** Ejecuta `logic_bomb.py` y revisa
+   `logic_bomb_marker.json`. Identifica cuáles de las 5 condiciones están
+   marcadas como cumplidas. Luego ejecuta `analisis_de_desencadenadores.py` y
+   verifica que neutraliza correctamente la bomba eliminando el marcador.
+2. **Evaluación del umbral:** La bomba se activa con ≥2 condiciones cumplidas.
+   Modifica el entorno (crear/eliminar archivos trigger, cambiar variables de
+   entorno) y re-ejecuta la simulación para observar cómo cambia el estado de
+   activación. Esto demuestra la sensibilidad de las bombas lógicas a su
+   entorno.
+3. **Auditoría de integridad:** Después de ejecutar `--clean`, verifica que no
+   quedan archivos `logic_bomb_marker.json`, `logic_bomb.log` ni archivos
+   trigger. En un entorno real, un sistema de integridad de archivos (AIDE,
+   Tripwire) detectaría la creación de estos marcadores.
+
 ## 🚀 5. Detalles de la Simulación Educativa (Python)
 
 ### Qué hace `logic_bomb.py`

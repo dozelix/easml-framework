@@ -118,6 +118,27 @@ un wiper destruye datos sin necesidad de cifrarlos.
   que los hashes coincidan post-restauracion. Esto demuestra el flujo que un
   equipo de respuesta a incidentes seguiria en produccion.
 
+### Cuándo aplicar esta defensa
+
+- **Corrupcion masiva de archivos**: Cuando se detecta que multiples archivos tienen sus primeros bytes sobrescritos con datos aleatorios, o cuando archivos de sistema pierden su formato (headers corruptos, imagenes que no se abren)
+- **Eliminacion de copias de seguridad**: Igual que en ransomware, la ejecucion de comandos de eliminacion de shadow copies es un indicador critico, pero en el contexto de wiper se ejecuta inmediatamente antes de la destruccion
+- **Alertas de integridad de archivos**: Herramientas FIM (File Integrity Monitoring) que reportan cambios en archivos criticos del sistema o de datos en lote
+- **Destruccion de MBR/GPT**: Cuando el sistema no puede arrancar o reporta corrupcion del Master Boot Record — esto indica un wiper avanzado que destruye la tabla de particiones
+- **Escenario real**: Durante un incidente geopolitico, un equipo de TI detecta que archivos en multiples servidores tienen headers corruptos y no se pueden abrir. Se activa inmediatamente el protocolo de recuperacion desde backups offline
+
+### Por qué funciona esta defensa
+
+- **Backup inmutable (WORM)**: Un backup WORM (Write Once Read Many) no puede ser modificado ni eliminado ni siquiera por un usuario con privilegios de administrador, porque esta diseniado para ser grabado una sola vez. El wiper no tiene capacidad de destruir algo que no puede modificar
+- **Deteccion temprana por comparacion de hashes**: La comparacion SHA-256 entre archivos actuales y su copia segura revela exactamente cuales archivos fueron corrompidos, permitiendo una recuperacion quirurgica en lugar de una restauracion ciega completa
+- **Irreversibilidad del ataque**: A diferencia del ransomware, el wiper no tiene punto de retorno — los datos destruidos estan perdidos para siempre sin backup. Esto hace que el backup offline sea la **unica** defensa efectiva, no una opcion
+- **Restauracion verificable**: El proceso de restaurar desde backup y verificar hashes garantiza que el sistema queda exactamente como estaba antes del ataque, sin residuos de corrupcion
+
+### Ejercicios practicos de defensa
+
+1. **Observar la destruccion en accion**: Ejecuta `python wiper.py` y observa como los primeros 64 bytes de cada archivo son sobrescritos con datos aleatorios. Luego intenta abrir los archivos corruptos (imagenes, CSVs) y documenta que tipo de danio observas en cada formato
+2. **Verificacion de integridad con auditoria**: Ejecuta `python auditoria_de_integridad.py` y analiza el reporte de hashes. Identifica cuales archivos fueron corrompidos (hash diferente al backup) y cuales sobrevivieron intactos. Compara los hashes antes/despues de la restauracion
+3. **Diseno de estrategia de backup**: Basandote en los resultados del laboratorio, diseña un plan de backups WORM para una empresa de 50 empleados. Define frecuencia, retencion, ubicacion (offline/on-premise/nube) y prueba de restauracion. Justifica cada decision usando los principios CIS
+
 ---
 
 ## 🚀 5. Detalles de la Simulacion Educativa (Python)
