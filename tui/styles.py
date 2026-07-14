@@ -37,6 +37,21 @@ Screen.modo-lectura #consola-logs {
     display: none;
 }
 
+Screen.modo-readme #panel-izquierdo {
+    display: none;
+}
+Screen.modo-readme #panel-derecho {
+    width: 100%;
+}
+Screen.modo-readme #info-modulo {
+    height: 100%;
+    border: solid $accent;
+    padding: 1 2;
+}
+Screen.modo-readme #consola-logs {
+    display: none;
+}
+
 #lista-modulos {
     height: 1fr;
     overflow-y: scroll;
