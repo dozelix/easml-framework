@@ -261,9 +261,10 @@ def limpiar_backdoor(hallazgos_marcadores, hallazgos_c2, hallazgos_persistencia)
         except Exception as e:
             safe_print(color(f"  [-] Error: {fpath}: {e}", 'red'))
 
-    # Eliminar logs
+    # Eliminar logs en lab_data/logs/
+    log_dir = os.path.join(find_lab_dir(ROOT), '..', 'logs')
     for log_name in ['06_backdoor.log', '06_backdoor_defensa.log']:
-        log_path = os.path.join(ROOT, log_name)
+        log_path = os.path.join(log_dir, log_name)
         if os.path.exists(log_path):
             os.remove(log_path)
             safe_print(color(f"  [+] Eliminado: {log_name}", 'green'))
@@ -358,8 +359,7 @@ def main():
     mostrar_consejos_defensa()
 
     write_log(
-        "06_backdoor_defensa", list(LOG_LINES),
-        os.path.join(ROOT, "06_backdoor_defensa.log")
+        "06_backdoor_defensa", list(LOG_LINES)
     )
     safe_print(color("  Defensa completada.\n", 'green'))
 

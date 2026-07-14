@@ -23,10 +23,11 @@ from modulos.common.utils import log, safe_print, color, banner, cleanup, write_
 
 # ── Directorio de trabajo de la simulación ──
 LAB_DIR = find_lab_dir(os.path.dirname(os.path.abspath(__file__)))
+LAB_DATA_LOGS = os.path.join(os.path.dirname(LAB_DIR), 'logs')
 
 # Artefactos conocidos que genera la simulación fileless
 ARTIFACTOS = {
-    "archivos": [os.path.join(LAB_DIR, "fileless.log")],
+    "archivos": [os.path.join(LAB_DATA_LOGS, "FILELESS.log")],
     "patrones_temporales": [
         os.path.join(LAB_DIR, "fileless_sim_*.py"),
         os.path.join(LAB_DIR, "fileless_payload_*.py"),
@@ -123,7 +124,7 @@ def ejecutar():
     write_log("defensa_fileless", [
         f"Escaneo defensivo completado",
         f"Artefactos encontrados: {len(hallazgos)}",
-    ], os.path.join(LAB_DIR, "defensa_fileless.log"))
+    ])
 
 
 if __name__ == "__main__":

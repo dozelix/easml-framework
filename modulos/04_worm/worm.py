@@ -308,8 +308,8 @@ def limpiar():
             safe_print(color(f"  [+] Eliminado: directorio_pruebas/{node}/", 'green'))
             removed += 1
 
-    # Eliminar log de la simulacion
-    log_path = os.path.join(ROOT, "04_worm.log")
+    # Eliminar log de la simulacion en lab_data/logs/
+    log_path = os.path.join(find_lab_dir(ROOT), '..', 'logs', "04_worm.log")
     if os.path.exists(log_path):
         os.remove(log_path)
         safe_print(color("  [+] Eliminado: 04_worm.log", 'green'))
@@ -369,7 +369,7 @@ def main():
     mostrar_notas_educativas()
 
     # Guardar registro
-    write_log("04_worm", list(LOG_LINES), os.path.join(ROOT, "04_worm.log"))
+    write_log("04_worm", list(LOG_LINES))
     safe_print(color("  Simulacion completada.\n", 'green'))
 
 

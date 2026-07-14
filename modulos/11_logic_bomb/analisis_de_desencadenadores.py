@@ -24,12 +24,13 @@ from modulos.common.utils import log, safe_print, color, banner, cleanup, write_
 
 # ── Directorio de trabajo de la simulación ──
 LAB_DIR = find_lab_dir(os.path.dirname(os.path.abspath(__file__)))
+LAB_DATA_LOGS = os.path.join(os.path.dirname(LAB_DIR), 'logs')
 
 # Artefactos conocidos que genera la simulación de bomba lógica
 ARTIFACTOS = {
     "archivos": [
         os.path.join(LAB_DIR, "logic_bomb_marker.json"),
-        os.path.join(LAB_DIR, "logic_bomb.log"),
+        os.path.join(LAB_DATA_LOGS, "LOGIC_BOMB.log"),
         os.path.join(LAB_DIR, "_trigger_bomb.txt"),
     ],
     "patrones": [os.path.join(LAB_DIR, "logic_bomb_*.log")],
@@ -145,7 +146,7 @@ def ejecutar():
         f"Artefactos encontrados: {len(hallazgos)}",
         f"Artefactos eliminados: {removidos}",
         f"Bomba neutralizada: SI",
-    ], os.path.join(LAB_DIR, "defensa_logic_bomb.log"))
+    ])
 
 
 if __name__ == "__main__":

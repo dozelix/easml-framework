@@ -210,8 +210,10 @@ def ejecutar():
         json.dump(config, f, indent=2, ensure_ascii=False)
     safe_print(color(f"  → {BOTNET_CONFIG} guardado ({os.path.getsize(BOTNET_CONFIG)} bytes)", 'green'))
 
-    # ── FASE 6: Guardar log C2 ──
-    write_log("BOTNET_C2", comandos_log, BOTNET_LOG)
+    # ── FASE 6: Guardar log C2 como artifacto de laboratorio ──
+    with open(BOTNET_LOG, 'w', encoding='utf-8') as f:
+        for entrada in comandos_log:
+            f.write(entrada + '\n')
     safe_print(color(f"  → {BOTNET_LOG} guardado", 'green'))
 
     # ── RESUMEN ──

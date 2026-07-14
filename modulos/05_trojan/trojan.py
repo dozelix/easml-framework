@@ -379,8 +379,8 @@ def limpiar():
             except Exception as e:
                 safe_print(color(f"  [-] Error al eliminar {fname}: {e}", 'red'))
 
-    # Eliminar log
-    log_path = os.path.join(ROOT, "05_trojan.log")
+    # Eliminar log en lab_data/logs/
+    log_path = os.path.join(find_lab_dir(ROOT), '..', 'logs', "05_trojan.log")
     if os.path.exists(log_path):
         os.remove(log_path)
         safe_print(color("  [+] Eliminado: 05_trojan.log", 'green'))
@@ -451,7 +451,7 @@ def main():
     mostrar_notas_educativas()
 
     # Guardar registro
-    write_log("05_trojan", list(LOG_LINES), os.path.join(ROOT, "05_trojan.log"))
+    write_log("05_trojan", list(LOG_LINES))
     safe_print(color("  Simulacion completada.\n", 'green'))
 
 

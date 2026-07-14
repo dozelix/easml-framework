@@ -317,8 +317,8 @@ def limpiar():
         safe_print(color("  [+] Eliminado: directorio_pruebas/process_list.txt", 'green'))
         removed += 1
 
-    # Eliminar log
-    log_path = os.path.join(ROOT, "07_rootkit.log")
+    # Eliminar log en lab_data/logs/
+    log_path = os.path.join(find_lab_dir(ROOT), '..', 'logs', "07_rootkit.log")
     if os.path.exists(log_path):
         os.remove(log_path)
         safe_print(color("  [+] Eliminado: 07_rootkit.log", 'green'))
@@ -378,7 +378,7 @@ def main():
     mostrar_tecnicas_ocultamiento()
     mostrar_notas_educativas()
 
-    write_log("07_rootkit", list(LOG_LINES), os.path.join(ROOT, "07_rootkit.log"))
+    write_log("07_rootkit", list(LOG_LINES))
     safe_print(color("  Simulacion completada.\n", 'green'))
 
 
