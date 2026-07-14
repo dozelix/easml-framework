@@ -4,7 +4,7 @@ import time
 import tkinter as tk
 from tkinter import ttk
 
-from tui.laboratorio import LaboratorioInteractivo, DESAFIOS_POR_MODULO, CONFIG_DIFICULTADES
+from gui.laboratorio import LaboratorioInteractivo, DESAFIOS_POR_MODULO, CONFIG_DIFICULTADES
 from gui.styles import *
 
 

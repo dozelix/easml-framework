@@ -40,12 +40,16 @@ class TestArchivosExistentes(unittest.TestCase):
         path = os.path.join(_REPO_ROOT, "core", "lab_setup.py")
         self.assertTrue(os.path.isfile(path), f"No existe: {path}")
 
-    def test_tui_entry_exists(self):
-        path = os.path.join(_REPO_ROOT, "tui.py")
+    def test_gui_entry_exists(self):
+        path = os.path.join(_REPO_ROOT, "gui.py")
         self.assertTrue(os.path.isfile(path), f"No existe: {path}")
 
-    def test_tui_styles_exists(self):
-        path = os.path.join(_REPO_ROOT, "tui", "styles.py")
+    def test_gui_config_exists(self):
+        path = os.path.join(_REPO_ROOT, "gui", "config.py")
+        self.assertTrue(os.path.isfile(path), f"No existe: {path}")
+
+    def test_gui_styles_exists(self):
+        path = os.path.join(_REPO_ROOT, "gui", "styles.py")
         self.assertTrue(os.path.isfile(path), f"No existe: {path}")
 
     def test_common_utils_exists(self):

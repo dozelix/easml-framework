@@ -11,7 +11,7 @@ from typing import Optional
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _DIR_RAIZ)
 
-from tui.config import MODULOS, NOMBRES_DEFENSA
+from gui.config import MODULOS, NOMBRES_DEFENSA
 
 
 @dataclass
