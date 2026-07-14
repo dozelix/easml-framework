@@ -39,7 +39,7 @@ class Desafio:
 # ── Base de desafíos por módulo ─────────────────────────────────────────────
 
 DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
-    "01_ransomware": [
+    "ransomware": [
         Desafio(
             pregunta="¿Qué algoritmo cifra la clave simétrica en un ransomware híbrido?",
             opciones=["AES-256", "RSA (asimétrico)", "MD5", "SHA-256"],
@@ -62,7 +62,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="WannaCry verificaba si existía un dominio específico. Al registrarlo, se activaba el kill switch y el malware se detenía."
         ),
     ],
-    "02_wiper": [
+    "wiper": [
         Desafio(
             pregunta="¿Qué diferencia principal tiene un wiper respecto a un ransomware?",
             opciones=["Usa cifrado más fuerte", "Destruye datos irrecuperablemente", "Pide un rescate", "Se propaga por red"],
@@ -78,7 +78,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="NotPetya usó EternalBlue como WannaCry pero su objetivo real era la destrucción, no el rescate."
         ),
     ],
-    "03_keylogger": [
+    "keylogger": [
         Desafio(
             pregunta="¿Qué API de Windows captura teclas globalmente en un keylogger?",
             opciones=["FindFirstFile", "GetAsyncKeyState", "CreateProcess", "RegSetValue"],
@@ -94,7 +94,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="CIS 8 establece que los logs de auditoría son esenciales para detectar actividad sospechosa como keyloggers."
         ),
     ],
-    "04_worm": [
+    "worm": [
         Desafio(
             pregunta="¿Qué vulnerabilidad explotó EternalBlue?",
             opciones=["HTTP/HTTPS", "SMBv1 (MS17-010)", "SSH", "DNS"],
@@ -103,7 +103,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="EternalBlue explotaba una vulnerabilidad en SMBv1 que permitía ejecución remota de código sin autenticación."
         ),
     ],
-    "05_trojan": [
+    "trojan": [
         Desafio(
             pregunta="¿Qué hace un troyano diferente a un virus?",
             opciones=["Se auto-replica", "Se disfraza de software legítimo", "Cifra archivos", "Ataca la red"],
@@ -112,7 +112,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="Un troyano se presenta como programa útil o legítimo mientras ejecuta funciones maliciosas ocultas."
         ),
     ],
-    "06_backdoor": [
+    "backdoor": [
         Desafio(
             pregunta="¿Qué permite una backdoor al atacante?",
             opciones=["Cifrar archivos remotamente", "Acceso remoto continuo y no autorizado", "Eliminar antivirus", "Generar tráfico DDoS"],
@@ -121,7 +121,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="Una backdoor proporciona al atacante acceso persistente al sistema comprometido, evitando mecanismos de autenticación normales."
         ),
     ],
-    "07_rootkit": [
+    "rootkit": [
         Desafio(
             pregunta="¿Qué técnica usa un rootkit para ocultar procesos?",
             opciones=["Cifrado de disco", "Filtrado de API (DKOM, hooking)", "Eliminación de archivos", "Encriptación de red"],
@@ -130,7 +130,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="DKOM (Direct Kernel Object Manipulation) y hooking interceptan APIs del SO para ocultar archivos, procesos y conexiones."
         ),
     ],
-    "08_botnet": [
+    "botnet": [
         Desafio(
             pregunta="¿Qué protocolo usaba Mirai para su canal C2?",
             opciones=["IRC", "HTTP", "DNS", "SMTP"],
@@ -146,7 +146,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="El ataque DDoS de Mirai contra Dyn en 2016 alcanzó 1.2 Tbps, uno de los ataques DDoS más grandes de la historia."
         ),
     ],
-    "09_steganography": [
+    "steganography": [
         Desafio(
             pregunta="¿Qué capa del modelo OSI se relaciona con esteganografía en red?",
             opciones=["Física", "Transporte", "Aplicación", "Enlace"],
@@ -155,7 +155,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="La esteganografía en red oculta datos dentro de protocolos de aplicación (HTTP headers, DNS queries, ICMP payloads)."
         ),
     ],
-    "10_fileless": [
+    "fileless": [
         Desafio(
             pregunta="¿Por qué son difíciles de detectar los ataques fileless?",
             opciones=["Usan cifrado fuerte", "No escriben archivos en disco", "Son muy rápidos", "Atacan el hardware"],
@@ -164,7 +164,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="Al ejecutar todo en memoria (PowerShell, WMI, registry), no hay archivos que el antivirus pueda escanear en disco."
         ),
     ],
-    "11_logic_bomb": [
+    "logic_bomb": [
         Desafio(
             pregunta="¿Qué activa típicamente una lógica bomb?",
             opciones=["Un antivirus", "Una condición lógica o fecha específica", "Un ataque de red", "Una actualización"],
@@ -173,7 +173,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="Una lógica bomb se activa cuando se cumple una condición predefinida: fecha específica, acción del usuario, o estado del sistema."
         ),
     ],
-    "12_cryptominer": [
+    "cryptominer": [
         Desafio(
             pregunta="¿Qué recurso del sistema consume principalmente un cryptominer?",
             opciones=["Disco duro", "CPU/GPU", "RAM", "Ancho de banda"],
@@ -182,7 +182,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="Los cryptominers utilizan CPU y/o GPU para resolver algoritmos de proof-of-work, consumiendo electricidad y generando calor excesivo."
         ),
     ],
-    "13_supply_chain": [
+    "supply_chain": [
         Desafio(
             pregunta="¿Qué ataque de supply chain comprometió SolarWinds?",
             opciones=["Phishing masivo", "Inyección de código en actualizaciones legítimas", "DDoS", "Ransomware"],
@@ -191,7 +191,7 @@ DESAFIOS_POR_MODULO: dict[str, list[Desafio]] = {
             explicacion="Los atacantes insertaron código malicioso en las actualizaciones de Orion, que se distribuyeron a 18.000+ organizaciones."
         ),
     ],
-    "14_dns_tunneling": [
+    "dns_tunneling": [
         Desafio(
             pregunta="¿Qué tipo de registros DNS se usan comúnmente para DNS tunneling?",
             opciones=["A y AAAA", "TXT y CNAME", "SOA y NS", "MX y PTR"],
@@ -252,9 +252,9 @@ class LaboratorioInteractivo:
         resultado = []
         for i, m in enumerate(MODULOS):
             num, nombre = m[0], m[1]
-            clave = f"{num}_{nombre}"
+            clave = nombre
             tiene = clave in DESAFIOS_POR_MODULO
-            resultado.append((i, f"{num}_{nombre}", tiene))
+            resultado.append((i, nombre, tiene))
         return resultado
 
     def obtener_desafios(self, num_nombre: str) -> list[Desafio]:

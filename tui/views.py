@@ -189,13 +189,13 @@ def render_modulo_info(index: int, modulos_dir: str) -> str:
 
     nombre_defensa_archivo = NOMBRES_DEFENSA.get(num, "defensa").lower().replace(' ', '_')
 
-    dir_modulo = os.path.join(modulos_dir, f"{num}_{nombre}")
+    dir_modulo = os.path.join(modulos_dir, nombre)
     sim_ok = "🟢" if os.path.exists(os.path.join(dir_modulo, f"{script}.py")) else "🔴"
     def_ok = "🟢" if os.path.exists(os.path.join(dir_modulo, f"{nombre_defensa_archivo}.py")) else "🔴"
     md_ok  = "🟢" if os.path.exists(os.path.join(dir_modulo, "README.md")) else "🟡"
 
     return f"""
-# 🔍 Análisis de Módulo: {num}_{nombre}
+# 🔍 Análisis de Módulo: {nombre}
 ---
 
 ### 🛡️ Clasificación de Seguridad (Frameworks)

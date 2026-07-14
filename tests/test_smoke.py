@@ -6,20 +6,20 @@ import unittest
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 MODULOS = [
-    ("01_ransomware", "ransomware.py", "respuesta_a_incidentes.py"),
-    ("02_wiper", "wiper.py", "auditoria_de_integridad.py"),
-    ("03_keylogger", "keylogger.py", "cazador_de_amenazas.py"),
-    ("04_worm", "worm.py", "monitoreo_de_red.py"),
-    ("05_trojan", "trojan.py", "inspeccion_de_contenido.py"),
-    ("06_backdoor", "backdoor.py", "auditoria_de_persistencia.py"),
-    ("07_rootkit", "rootkit.py", "monitoreo_del_kernel_ganchos.py"),
-    ("08_botnet", "botnet.py", "mitigacion_ddos_filtros.py"),
-    ("09_steganography", "steganography.py", "analisis_esteganografico.py"),
-    ("10_fileless", "fileless.py", "inspeccion_de_memoria_volatile.py"),
-    ("11_logic_bomb", "logic_bomb.py", "analisis_de_desencadenadores.py"),
-    ("12_cryptominer", "cryptominer.py", "monitoreo_de_recursos_cpu.py"),
-    ("13_supply_chain", "supply_chain.py", "verificacion_de_dependencias_sca.py"),
-    ("14_dns_tunneling", "dns_tunneling.py", "deteccion_de_anomalias_dns.py"),
+    ("ransomware", "ransomware.py", "respuesta_a_incidentes.py"),
+    ("wiper", "wiper.py", "auditoria_de_integridad.py"),
+    ("keylogger", "keylogger.py", "cazador_de_amenazas.py"),
+    ("worm", "worm.py", "monitoreo_de_red.py"),
+    ("trojan", "trojan.py", "inspeccion_de_contenido.py"),
+    ("backdoor", "backdoor.py", "auditoria_de_persistencia.py"),
+    ("rootkit", "rootkit.py", "monitoreo_del_kernel_ganchos.py"),
+    ("botnet", "botnet.py", "mitigacion_ddos_filtros.py"),
+    ("steganography", "steganography.py", "analisis_esteganografico.py"),
+    ("fileless", "fileless.py", "inspeccion_de_memoria_volatile.py"),
+    ("logic_bomb", "logic_bomb.py", "analisis_de_desencadenadores.py"),
+    ("cryptominer", "cryptominer.py", "monitoreo_de_recursos_cpu.py"),
+    ("supply_chain", "supply_chain.py", "verificacion_de_dependencias_sca.py"),
+    ("dns_tunneling", "dns_tunneling.py", "deteccion_de_anomalias_dns.py"),
 ]
 
 
