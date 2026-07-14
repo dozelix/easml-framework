@@ -6,21 +6,80 @@ from tui.config import MODULOS, NOMBRES_DEFENSA
 def cia_icon(cia: str) -> str:
     return {"Confidencialidad": "🔒 C", "Integridad": "🛡️ I", "Disponibilidad": "⚡ A"}.get(cia, "?")
 
-def render_dashboard_tutorial() -> str:
-    return """
-# 📊 CONTROL PANEL & TUTORIAL INICIAL
----
-¡Bienvenido al **Laboratorio Educativo de Simulación Avanzada de Malware (E.A.S.M.L)**!
 
-### 🎮 Controles de Navegación Rápida
-*   `↑ / ↓` o Rueda del Ratón: Navega por la lista de módulos.
-*   **`[W]` Simular:** Lanza el script de malware en el entorno controlado.
-*   **`[E]` Defensa:** Ejecuta el script de mitigación o remediación.
-*   **`[R]` Readme Max:** Expande la teoría técnica ocupando toda la pantalla derecha.
-*   **`[Q]` Setup Lab:** Fuerza la reconstrucción limpia del laboratorio.
-*   **`[D]` Clean:** Ejecuta el módulo de limpieza de entorno y vacía la consola.
-*   **`[H]` Tutorial:** Regresa a esta pantalla de ayuda.
+def render_tutorial() -> str:
+    """Tutorial guiado paso a paso — se muestra al inicio y con [H]."""
+    return """
+# 🎓 Tutorial Rápido — Laboratorio E.A.S.M.L
+
+---
+
+## Paso 1: Bienvenida
+
+¡Bienvenido al **Laboratorio Educativo de Simulación Avanzada de Malware**!
+
+Este laboratorio te permite ejecutar 14 tipos de amenazas de forma segura
+y controlada, dentro de un entorno aislado (`directorio_pruebas/`).
+Todo es una simulación educativa — **no se genera malware real**.
+
+---
+
+## Paso 2: ¿Cómo funciona?
+
+El flujo es simple:
+
+```
+Preparar → Simular → Defender → Limpiar
+```
+
+1. **Preparas** el entorno con archivos de prueba (`[Q]`)
+2. **Seleccionas** un módulo de la lista izquierda (flechas o ratón)
+3. **Simulas** el ataque con `[W]`
+4. **Defiendes** con `[E]` para ver cómo se mitiga
+5. **Limpias** todo con `[D]`
+
+---
+
+## Paso 3: Guía de controles paso a paso
+
+### `[Q]` — Setup (Preparar entorno)
+Genera 12 archivos de prueba (texto, imágenes, documentos) en `directorio_pruebas/`.
+Ejecútalo **antes** de simular por primera vez.
+
+### `[W]` — Simular (Lanzar amenaza)
+Ejecuta el script de simulación del módulo seleccionado.
+Verás en tiempo real cómo el malware afecta los archivos de prueba.
+
+### `[E]` — Defensa (Mitigar)
+Ejecuta el script de defensa del mismo módulo.
+Detecta los artefactos, los analiza y restaura el entorno.
+
+### `[R]` — Readme Max (Documentación)
+Expande el README del módulo para leer la teoría completa
+(historia, Tríada CIA, Controles CIS, ejercicios).
+
+### `[D]` — Clean (Limpiar)
+Vacía la consola y restablece el entorno de pruebas a su estado original.
+
+### `[H]` — Tutorial (Volver aquí)
+Regresa a este tutorial en cualquier momento.
+
+### `↑ / ↓` — Navegar
+Usa las flechas del teclado o la rueda del ratón para navegar la lista.
+
+### `ESC` — Salir
+Abre una ventana de confirmación para cerrar la TUI de forma segura.
+
+---
+
+## Paso 4: Listo para empezar
+
+Selecciona un módulo de la lista izquierda y presiona `[Q]` para preparar el entorno.
+Luego `[W]` para simular, y `[E]` para defenderte.
+
+> **Recuerda:** Puedes volver a este tutorial en cualquier momento presionando **`[H]`**.
 """
+
 
 def render_modulo_info(index: int, modulos_dir: str) -> str:
     if index < 0 or index >= len(MODULOS):

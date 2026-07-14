@@ -11,7 +11,7 @@ from textual.containers import Horizontal, Vertical
 # Módulos internos heredados y nuevos
 from tui.config import MODULOS
 from tui.styles import TUI_CSS
-from tui.views import render_dashboard_tutorial, render_modulo_info
+from tui.views import render_tutorial, render_modulo_info
 from tui.runner import run_lab_script
 
 # ── Configuración de Entorno ────────────────────────────────────────────────
@@ -88,7 +88,7 @@ class LaboratorioTUI(App):
     def action_mostrar_tutorial(self) -> None:
         self.viendo_tutorial, self.leyendo_readme = True, False
         self.remove_class("modo-lectura")
-        self.query_one("#info-modulo", Markdown).update(render_dashboard_tutorial())
+        self.query_one("#info-modulo", Markdown).update(render_tutorial())
 
     def action_explicar_modulo(self) -> None:
         lv = self.query_one("#lista-modulos", ListView)
