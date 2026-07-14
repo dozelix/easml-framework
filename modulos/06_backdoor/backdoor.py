@@ -350,9 +350,9 @@ def limpiar():
             except Exception as e:
                 safe_print(color(f"  [-] Error al eliminar {fname}: {e}", 'red'))
 
-    # Eliminar logs
+    # Eliminar logs en lab_data/logs/
     for log_name in ['06_backdoor.log']:
-        log_path = os.path.join(ROOT, log_name)
+        log_path = os.path.join(find_lab_dir(ROOT), '..', 'logs', log_name)
         if os.path.exists(log_path):
             os.remove(log_path)
             safe_print(color(f"  [+] Eliminado: {log_name}", 'green'))
@@ -423,7 +423,7 @@ def main():
     mostrar_notas_educativas()
 
     # Guardar registro
-    write_log("06_backdoor", list(LOG_LINES), os.path.join(ROOT, "06_backdoor.log"))
+    write_log("06_backdoor", list(LOG_LINES))
     safe_print(color("  Simulacion completada.\n", 'green'))
 
 

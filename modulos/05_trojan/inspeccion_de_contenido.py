@@ -210,15 +210,15 @@ def limpiar_troyano(hallazgos_marcadores, hallazgos_nombres):
         except Exception as e:
             safe_print(color(f"  [-] Error al eliminar {fpath}: {e}", 'red'))
 
-    # Eliminar log de simulacion
-    sim_log = os.path.join(ROOT, "05_trojan.log")
+    # Eliminar logs en lab_data/logs/
+    log_dir = os.path.join(find_lab_dir(ROOT), '..', 'logs')
+    sim_log = os.path.join(log_dir, "05_trojan.log")
     if os.path.exists(sim_log):
         os.remove(sim_log)
         safe_print(color("  [+] Eliminado: 05_trojan.log", 'green'))
         eliminados += 1
 
-    # Eliminar log de defensa
-    def_log = os.path.join(ROOT, "05_trojan_defensa.log")
+    def_log = os.path.join(log_dir, "05_trojan_defensa.log")
     if os.path.exists(def_log):
         os.remove(def_log)
         safe_print(color("  [+] Eliminado: 05_trojan_defensa.log", 'green'))
@@ -302,8 +302,7 @@ def main():
     mostrar_consejos_defensa()
 
     write_log(
-        "05_trojan_defensa", list(LOG_LINES),
-        os.path.join(ROOT, "05_trojan_defensa.log")
+        "05_trojan_defensa", list(LOG_LINES)
     )
     safe_print(color("  Defensa completada.\n", 'green'))
 

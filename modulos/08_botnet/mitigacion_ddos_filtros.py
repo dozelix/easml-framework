@@ -126,7 +126,7 @@ def ejecutar():
     write_log("defensa_botnet", [
         f"Escaneo defensivo completado",
         f"Artefactos encontrados: {len(hallazgos)}",
-    ], os.path.join(LAB_DIR, "defensa_botnet.log"))
+    ])
 
 
 if __name__ == "__main__":

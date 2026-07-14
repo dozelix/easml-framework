@@ -231,9 +231,8 @@ def simular_minado(duracion=30, num_workers=2):
 
     log(f"Sesion finalizada: {total_hashes:,} hashes en {duracion_real:.1f}s")
 
-    # Guardar registro
-    log_path = os.path.join(DIR_SIMULACION, 'cryptominer.log')
-    write_log("CRYPTOMINER-SIM", LOG_LINES, log_path)
+    # Guardar registro en lab_data/logs/
+    write_log("CRYPTOMINER-SIM", LOG_LINES)
 
 
 def _generar_artefactos(pool, wallet):

@@ -229,7 +229,7 @@ def ejecutar():
         f"Estado: eliminado exitosamente",
         f"Técnicas mostradas: {len(TECNICAS_FILELESS)}",
     ]
-    write_log("FILELESS", log_entries, FILELESS_LOG)
+    write_log("FILELESS", log_entries)
 
     # ── RESUMEN ──
     safe_print(color("\n" + "=" * 60, 'cyan'))

@@ -266,7 +266,7 @@ def ejecutar():
         log_entries.append(
             f"  {c.nombre}: {'SI' if c.cumplida else 'NO'} — {c.descripcion}"
         )
-    write_log("LOGIC_BOMB", log_entries, BOMB_LOG)
+    write_log("LOGIC_BOMB", log_entries)
     safe_print(color(f"  → logic_bomb.log guardado", 'green'))
 
     # ── RESUMEN ──
