@@ -113,7 +113,7 @@ class LaboratorioTUI(App):
         if lv.index is None:
             return
         num, nombre = MODULOS[lv.index][0], MODULOS[lv.index][1]
-        clave = f"{num}_{nombre}"
+        clave = nombre
         if clave not in DESAFIOS_POR_MODULO:
             self.query_one("#info-modulo", Markdown).update(
                 f"# ⚠️ Sin desafíos\n\nEl módulo **{clave}** aún no tiene desafíos disponibles."
@@ -132,15 +132,15 @@ class LaboratorioTUI(App):
             return
 
         num, nombre = MODULOS[lv.index][0], MODULOS[lv.index][1]
-        readme_path = os.path.join(MODULOS_DIR, f"{num}_{nombre}", "README.md")
+        readme_path = os.path.join(MODULOS_DIR, nombre, "README.md")
         
         if os.path.exists(readme_path):
             with open(readme_path, "r", encoding="utf-8") as f:
                 self.leyendo_readme = True
                 self.add_class("modo-readme")
-                md_widget.update(f"# 📖 TEORÍA Y CONOCIMIENTO: {num}_{nombre}\n---\n{f.read()}")
+                md_widget.update(f"# 📖 TEORÍA Y CONOCIMIENTO: {nombre}\n---\n{f.read()}")
         else:
-            md_widget.update(f"# Aviso\n\nEl módulo **{num}_{nombre}** no cuenta con un archivo README.md todavía.")
+            md_widget.update(f"# Aviso\n\nEl módulo **{nombre}** no cuenta con un archivo README.md todavía.")
 
     def action_crear_setup(self) -> None:
         if not self.ejecutando:
@@ -151,7 +151,7 @@ class LaboratorioTUI(App):
         if self.ejecutando or lv.index is None:
             return
         num, nombre, script = MODULOS[lv.index][0], MODULOS[lv.index][1], MODULOS[lv.index][2]
-        self.run_worker(self._preparar_y_lanzar(os.path.join(MODULOS_DIR, f"{num}_{nombre}", f"{script}.py"), f"{num}_{nombre}/simulacion"), group="subprocess", exclusive=True)
+        self.run_worker(self._preparar_y_lanzar(os.path.join(MODULOS_DIR, nombre, f"{script}.py"), f"{nombre}/simulacion"), group="subprocess", exclusive=True)
 
     def action_ejecutar_defensa(self) -> None:
         lv = self.query_one("#lista-modulos", ListView)
@@ -163,9 +163,9 @@ class LaboratorioTUI(App):
         # SOLUCIÓN ERROR N1: Mapeamos dinámicamente al nombre real usando NOMBRES_DEFENSA
         from tui.config import NOMBRES_DEFENSA
         nombre_defensa = NOMBRES_DEFENSA.get(num, "defensa").lower().replace(' ', '_')
-        defensa_path = os.path.join(MODULOS_DIR, f"{num}_{nombre}", f"{nombre_defensa}.py")
+        defensa_path = os.path.join(MODULOS_DIR, nombre, f"{nombre_defensa}.py")
         
-        self.run_worker(self._preparar_y_lanzar(defensa_path, f"{num}_{nombre}/defensa"), group="subprocess", exclusive=True)
+        self.run_worker(self._preparar_y_lanzar(defensa_path, f"{nombre}/defensa"), group="subprocess", exclusive=True)
 
     def action_limpiar_consola(self) -> None:
         self.query_one("#consola-logs", RichLog).clear()
