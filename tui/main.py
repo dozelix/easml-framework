@@ -13,6 +13,8 @@ from tui.config import MODULOS
 from tui.styles import TUI_CSS
 from tui.views import render_tutorial, render_dashboard, render_modulo_info
 from tui.runner import run_lab_script
+from tui.desafio import DesafioScreen
+from tui.laboratorio import DESAFIOS_POR_MODULO
 
 # ── Configuración de Entorno ────────────────────────────────────────────────
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -33,6 +35,7 @@ class LaboratorioTUI(App):
         Binding("h",      "mostrar_tutorial",    "Tutorial",   show=True),
         Binding("escape", "confirmar_salida",    "Salir",      show=True),
         Binding("b",      "mostrar_dashboard",   "Dashboard",  show=True),
+        Binding("c",      "iniciar_desafio",     "Desafío",    show=True),
         Binding("up",     "scroll_lista(-1)",    "Subir",      show=False),
         Binding("down",   "scroll_lista(1)",     "Bajar",      show=False),
     ]
@@ -104,6 +107,19 @@ class LaboratorioTUI(App):
         self.remove_class("modo-lectura")
         self.remove_class("modo-readme")
         self.query_one("#info-modulo", Markdown).update(render_dashboard())
+
+    def action_iniciar_desafio(self) -> None:
+        lv = self.query_one("#lista-modulos", ListView)
+        if lv.index is None:
+            return
+        num, nombre = MODULOS[lv.index][0], MODULOS[lv.index][1]
+        clave = f"{num}_{nombre}"
+        if clave not in DESAFIOS_POR_MODULO:
+            self.query_one("#info-modulo", Markdown).update(
+                f"# ⚠️ Sin desafíos\n\nEl módulo **{clave}** aún no tiene desafíos disponibles."
+            )
+            return
+        self.push_screen(DesafioScreen(clave, dificultad="facil"))
 
     def action_explicar_modulo(self) -> None:
         lv = self.query_one("#lista-modulos", ListView)
