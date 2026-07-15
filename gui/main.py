@@ -22,7 +22,7 @@ from gui.runner import ScriptRunner
 from gui.desafio import DesafioWindow
 
 try:
-    from PIL import Image, ImageTk as _ImageTk
+    from PIL import Image as _PILImage, ImageTk as _PILImageTk
     HAS_PIL = True
 except ImportError:
     HAS_PIL = False
@@ -50,18 +50,20 @@ class LaboratorioGUI(tk.Tk):
     # ── Layout ──────────────────────────────────────────────────────────────
 
     def _cargar_icono(self, nombre, size=28):
-        if not HAS_PIL:
-            return None
-        import PIL.Image as _PILImage
-        import PIL.ImageTk as _PILImageTk
         ruta = os.path.join(ASSETS_DIR, f"{nombre}.png")
         if not os.path.exists(ruta):
             return None
         if nombre in self._iconos:
             return self._iconos[nombre]
-        filtro = getattr(_PILImage.Resampling, "LANCZOS", 1)
-        img = _PILImage.open(ruta).resize((size, size), filtro)
-        photo = _PILImageTk.PhotoImage(img)
+        if HAS_PIL:
+            filtro = getattr(_PILImage.Resampling, "LANCZOS", 1)
+            img = _PILImage.open(ruta).resize((size, size), filtro)
+            photo = _PILImageTk.PhotoImage(img)
+        else:
+            photo = tk.PhotoImage(file=ruta)
+            w, h = photo.width(), photo.height()
+            if w != size or h != size:
+                photo = photo.zoom(size, size).subsample(w, h)
         self._iconos[nombre] = photo
         return photo
 
