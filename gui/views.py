@@ -1,82 +1,175 @@
-"""Generadores de contenido para la GUI."""
-
 import os
 import re
+import tkinter as tk
+import webbrowser
 from collections import Counter
 from gui.config import MODULOS, NOMBRES_DEFENSA
+from gui.styles import *
 
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def _contar_archivos(directorio: str) -> int:
-    if not os.path.isdir(directorio):
-        return 0
-    return len([f for f in os.listdir(directorio) if os.path.isfile(os.path.join(directorio, f))])
+def _card(parent, **kwargs):
+    card = tk.Frame(parent, bg=BG_PANEL, highlightbackground=BORDE,
+                    highlightthickness=2, **kwargs)
+    return card
 
 
-def dashboard() -> str:
+def _limpiar(parent):
+    for w in parent.winfo_children():
+        w.destroy()
+
+
+def _titulo(parent, texto):
+    lbl = tk.Label(parent, text=texto, bg=BG, fg=TEXTO, font=FUENTE_H1, anchor="w")
+    lbl.pack(anchor="w", pady=(0, 20))
+    return lbl
+
+
+def _separador(parent):
+    ttk.Separator(parent, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=8)
+
+
+def build_dashboard(parent):
+    _limpiar(parent)
+
     dir_lab = os.path.join(ROOT, 'directorio_pruebas')
     dir_logs = os.path.join(ROOT, 'lab_data', 'logs')
 
-    archivos_lab = _contar_archivos(dir_lab)
+    archivos_lab = len([f for f in os.listdir(dir_lab)
+                        if os.path.isfile(os.path.join(dir_lab, f))]) if os.path.isdir(dir_lab) else 0
     logs_lab = len([f for f in os.listdir(dir_logs) if f.endswith('.log')]) if os.path.isdir(dir_logs) else 0
-
     cia_counter = Counter(m[3] for m in MODULOS)
-    estado = "🟢 Activo" if archivos_lab > 0 else "🔴 Vacío"
+    activo = archivos_lab > 0
 
-    return (
-        "📊 DASHBOARD — Laboratorio E.A.S.M.L\n\n"
-        f"  Estado: {estado} — {archivos_lab} archivos en directorio_pruebas/\n"
-        f"  Logs:   {logs_lab} registros en lab_data/logs/\n\n"
-        f"  MÓDULOS POR PILAR CIA\n\n"
-        f"  🔒 Confidencialidad  {cia_counter.get('Confidencialidad', 0):2d}\n"
-        f"  🛡️  Integridad         {cia_counter.get('Integridad', 0):2d}\n"
-        f"  ⚡ Disponibilidad     {cia_counter.get('Disponibilidad', 0):2d}\n\n"
-        f"  Total: {len(MODULOS)} módulos ordenados por CIS\n\n"
-        "  Setup · Simular · Defensa · Readme · Clean · Dashboard · Juego"
-    )
+    _titulo(parent, "DASHBOARD")
+
+    stats_row = tk.Frame(parent, bg=BG)
+    stats_row.pack(fill=tk.X, pady=(0, 20))
+
+    for tit, val, color in [
+        ("ESTADO", "ACTIVO" if activo else "VACIO", VERDE if activo else ROJO),
+        ("ARCHIVOS", str(archivos_lab), TEXTO),
+        ("LOGS", str(logs_lab), TEXTO),
+    ]:
+        c = _card(stats_row, padx=18, pady=14)
+        c.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
+        tk.Label(c, text=tit, bg=BG_PANEL, fg=TEXTO_DIM,
+                 font=FUENTE_SM).pack(anchor="w")
+        tk.Label(c, text=val, bg=BG_PANEL, fg=color,
+                 font=FUENTE_STAT).pack(anchor="w", pady=(4, 0))
+
+    _separador(parent)
+
+    tk.Label(parent, text="MODULOS POR PILAR CIA", bg=BG, fg=TEXTO,
+             font=FUENTE_BOLD, anchor="w").pack(anchor="w", pady=(0, 12))
+
+    cia_row = tk.Frame(parent, bg=BG)
+    cia_row.pack(fill=tk.X)
+
+    for cia_name, icon_key in [
+        ("Confidencialidad", "confidencialidad"),
+        ("Integridad", "integridad"),
+        ("Disponibilidad", "disponibilidad"),
+    ]:
+        c = _card(cia_row, padx=16, pady=14)
+        c.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
+        tk.Label(c, text=cia_name, bg=BG_PANEL, fg=TEXTO_DIM,
+                 font=FUENTE_SM).pack(anchor="w")
+        tk.Label(c, text=str(cia_counter.get(cia_name, 0)),
+                 bg=BG_PANEL, fg=TEXTO, font=FUENTE_STAT).pack(anchor="w", pady=(4, 0))
+
+    _separador(parent)
+    tk.Label(parent, text=f"Total: {len(MODULOS)} modulos ordenados por CIS (2 -> 15)",
+             bg=BG, fg=TEXTO_DIM, font=FUENTE_SM).pack(anchor="w")
 
 
-def tutorial() -> str:
-    return (
-        "🎓 TUTORIAL RÁPIDO\n\n"
-        "  ¡Bienvenido! Este laboratorio te permite ejecutar 14 tipos de amenazas\n"
-        "  de forma segura en un entorno aislado (directorio_pruebas/).\n\n"
-        "  FLUJO DE TRABAJO\n\n"
-        "  Preparar → Simular → Defender → Limpiar\n\n"
-        "  1. Setup   — Genera archivos de prueba\n"
-        "  2. Simular — Ejecuta la simulación del módulo seleccionado\n"
-        "  3. Defensa — Mitiga la amenaza y restaura archivos\n"
-        "  4. Clean   — Limpia consola y entorno\n\n"
-        "  Los módulos están ordenados por control CIS (2→15) para\n"
-        "  facilitar el aprendizaje progresivo de los estándares."
-    )
+def build_tutorial(parent):
+    _limpiar(parent)
+
+    _titulo(parent, "TUTORIAL RAPIDO")
+
+    intro = _card(parent, padx=18, pady=14)
+    intro.pack(fill=tk.X, pady=(0, 20))
+    tk.Label(intro, text="Bienvenido! Este laboratorio te permite ejecutar 14 tipos\nde amenazas de forma segura en un entorno aislado.",
+             bg=BG_PANEL, fg=TEXTO, font=FUENTE, justify="left").pack(anchor="w")
+
+    _separador(parent)
+    tk.Label(parent, text="FLUJO DE TRABAJO", bg=BG, fg=TEXTO,
+             font=FUENTE_BOLD, anchor="w").pack(anchor="w", pady=(0, 12))
+
+    for paso, color in [
+        ("[1] Setup   — Genera archivos de prueba", AMARILLO),
+        ("[2] Simular — Ejecuta la simulacion del modulo", ROJO),
+        ("[3] Defensa — Mitiga la amenaza y restaura archivos", AZUL),
+        ("[4] Clean   — Limpia consola y entorno", VERDE),
+    ]:
+        c = _card(parent, padx=16, pady=10)
+        c.pack(fill=tk.X, pady=3)
+        tk.Label(c, text=paso, bg=BG_PANEL, fg=color,
+                 font=FUENTE_BOLD).pack(anchor="w")
+
+    _separador(parent)
+    tk.Label(parent, text="Los modulos estan ordenados por control CIS (2 -> 15) para\nfacilitar el aprendizaje progresivo de los estandares.",
+             bg=BG, fg=TEXTO_DIM, font=FUENTE_SM, justify="left").pack(anchor="w")
 
 
-def modulo_info(index: int) -> str:
+def build_modulo_info(parent, index: int):
+    _limpiar(parent)
+
     if index < 0 or index >= len(MODULOS):
-        return "Selecciona un módulo de la lista."
+        tk.Label(parent, text="Selecciona un modulo de la lista.",
+                 bg=BG, fg=TEXTO_DIM, font=FUENTE).pack()
+        return
 
     num, nombre, script, cia, cis, url_ref = MODULOS[index]
     nombre_defensa = NOMBRES_DEFENSA.get(num, "defensa")
-    icono_cia = {"Confidencialidad": "🔒", "Integridad": "🛡️", "Disponibilidad": "⚡"}.get(cia, "?")
     dir_modulo = os.path.join(ROOT, 'modulos', nombre)
     arch_defensa = nombre_defensa.lower().replace(' ', '_')
 
-    sim_ok = "✓" if os.path.exists(os.path.join(dir_modulo, f"{script}.py")) else "✗"
-    def_ok = "✓" if os.path.exists(os.path.join(dir_modulo, f"{arch_defensa}.py")) else "✗"
-    md_ok = "✓" if os.path.exists(os.path.join(dir_modulo, "README.md")) else "—"
+    sim_existe = os.path.exists(os.path.join(dir_modulo, f"{script}.py"))
+    def_existe = os.path.exists(os.path.join(dir_modulo, f"{arch_defensa}.py"))
+    md_existe = os.path.exists(os.path.join(dir_modulo, "README.md"))
 
-    return (
-        f"🔍 {nombre}\n\n"
-        f"  {icono_cia}  {cia}\n"
-        f"  {cis}\n\n"
-        f"  {sim_ok}  Simulación: {script}.py\n"
-        f"  {def_ok}  Defensa:     {arch_defensa}.py\n"
-        f"  {md_ok}  Documentación\n\n"
-        f"  {url_ref}"
-    )
+    _titulo(parent, "INFORMACION DEL MODULO")
+
+    cia_card = _card(parent, padx=16, pady=12)
+    cia_card.pack(fill=tk.X, pady=(0, 16))
+
+    color_cia = {"Confidencialidad": CYAN, "Integridad": MORADO, "Disponibilidad": NARANJA}.get(cia, TEXTO)
+    tk.Label(cia_card, text="PILAR CIA", bg=BG_PANEL, fg=TEXTO_DIM,
+             font=FUENTE_SM).pack(anchor="w")
+    tk.Label(cia_card, text=cia, bg=BG_PANEL, fg=color_cia,
+             font=FUENTE_H2).pack(anchor="w", pady=(4, 0))
+
+    _separador(parent)
+    tk.Label(parent, text="ARCHIVOS DEL MODULO", bg=BG, fg=TEXTO,
+             font=FUENTE_BOLD, anchor="w").pack(anchor="w", pady=(0, 12))
+
+    for label, existe in [
+        (f"Simulacion: {script}.py", sim_existe),
+        (f"Defensa:    {arch_defensa}.py", def_existe),
+        ("Documentacion (README.md)", md_existe),
+    ]:
+        c = _card(parent, padx=16, pady=8)
+        c.pack(fill=tk.X, pady=2)
+        fg_color = VERDE if existe else ROJO
+        status = "[OK]" if existe else "[--]"
+        lbl = tk.Label(c, text=f"{status}  {label}", bg=BG_PANEL, fg=fg_color,
+                       font=FUENTE_BOLD, anchor="w")
+        lbl.pack(fill=tk.X)
+
+    if url_ref:
+        _separador(parent)
+        tk.Label(parent, text="REFERENCIA", bg=BG, fg=TEXTO,
+                 font=FUENTE_BOLD, anchor="w").pack(anchor="w", pady=(0, 8))
+        link = tk.Label(parent, text=url_ref, bg=BG, fg=ACCENT,
+                        font=FUENTE, cursor="hand2")
+        link.pack(anchor="w")
+        link.bind("<Button-1>", lambda e: webbrowser.open(url_ref))
+        link.bind("<Enter>", lambda e: link.configure(fg=MORADO))
+        link.bind("<Leave>", lambda e: link.configure(fg=ACCENT))
 
 
 def leer_readme(index: int) -> str | None:
@@ -96,10 +189,11 @@ def md_to_html(md_text: str) -> str:
         html = markdown.markdown(md_text, extensions=['fenced_code', 'codehilite'])
     except ImportError:
         html = f"<pre>{md_text}</pre>"
-    html = re.sub(r'<h(\d)>', r'<h\1 style="color:#7aa2f7;font-family:JetBrains Mono;">', html)
-    html = re.sub(r'<h(\d) ', r'<h\1 style="color:#7aa2f7;font-family:JetBrains Mono;" ', html)
-    html = html.replace('<pre>', '<pre style="background:#0a0c10;color:#9ece6a;padding:10px;border-radius:4px;">')
-    html = html.replace('<code>', '<code style="background:#0a0c10;color:#f7768e;padding:2px 4px;border-radius:2px;">')
-    html = f"""<body style="background:#1a1d27;color:#c0caf5;font-family:JetBrains Mono;font-size:10pt;
+    html = re.sub(r'<h(\d)>', rf'<h\1 style="color:{ACCENT};font-family:JetBrains Mono;">', html)
+    html = re.sub(r'<h(\d) ', rf'<h\1 style="color:{ACCENT};font-family:JetBrains Mono;" ', html)
+    html = html.replace('<pre>', '<pre style="background:#F5F0EB;color:#1A1A1A;padding:10px;border-radius:4px;border:2px solid #1A1A1A;">')
+    html = html.replace('<code>', f'<code style="background:#F5F0EB;color:{ROJO};padding:2px 4px;border-radius:2px;">')
+    html = html.replace('<a ', f'<a style="color:{ACCENT};" ')
+    html = f"""<body style="background:{BG_PANEL};color:{TEXTO};font-family:JetBrains Mono;font-size:10pt;
 padding:14px;">{html}</body>"""
     return html
