@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Modulo 04 - Gusano (Worm)</h1>
+<h2>📖 1. Definicion Teorica y Contexto Historico</h2>
+<p>Un <strong>gusano informatico</strong> (worm) es un programa malware autonomo capaz de replicarse a si mismo y propagarse a traves de redes o medios de almacenamiento sin necesidad de intervencion humana ni de un archivo hospedero. A diferencia de un virus, un gusano no necesita modificarse a si mismo ni adjuntarse a un archivo existente: es un programa completo que se ejecuta de forma independiente.</p>
+<h3>Mecanismo fundamental</h3>
+<p>El gusano combina dos capacidades criticas:</p>
+<ol>
+<li><strong>Replicacion</strong>: Crea copias identicas de si mismo en otros sistemas o directorios.</li>
+<li><strong>Propagacion</strong>: Utiliza un vector de transmision (red, USB, email) para llegar a nuevos hosts.</li>
+</ol>
+<p>Estas capacidades le permiten expandirse de forma exponencial, similar a una epidemia biologica. Cada nodo infectado se convierte en un nuevo punto de dispersion, creando un efecto de cascada.</p>
+<h3>Ejemplos historicos relevantes</h3>
+<table>
+<thead>
+<tr>
+<th>Ano</th>
+<th>Nombre</th>
+<th>Vector de propagacion</th>
+<th>Impacto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1988</td>
+<td>Morris Worm</td>
+<td>Exploits en fingerd, rsh, sendmail</td>
+<td>Primer worm de la historia; infecto ~6.000 sistemas (10% de Internet)</td>
+</tr>
+<tr>
+<td>2000</td>
+<td>ILOVEYOU</td>
+<td>Email con adjunto VBS</td>
+<td>Destruyo archivos, causo ~$10 mil millones en danos globales</td>
+</tr>
+<tr>
+<td>2003</td>
+<td>Blaster / Sasser</td>
+<td>Exploit DCOM RPC (MS03-026)</td>
+<td>Reiniciaba PCs indefinidamente, propagacion masiva</td>
+</tr>
+<tr>
+<td>2008</td>
+<td>Conficker</td>
+<td>SMB (MS08-067) + fuerza bruta</td>
+<td>Infecto millones de PCs en 190+ paises</td>
+</tr>
+<tr>
+<td>2010</td>
+<td>Stuxnet</td>
+<td>USB + exploits zero-day LNK + print spooler</td>
+<td>Destruyo centrifugadoras de Iran; primer worm de ciberfisico</td>
+</tr>
+<tr>
+<td>2017</td>
+<td>WannaCry</td>
+<td>EternalBlue (MS17-010)</td>
+<td>200.000+ victimas en 150 paises; cifrado + propagacion</td>
+</tr>
+</tbody>
+</table>
+<h3>WannaCry: un caso de estudio</h3>
+<p>En mayo de 2017, WannaCry exploto globalmente aprovechando EternalBlue, una vulnerabilidad en el protocolo SMBv1 de Microsoft. El gusano:</p>
+<ol>
+<li>Escaneaba hosts en la red local buscando el puerto 445 (SMB) abierto.</li>
+<li>Explotaba la vulnerabilidad para ejecutar codigo arbitrario.</li>
+<li>Instalaba un cifrador que bloqueaba archivos con extensiones .WNCRY.</li>
+<li>Demandaba un rescate en Bitcoin por la clave de descifrado.</li>
+</ol>
+<p>La propagacion fue tan rapida que afecto al Servicio Nacional de Salud del Reino Unido (NHS), Telefonica, FedEx, y miles de organizaciones en todo el mundo. La propagacion solo se detuvo cuando un investigador descubrio un "kill switch" accidental en el codigo del gusano.</p>
+<h2>⚙️ 2. Mecanismo de Funcionamiento Tecnologico (Flujo Logico)</h2>
+<p>El flujo tipico de un gusano de red se describe en los siguientes pasos:</p>
+<ol>
+<li>
+<p><strong>Punto de entrada</strong>: El gusano ingresa al sistema initial a traves de un vector (email, exploit USB, descarga maliciosa).</p>
+</li>
+<li>
+<p><strong>Recoleccion de informacion</strong>: Enumera las interfaces de red, tablas de enrutamiento, archivos de configuracion de red y credenciales almacenadas.</p>
+</li>
+<li>
+<p><strong>Escaneo de red</strong>: Busca hosts activos probando puertos comunes (SMB 445, SSH 22, RPC 135, RDP 3389) en subredes locales y rutas configuradas.</p>
+</li>
+<li>
+<p><strong>Explotacion / Autenticacion</strong>: Para cada host vulnerable, explota una falla de seguridad o utiliza credenciales por defecto/robadas para obtener acceso.</p>
+</li>
+<li>
+<p><strong>Replicacion</strong>: Copia su codigo al host remoto usando el mecanismo de transferencia (SMB, SCP, HTTP).</p>
+</li>
+<li>
+<p><strong>Ejecucion</strong>: El gusano se ejecuta en el nuevo host, reiniciando el ciclo desde el paso 2.</p>
+</li>
+<li>
+<p><strong>Persistencia</strong> (opcional): Algunos gusanos modifican claves de registro, tareas programadas o scripts de inicio para sobrevivir reinicios.</p>
+</li>
+</ol>
+<div class="codehilite"><pre><span></span><code><span class="n">flowchart</span><span class="w"> </span><span class="n">TD</span>
+<span class="w">    </span><span class="n">A</span><span class="p">[</span><span class="n">Punto</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">entrada</span><span class="p">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">B</span><span class="p">[</span><span class="n">Recoleccion</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">info</span><span class="p">]</span>
+<span class="w">    </span><span class="n">B</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">C</span><span class="p">[</span><span class="n">Escaneo</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">red</span><span class="p">]</span>
+<span class="w">    </span><span class="n">C</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">D</span><span class="p">{</span><span class="n">Host</span><span class="w"> </span><span class="n">vulnerable</span><span class="o">?</span><span class="p">}</span>
+<span class="w">    </span><span class="n">D</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="n">No</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">C</span>
+<span class="w">    </span><span class="n">D</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="n">Si</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">E</span><span class="p">[</span><span class="n">Explotacion</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Autenticacion</span><span class="p">]</span>
+<span class="w">    </span><span class="n">E</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">F</span><span class="p">[</span><span class="n">Replicacion</span><span class="w"> </span><span class="n">al</span><span class="w"> </span><span class="n">host</span><span class="w"> </span><span class="n">remoto</span><span class="p">]</span>
+<span class="w">    </span><span class="n">F</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">G</span><span class="p">[</span><span class="n">Ejecucion</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">nuevo</span><span class="w"> </span><span class="n">host</span><span class="p">]</span>
+<span class="w">    </span><span class="n">G</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">B</span>
+
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">f96</span><span class="p">,</span><span class="n">stroke</span><span class="o">:</span><span class="err">#</span><span class="mi">333</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">E</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">f66</span><span class="p">,</span><span class="n">stroke</span><span class="o">:</span><span class="err">#</span><span class="mi">333</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">F</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">f66</span><span class="p">,</span><span class="n">stroke</span><span class="o">:</span><span class="err">#</span><span class="mi">333</span>
+</code></pre></div>
+
+<h3>Patron de propagacion</h3>
+<div class="codehilite"><pre><span></span><code><span class="w">   </span><span class="n">Ronda</span><span class="w"> </span><span class="mi">0</span><span class="w">          </span><span class="n">Ronda</span><span class="w"> </span><span class="mi">1</span><span class="w">            </span><span class="n">Ronda</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">   </span><span class="o">[</span><span class="n">A</span><span class="o">]</span><span class="w"> </span><span class="err">──────────</span><span class="o">&gt;</span><span class="w"> </span><span class="o">[</span><span class="n">A</span><span class="o">]</span><span class="err">──</span><span class="o">&gt;[</span><span class="n">B</span><span class="o">]</span>
+<span class="w">                    </span><span class="o">[</span><span class="n">A</span><span class="o">]</span><span class="err">──</span><span class="o">&gt;[</span><span class="n">C</span><span class="o">]</span>
+<span class="w">                              </span><span class="o">[</span><span class="n">A</span><span class="o">]</span><span class="err">──</span><span class="o">&gt;[</span><span class="n">B</span><span class="o">]</span><span class="err">──</span><span class="o">&gt;[</span><span class="n">D</span><span class="o">]</span>
+<span class="w">                              </span><span class="o">[</span><span class="n">A</span><span class="o">]</span><span class="err">──</span><span class="o">&gt;[</span><span class="n">B</span><span class="o">]</span><span class="err">──</span><span class="o">&gt;[</span><span class="n">E</span><span class="o">]</span>
+<span class="w">                              </span><span class="o">[</span><span class="n">A</span><span class="o">]</span><span class="err">──</span><span class="o">&gt;[</span><span class="n">C</span><span class="o">]</span><span class="err">──</span><span class="o">&gt;[</span><span class="n">F</span><span class="o">]</span>
+<span class="w">                              </span><span class="o">[</span><span class="n">A</span><span class="o">]</span><span class="err">──</span><span class="o">&gt;[</span><span class="n">C</span><span class="o">]</span><span class="err">──</span><span class="o">&gt;[</span><span class="n">G</span><span class="o">]</span>
+</code></pre></div>
+
+<p>Cada nodo infectado se convierte en un nuevo vector de dispersion, generando crecimiento exponencial si no hay contencion.</p>
+<h2>🔺 3. Alineacion con la Triada CIA</h2>
+<ul>
+<li><strong>Pilar Afectado: Disponibilidad (Availability)</strong></li>
+<li><strong>Justificacion Tecnica:</strong> El gusano compromete la disponibilidad de multiples maneras:</li>
+<li><strong>Consumo de recursos</strong>: La replicacion consume CPU, memoria y ancho de banda, degradando el rendimiento del sistema.</li>
+<li><strong>Consumo de red</strong>: El escaneo y la replicacion saturan el ancho de banda de la red, provocando latencia o caidas en la conectividad.</li>
+<li><strong>Interrupcion de servicios</strong>: WannaCry, por ejemplo, dejó inoperativo el Servicio Nacional de Salud del Reino Unido, impidiendo acceso a historiales clinicos y cancelando cirugias.</li>
+<li><strong>Reinicios forzados</strong>: Algunos gusanos (Blaster, Sasser) provocaban reinicios ciclicos, haciendo imposible usar el equipo.</li>
+<li><strong>Denegacion de servicio accidental</strong>: Aunque no sea su objetivo primario, la propagacion masiva puede causar una DoS accidental al saturar servidores y redes.</li>
+</ul>
+<h2>🛡️ 4. Mitigacion bajo la Norma de Controles CIS</h2>
+<ul>
+<li><strong>CIS Control 13: Defensa de Red (Network Monitoring and Defense)</strong></li>
+<li><strong>Concepto:</strong> Este control establece la necesidad de monitorear y defender la red contra accesos no autorizados, trafico anomalo y amenazas de propagacion. Incluye la segmentacion de red, el monitoreo de trafico y la respuesta automatizada a incidentes.</li>
+<li><strong>Implementacion Practica en Laboratorio:</strong> El script <code>monitoreo_de_red.py</code> implementa este control de las siguientes formas:</li>
+<li><strong>Deteccion de artefactos de propagacion</strong>: Escanea todos los directorios compartidos en busca de copias del gusano, identificando cada nodo infectado y las rutas de transmision.</li>
+<li><strong>Grafo de propagacion</strong>: Reconstruye el arbol de infeccion mostrando que nodo origino la infeccion de que otro nodo, similar a como un analista de SOC reconstruiria un evento de propagacion real.</li>
+<li><strong>Limpieza automatizada</strong>: Elimina todas las copias del gusano y los directorios compartidos comprometidos, restaurando el estado original.</li>
+<li><strong>Registro forense</strong>: Genera un log con hashes SHA-256 de cada artefacto detectado para analisis posterior.</li>
+</ul>
+<h2>🚀 5. Detalles de la Simulacion Educativa (Python)</h2>
+<ul>
+<li><strong>Que hace <code>worm.py</code>:</strong></li>
+<li>Crea 3 directorios simulados (<code>shareA</code>, <code>shareB</code>, <code>shareC</code>) que representan nodos de red compartidos.</li>
+<li>Genera un archivo <code>worm_sim.py</code> en el nodo origen (<code>shareA</code>) con un marcador de payload educativo.</li>
+<li>Ejecuta 3 rondas de propagacion: en cada ronda, cada nodo infectado intenta copiar el gusano a nodos aun no infectados.</li>
+<li>Registra cada paso de propagacion mostrando origen, destino y hash SHA-256 de cada copia.</li>
+<li>Muestra un grafo visual de la propagacion y estadisticas finales.</li>
+<li>
+<p>Todo operan dentro de <code>directorio_pruebas/</code> (lab_tmp/) sin tocar archivos del sistema real.</p>
+</li>
+<li>
+<p><strong>Que hace <code>monitoreo_de_red.py</code>:</strong></p>
+</li>
+<li>Escanea todos los subdirectorios buscando archivos con el nombre <code>worm_sim.py</code>.</li>
+<li>Para cada copia encontrada, extrae el hash SHA-256 y el nodo de origen desde el contenido del archivo.</li>
+<li>Reconstruye y muestra el grafo de propagacion (que nodo infecto a que otro).</li>
+<li>Busca marcadores <code>WORM_PAYLOAD_SIMULATION</code> en archivos del laboratorio.</li>
+<li>Elimina todas las copias del gusano y los directorios compartidos.</li>
+<li>Muestra recomendaciones de defensa: firewalls SMB, IDS/IPS, segmentacion de red, parchado.</li>
+</ul>
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Multiples copias de un mismo archivo en la red</strong>: Cuando se detecta que un archivo identico (mismo hash SHA-256) aparece en multiples directorios compartidos o nodos de red, esto indica propagacion automatica caracteristica de un gusano</li>
+<li><strong>Escaneo de puertos en logs de red</strong>: Alertas de IDS/IPS que muestran un host escaneando multiples puertos (SMB 445, SSH 22, RDP 3389) en rangos de IP de la red local — el patron tipico de reconocimiento de un gusano</li>
+<li><strong>Consumo inusual de ancho de banda</strong>: Monitoreo de red que detecta un incremento dramatico en el trafico entre hosts de la red local, especialmente en protocolos de transferencia de archivos</li>
+<li><strong>Deteccion de marcadores de payload</strong>: Cuando herramientas de analisis encuentran firmas conocidas de malware (como <code>WORM_PAYLOAD_SIMULATION</code>) en archivos del sistema o compartidos</li>
+<li><strong>Escenario real</strong>: Un administrador de red detecta que un servidor esta intentando conectarse a cientos de IPs en la subred cada minuto. Un IDS reporta trafico SMB anormal. Se activa la contencion inmediata del gusano</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Segmentacion de red contiene la propagacion</strong>: Si la red esta dividida en segmentos (VLANs) con firewalls entre ellos, un gusano propagandose en un segmento no puede alcanzar los demas, limitando el dano alarea de propagacion</li>
+<li><strong>IDS/IPS detecta patrones de escaneo</strong>: Los sistemas de deteccion de intrusiones identifican el patron de escaneo de puertos caracteristico de los gusanos (multiples conexiones TCP a puertos comunes en corto tiempo) y generan alertas que permiten la contencion temprana</li>
+<li><strong>Parchado elimina el vector de explotacion</strong>: La mayoria de gusanos explotan vulnerabilidades conocidas con parches disponibles. El parchado oportuno (control CIS 7) elimina la superficie de ataque, haciendo que el gusano no pueda propagarse</li>
+<li><strong>Monitoreo reconstruye la cadena de infeccion</strong>: La reconstruccion del grafo de propagacion permite identificar el nodo cero (primer infectado) y trazar la ruta completa de la infeccion, facilitando la limpieza sistematica</li>
+</ul>
+<h3>Ejercicios practicos de defensa</h3>
+<ol>
+<li><strong>Simular y observar la propagacion</strong>: Ejecuta <code>python worm.py</code> y observa como el gusano se replica en 3 rondas a traves de los directorios compartidos (shareA, shareB, shareC). Documenta el patron de propagacion: cuantos nodos se infectaron en cada ronda y por que el crecimiento es exponencial</li>
+<li><strong>Reconstruccion forense del grafo</strong>: Ejecuta <code>python monitoreo_de_red.py</code> para detectar todas las copias del gusano. Analiza el grafo de propagacion generado: identifica el nodo cero, las rutas de transmision, y que hashes corresponden a cada copia. Compara los hashes para confirmar que todas las copias son identicas</li>
+<li><strong>Evaluacion de segmentacion de red</strong>: Basandote en el patron de propagacion observado, diseña una arquitectura de red segmentada para una oficina con 3 departamentos (ventas, TI, contabilidad). Define que segmentos necesitan comunicarse entre si y donde colocar firewalls para contener un gusano similar al simulado</li>
+</ol>
+<hr />
+<blockquote>
+<p><strong>Disclaimer:</strong> Este modulo es estrictamente educativo. Los archivos generados son texto plano inofensivo. No se realizan conexiones de red reales ni se explotan vulnerabilidades verdaderas.</p>
+</blockquote>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Módulo 08 — Botnet</h1>
+<h2>📖 1. Definición Teórica y Contexto Histórico</h2>
+<p>Una <strong>botnet</strong> es una red de dispositivos comprometidos ("bots" o "zombies") controlados
+remotamente por un atacante (botmaster) mediante un servidor <strong>Command &amp; Control (C2)</strong>.
+Cada dispositivo infectado ejecuta órdenes del atacante sin conocimiento del usuario
+legítimo, convirtiéndose en un nodo de una infraestructura distribuida de ataque.</p>
+<h3>Protocolos de C2</h3>
+<table>
+<thead>
+<tr>
+<th>Protocolo</th>
+<th>Características</th>
+<th>Ejemplo histórico</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IRC</td>
+<td>Simple, bajo perfil, canales</td>
+<td>GTBot (2000s)</td>
+</tr>
+<tr>
+<td>HTTP/HTTPS</td>
+<td>Se mezcla con tráfico normal</td>
+<td>Zeus (2007)</td>
+</tr>
+<tr>
+<td>P2P</td>
+<td>Sin punto central, resiliente</td>
+<td>Storm Worm (2007)</td>
+</tr>
+<tr>
+<td>DNS</td>
+<td>Evade firewalls estrictos</td>
+<td>BredoLab (2009)</td>
+</tr>
+</tbody>
+</table>
+<h3>Ejemplos históricos</h3>
+<table>
+<thead>
+<tr>
+<th>Año</th>
+<th>Botnet</th>
+<th>Impacto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2007</td>
+<td>Cutwail</td>
+<td>Generaba ~50% del spam global en su punto máximo</td>
+</tr>
+<tr>
+<td>2009</td>
+<td>BredoLab</td>
+<td>30 millones de PCs, usaba DNS para canal C2</td>
+</tr>
+<tr>
+<td>2014</td>
+<td>Emotet</td>
+<td>Botnet bancaria, redistribuía TrickBot y Ryuk (2014-2021)</td>
+</tr>
+<tr>
+<td>2016</td>
+<td>Mirai</td>
+<td>Infectó cámaras IoT, atacó Dyn DNS con 1.2 Tbps de tráfico</td>
+</tr>
+</tbody>
+</table>
+<h3>Tipos de ataque DDoS</h3>
+<ul>
+<li><strong>UDP Flood</strong> — Inunda con paquetes UDP aleatorios al puerto objetivo.</li>
+<li><strong>HTTP Flood</strong> — Solicitudes HTTP/HTTPS masivas que saturan el servidor web.</li>
+<li><strong>SYN Flood</strong> — Abre conexiones TCP sin completar el handshake three-way.</li>
+<li><strong>DNS Amplification</strong> — Usa servidores DNS como amplificador de tráfico spoofado.</li>
+</ul>
+<h2>⚙️ 2. Mecanismo de Funcionamiento Tecnológico (Flujo Lógico)</h2>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">PROPAGACIÓN</span><span class="p">:</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">botmaster</span><span class="w"> </span><span class="n">compromete</span><span class="w"> </span><span class="n">dispositivos</span><span class="w"> </span><span class="n">mediante</span><span class="w"> </span><span class="n">phishing</span><span class="p">,</span><span class="w"> </span><span class="nb">exp</span><span class="n">loits</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="n">IoT</span><span class="w"> </span><span class="n">desprotegido</span><span class="mf">.</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">CONEXIÓN</span><span class="w"> </span><span class="n">C2</span><span class="p">:</span><span class="w"> </span><span class="n">Cada</span><span class="w"> </span><span class="n">bot</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">conecta</span><span class="w"> </span><span class="n">al</span><span class="w"> </span><span class="n">servidor</span><span class="w"> </span><span class="n">C2</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">registra</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">canales</span><span class="w"> </span><span class="p">(</span><span class="n">IRC</span><span class="o">/</span><span class="n">HTTP</span><span class="p">)</span><span class="mf">.</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">RECONOCIMIENTO</span><span class="p">:</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">botmaster</span><span class="w"> </span><span class="n">identifica</span><span class="w"> </span><span class="n">capacidades</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">cada</span><span class="w"> </span><span class="n">bot</span><span class="w"> </span><span class="p">(</span><span class="n">CPU</span><span class="p">,</span><span class="w"> </span><span class="n">ancho</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">banda</span><span class="p">,</span><span class="w"> </span><span class="n">OS</span><span class="p">)</span><span class="mf">.</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">COMANDOS</span><span class="p">:</span><span class="w"> </span><span class="n">Se</span><span class="w"> </span><span class="n">envían</span><span class="w"> </span><span class="n">órdenes</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">canales</span><span class="p">:</span><span class="w"> </span><span class="n">SCAN</span><span class="p">,</span><span class="w"> </span><span class="n">ATTACK</span><span class="p">,</span><span class="w"> </span><span class="n">UPDATE</span><span class="p">,</span><span class="w"> </span><span class="n">SLEEP</span><span class="p">,</span><span class="w"> </span><span class="n">EXFIL</span><span class="mf">.</span>
+<span class="mf">5.</span><span class="w"> </span><span class="n">EJECUCIÓN</span><span class="w"> </span><span class="n">DDoS</span><span class="p">:</span><span class="w"> </span><span class="n">Los</span><span class="w"> </span><span class="n">bots</span><span class="w"> </span><span class="n">coordinan</span><span class="w"> </span><span class="n">ataques</span><span class="w"> </span><span class="n">simultáneos</span><span class="w"> </span><span class="kr">cont</span><span class="n">ra</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">objetivo</span><span class="mf">.</span>
+<span class="mf">6.</span><span class="w"> </span><span class="n">MÉTRICAS</span><span class="p">:</span><span class="w"> </span><span class="n">Se</span><span class="w"> </span><span class="n">miden</span><span class="w"> </span><span class="n">paquetes</span><span class="o">/</span><span class="n">segundo</span><span class="p">,</span><span class="w"> </span><span class="n">ancho</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">banda</span><span class="w"> </span><span class="n">consumido</span><span class="p">,</span><span class="w"> </span><span class="n">duración</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">ataque</span><span class="mf">.</span>
+<span class="mf">7.</span><span class="w"> </span><span class="n">PERSISTENCIA</span><span class="p">:</span><span class="w"> </span><span class="n">Los</span><span class="w"> </span><span class="n">bots</span><span class="w"> </span><span class="n">mantienen</span><span class="w"> </span><span class="n">heartbeat</span><span class="w"> </span><span class="n">periódico</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">confirmar</span><span class="w"> </span><span class="n">disponibilidad</span><span class="mf">.</span>
+</code></pre></div>
+
+<h2>🔺 3. Alineación con la Tríada CIA</h2>
+<ul>
+<li><strong>Pilar Afectado: Disponibilidad (Availability)</strong></li>
+<li><strong>Justificación Técnica:</strong> Un ataque DDoS orquestado por una botnet satura los recursos
+  de la víctima (CPU, memoria, ancho de banda), impidiendo que servicios legítimos
+  respondan a usuarios reales. La disponibilidad se pierde cuando el sistema deja de
+  poder prestar el servicio para el que fue diseñado. Una botnet de 10,000 bots con
+  1 Mbps cada uno genera 10 Gbps de tráfico malicioso, suficiente para colapsar
+  la mayoría de los servidores.</li>
+</ul>
+<h2>🛡️ 4. Mitigación bajo la Norma de Controles CIS</h2>
+<ul>
+<li>
+<p><strong>CIS Control 13: Monitoreo y Defensa de Red:</strong>
+  Implementa monitoreo continuo de tráfico de red para detectar patrones anómalos
+  como beaconing C2, picos de tráfico saliente, y conexiones a destinos conocidos
+  maliciosos.</p>
+</li>
+<li>
+<p><strong>Implementación Práctica en Laboratorio:</strong>
+  <code>mitigacion_ddos_filtros.py</code> analiza el archivo <code>bot_config.json</code> generado por la simulación,
+  extrae IPs, canales C2 y métricas de ataque, mostrando cómo un analista SOC
+  correlacionaría estos artefactos para identificar la infraestructura de la botnet.</p>
+</li>
+</ul>
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Tráfico C2 periódico (beaconing):</strong> Cuando se detecta un host que realiza
+  conexiones regulares a un mismo destino IP o dominio cada pocos segundos
+  (heartbeat), es un indicador fuerte de un bot registrado en una botnet.</li>
+<li><strong>Picos de tráfico saliente inusuales:</strong> Un aumento repentino de tráfico
+  saliente desde un servidor o estación de trabajo que normalmente no genera
+  tráfico externo sugiere que está participando en un ataque DDoS o exfiltrando
+  datos.</li>
+<li><strong>Alertas de DDoS en capa 7:</strong> Cuando un servidor web reporta saturación de
+  conexiones HTTP/HTTPS con patrones repetitivos (mismo User-Agent, mismo
+  intervalo), activar la inspección de hosts internos que puedan ser bots.</li>
+<li><strong>Detección de canales C2 conocidos:</strong> Si el IDS/IPS identifica tráfico hacia
+  IPs o dominios en listas de threat intelligence (Feodo Tracker, AlienVault OTX),
+  activar el análisis forense de los hosts involucrados.</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Visibilidad del tráfico:</strong> El monitoreo continuo de red (CIS Control 13)
+  proporciona la capacidad de ver patrones de tráfico que de otra forma pasarían
+  desapercibidos. La correlación de flujos de red permite identificar la
+  infraestructura C2 sin depender de firmas antivirus.</li>
+<li><strong>Desarticulación de la cadena de mando:</strong> Al detectar y bloquear las
+  comunicaciones C2, se corta el canal entre el botmaster y los bots, eliminando
+  la capacidad del atacante de enviar comandos de ataque DDoS o exfiltración.</li>
+<li><strong>Principio de defensa en profundidad:</strong> La combinación de monitoreo de
+  tráfico, análisis de logs y correlación de eventos permite detectar la botnet
+  en múltiples capas, haciendo que la evasión sea significativamente más difícil.</li>
+</ul>
+<h3>Ejercicios prácticos de defensa</h3>
+<ol>
+<li><strong>Análisis de artefactos C2:</strong> Ejecuta <code>botnet.py</code> y luego analiza el
+   archivo <code>bot_config.json</code> con <code>mitigacion_ddos_filtros.py</code>. Observa las IPs,
+   canales y métricas extraídas. Intenta identificar qué patrones de beaconing
+   indicarían un bot activo en un entorno real.</li>
+<li><strong>Correlación de logs:</strong> Revisa <code>botnet_c2.log</code> y busca comandos del tipo
+   <code>ATTACK</code> o <code>SCAN</code>. En un entorno real, estos registros se correlacionarían
+   con alertas de IDS para determinar el momento exacto del ataque y los bots
+   participantes.</li>
+<li><strong>Evaluación de impacto:</strong> Con las métricas generadas (paq/seg, Mbps, bots),
+   calcula el ancho de banda total del ataque simulado. Compara con la capacidad
+   de enlace de tu red para dimensionar la mitigación necesaria.</li>
+</ol>
+<h2>🚀 5. Detalles de la Simulación Educativa (Python)</h2>
+<h3>Qué hace <code>botnet.py</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">Genera</span><span class="w"> </span><span class="n">una</span><span class="w"> </span><span class="kr">list</span><span class="n">a</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="mf">15</span><span class="o">-</span><span class="mf">40</span><span class="w"> </span><span class="n">bots</span><span class="w"> </span><span class="n">ficticios</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">IPs</span><span class="p">,</span><span class="w"> </span><span class="n">puertos</span><span class="p">,</span><span class="w"> </span><span class="n">OS</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">estados</span><span class="w"> </span><span class="n">aleatorios</span><span class="mf">.</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">Asigna</span><span class="w"> </span><span class="n">cada</span><span class="w"> </span><span class="n">bot</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">uno</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="n">canales</span><span class="w"> </span><span class="n">IRC</span><span class="w"> </span><span class="n">simulados</span><span class="w"> </span><span class="p">(</span><span class="err">#</span><span class="kr">cont</span><span class="n">rol</span><span class="p">,</span><span class="w"> </span><span class="err">#</span><span class="n">attacks</span><span class="p">,</span><span class="w"> </span><span class="err">#</span><span class="n">loot</span><span class="p">,</span><span class="w"> </span><span class="err">#</span><span class="n">beacon</span><span class="p">)</span><span class="mf">.</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">Simula</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">ejecución</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="n">comandos</span><span class="w"> </span><span class="n">C2</span><span class="p">:</span><span class="w"> </span><span class="n">SCAN</span><span class="p">,</span><span class="w"> </span><span class="n">ATTACK</span><span class="p">,</span><span class="w"> </span><span class="n">UPDATE</span><span class="p">,</span><span class="w"> </span><span class="n">SLEEP</span><span class="p">,</span><span class="w"> </span><span class="n">EXFIL</span><span class="p">,</span><span class="w"> </span><span class="n">BEACON</span><span class="mf">.</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">Calcula</span><span class="w"> </span><span class="n">métricas</span><span class="w"> </span><span class="n">simuladas</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">DDoS</span><span class="p">:</span><span class="w"> </span><span class="n">tipo</span><span class="p">,</span><span class="w"> </span><span class="n">bots</span><span class="w"> </span><span class="n">participantes</span><span class="p">,</span><span class="w"> </span><span class="n">paq</span><span class="o">/</span><span class="n">seg</span><span class="p">,</span><span class="w"> </span><span class="n">Mbps</span><span class="mf">.</span>
+<span class="mf">5.</span><span class="w"> </span><span class="n">Guarda</span><span class="w"> </span><span class="kr">to</span><span class="n">da</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">configuración</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">bot_config</span><span class="mf">.</span><span class="n">json</span><span class="w"> </span><span class="p">(</span><span class="kr">list</span><span class="n">a</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">bots</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">métricas</span><span class="p">)</span><span class="mf">.</span>
+<span class="mf">6.</span><span class="w"> </span><span class="n">Registra</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">comandos</span><span class="w"> </span><span class="n">C2</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">botnet_c2</span><span class="mf">.</span><span class="nb">log</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">timestamps</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">canales</span><span class="mf">.</span>
+<span class="mf">7.</span><span class="w"> </span><span class="n">Muestra</span><span class="w"> </span><span class="n">resumen</span><span class="w"> </span><span class="n">visual</span><span class="w"> </span><span class="n">paso</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">paso</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">colores</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">consola</span><span class="mf">.</span>
+</code></pre></div>
+
+<h3>Qué hace <code>mitigacion_ddos_filtros.py</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">Escanea</span><span class="w"> </span><span class="n">directorio</span><span class="w"> </span><span class="n">actual</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">busca</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">bot_config</span><span class="mf">.</span><span class="n">json</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">botnet_c2</span><span class="mf">.</span><span class="nb">log</span><span class="mf">.</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">Analiza</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="kr">cont</span><span class="n">enido</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">JSON</span><span class="p">:</span><span class="w"> </span><span class="n">nombre</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">red</span><span class="p">,</span><span class="w"> </span><span class="n">servidor</span><span class="w"> </span><span class="n">C2</span><span class="p">,</span><span class="w"> </span><span class="kr">to</span><span class="n">tal</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">bots</span><span class="mf">.</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">Muestra</span><span class="w"> </span><span class="n">las</span><span class="w"> </span><span class="n">IPs</span><span class="p">,</span><span class="w"> </span><span class="n">canales</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">estados</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">bots</span><span class="w"> </span><span class="n">encontrados</span><span class="mf">.</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">Ofrece</span><span class="w"> </span><span class="n">eliminación</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="kr">to</span><span class="n">dos</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">artefactos</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">simulación</span><span class="mf">.</span>
+<span class="mf">5.</span><span class="w"> </span><span class="n">Registra</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">hallazgo</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="kd">def</span><span class="n">ensa_botnet</span><span class="mf">.</span><span class="nb">log</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">auditoría</span><span class="mf">.</span>
+</code></pre></div>
+
+<hr />
+<h2>Ejecución</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Generar archivos de laboratorio</span>
+python<span class="w"> </span>core/lab_setup.py
+
+<span class="c1"># Ejecutar simulación</span>
+python<span class="w"> </span>modulos/08_botnet/botnet.py
+
+<span class="c1"># Ver ayuda</span>
+python<span class="w"> </span>modulos/08_botnet/botnet.py<span class="w"> </span>--help
+
+<span class="c1"># Limpiar artefactos de la simulación</span>
+python<span class="w"> </span>modulos/08_botnet/botnet.py<span class="w"> </span>--clean
+
+<span class="c1"># Ejecutar defensa (detectar y limpiar)</span>
+python<span class="w"> </span>modulos/08_botnet/mitigacion_ddos_filtros.py
+</code></pre></div>
+
+<blockquote>
+<p><strong>NOTA:</strong> No se generan conexiones de red reales ni se contactan servidores externos.
+Todos los datos son ficticios y operan dentro de <code>directorio_pruebas/</code>.</p>
+</blockquote>
+</body>
+</html>

@@ -1,21 +1,5 @@
 # Changelog
 
-## [3.2.3] - 2026-07-14
-
-### Added
-- nuevo renderizador de guias con Text widget + tags estilizados (fondo crema)
-- etiquetado semantico de markdown: encabezados, negritas, codigo inline, bloques de codigo
-
-### Changed
-- boton "Readme" renombrado a "Guia" (espanol)
-- README se renderiza con Text widget directamente, sin pasar por HTML/tkhtmlview
-- fondo de documentacion cambiado de blanco puro (#FFFFFF) a crema suave (#FAF7F2)
-
-### Removed
-- dependencia `tkhtmlview` de requirements.txt y documentacion
-- funcion `md_to_html()` (obsoleta por el nuevo renderizador directo)
-- import de HTMLLabel en gui/main.py
-
 ## [3.2.0] - 2026-07-14
 
 ### Added

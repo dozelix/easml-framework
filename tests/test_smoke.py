@@ -45,7 +45,7 @@ class TestArchivosExistentes(unittest.TestCase):
         self.assertTrue(os.path.isfile(path), f"No existe: {path}")
 
     def test_gui_config_exists(self):
-        path = os.path.join(_REPO_ROOT, "gui", "config.py")
+        path = os.path.join(_REPO_ROOT, "app", "config.py")
         self.assertTrue(os.path.isfile(path), f"No existe: {path}")
 
     def test_gui_styles_exists(self):

@@ -3,7 +3,8 @@ import re
 import tkinter as tk
 import webbrowser
 from collections import Counter
-from gui.config import MODULOS, NOMBRES_DEFENSA
+from tkhtmlview import HTMLLabel
+from app.config import MODULOS, NOMBRES_DEFENSA
 from gui.styles import *
 
 
@@ -11,7 +12,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def _card(parent, **kwargs):
-    card = tk.Frame(parent, bg=BG_PANEL, highlightbackground=BORDE,
+    card = tk.Frame(parent, bg=BG_CARD, highlightbackground=BORDE_CARD,
                     highlightthickness=1, **kwargs)
     return card
 
@@ -56,9 +57,9 @@ def build_dashboard(parent):
         stats_row.grid_columnconfigure(i, weight=1, uniform="stats")
         c = _card(stats_row, padx=18, pady=14)
         c.grid(row=0, column=i, sticky="nsew", padx=(0 if i == 0 else 4, 0 if i == 2 else 4))
-        tk.Label(c, text=tit, bg=BG_PANEL, fg=TEXTO_DIM,
+        tk.Label(c, text=tit, bg=BG_CARD, fg=TEXTO_DIM,
                  font=FUENTE_SM).pack(anchor="w")
-        tk.Label(c, text=val, bg=BG_PANEL, fg=color,
+        tk.Label(c, text=val, bg=BG_CARD, fg=color,
                  font=FUENTE_STAT).pack(anchor="w", pady=(4, 0))
 
     _separador(parent)
@@ -77,10 +78,10 @@ def build_dashboard(parent):
         cia_row.grid_columnconfigure(i, weight=1, uniform="cia")
         c = _card(cia_row, padx=16, pady=14)
         c.grid(row=0, column=i, sticky="nsew", padx=(0 if i == 0 else 4, 0 if i == 2 else 4))
-        tk.Label(c, text=cia_name, bg=BG_PANEL, fg=TEXTO_DIM,
+        tk.Label(c, text=cia_name, bg=BG_CARD, fg=TEXTO_DIM,
                  font=FUENTE_SM).pack(anchor="w")
         tk.Label(c, text=str(cia_counter.get(cia_name, 0)),
-                 bg=BG_PANEL, fg=TEXTO, font=FUENTE_STAT).pack(anchor="w", pady=(4, 0))
+                 bg=BG_CARD, fg=TEXTO, font=FUENTE_STAT).pack(anchor="w", pady=(4, 0))
 
 
 def build_tutorial(parent):
@@ -91,7 +92,7 @@ def build_tutorial(parent):
     intro = _card(parent, padx=18, pady=14)
     intro.pack(fill=tk.X, pady=(0, 20))
     tk.Label(intro, text="Bienvenido! Este laboratorio te permite ejecutar 14 tipos\nde amenazas de forma segura en un entorno aislado.",
-             bg=BG_PANEL, fg=TEXTO, font=FUENTE, justify="left").pack(anchor="w")
+             bg=BG_CARD, fg=TEXTO, font=FUENTE, justify="left").pack(anchor="w")
 
     _separador(parent)
     tk.Label(parent, text="FLUJO DE TRABAJO", bg=BG, fg=TEXTO,
@@ -105,7 +106,7 @@ def build_tutorial(parent):
     ]:
         c = _card(parent, padx=16, pady=10)
         c.pack(fill=tk.X, pady=3)
-        tk.Label(c, text=paso, bg=BG_PANEL, fg=color,
+        tk.Label(c, text=paso, bg=BG_CARD, fg=color,
                  font=FUENTE_BOLD).pack(anchor="w")
 
     _separador(parent)
@@ -128,7 +129,7 @@ def build_modulo_info(parent, index: int):
 
     sim_existe = os.path.exists(os.path.join(dir_modulo, f"{script}.py"))
     def_existe = os.path.exists(os.path.join(dir_modulo, f"{arch_defensa}.py"))
-    md_existe = os.path.exists(os.path.join(dir_modulo, "README.md"))
+    md_existe = os.path.exists(os.path.join(dir_modulo, "guia.html"))
 
     _titulo(parent, "INFORMACION DEL MODULO")
 
@@ -136,9 +137,9 @@ def build_modulo_info(parent, index: int):
     cia_card.pack(fill=tk.X, pady=(0, 16))
 
     color_cia = {"Confidencialidad": CYAN, "Integridad": MORADO, "Disponibilidad": NARANJA}.get(cia, TEXTO)
-    tk.Label(cia_card, text="PILAR CIA", bg=BG_PANEL, fg=TEXTO_DIM,
+    tk.Label(cia_card, text="PILAR CIA", bg=BG_CARD, fg=TEXTO_DIM,
              font=FUENTE_SM).pack(anchor="w")
-    tk.Label(cia_card, text=cia, bg=BG_PANEL, fg=color_cia,
+    tk.Label(cia_card, text=cia, bg=BG_CARD, fg=color_cia,
              font=FUENTE_H2).pack(anchor="w", pady=(4, 0))
 
     _separador(parent)
@@ -148,13 +149,13 @@ def build_modulo_info(parent, index: int):
     for label, existe in [
         (f"Simulacion: {script}.py", sim_existe),
         (f"Defensa:    {arch_defensa}.py", def_existe),
-        ("Documentacion (README.md)", md_existe),
+        ("Guia (guia.html)", md_existe),
     ]:
         c = _card(parent, padx=16, pady=8)
         c.pack(fill=tk.X, pady=2)
         fg_color = VERDE if existe else ROJO
         status = "[OK]" if existe else "[--]"
-        lbl = tk.Label(c, text=f"{status}  {label}", bg=BG_PANEL, fg=fg_color,
+        lbl = tk.Label(c, text=f"{status}  {label}", bg=BG_CARD, fg=fg_color,
                        font=FUENTE_BOLD, anchor="w")
         lbl.pack(fill=tk.X)
 
@@ -170,95 +171,30 @@ def build_modulo_info(parent, index: int):
         link.bind("<Leave>", lambda e: link.configure(fg=ACCENT))
 
 
-def leer_readme(index: int) -> str | None:
+def leer_guia(index: int) -> str | None:
     if index < 0 or index >= len(MODULOS):
         return None
     num, nombre = MODULOS[index][0], MODULOS[index][1]
-    readme_path = os.path.join(ROOT, 'modulos', nombre, "README.md")
-    if os.path.exists(readme_path):
-        with open(readme_path, "r", encoding="utf-8") as f:
+    path = os.path.join(ROOT, 'modulos', nombre, "guia.html")
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
             return f.read()
     return None
 
 
-def _insert_md_text(text: tk.Text, md: str):
-    text.tag_configure("h1", font=FUENTE_H1, foreground=ACCENT, spacing1=10, spacing3=6)
-    text.tag_configure("h2", font=FUENTE_H2, foreground=ACCENT, spacing1=8, spacing3=4)
-    text.tag_configure("h3", font=("JetBrains Mono", 11, "bold"), foreground=ACCENT, spacing1=6, spacing3=3)
-    text.tag_configure("bold", font=FUENTE_BOLD)
-    text.tag_configure("code", background=BG_HOVER, foreground=ROJO, font=FUENTE)
-    text.tag_configure("code_block", background="#1A1A1A", foreground="#9ECE6A",
-                       font=("JetBrains Mono", 9), spacing1=4, spacing3=4,
-                       lmargin1=14, lmargin2=14, rmargin=14)
-    text.tag_configure("bullet", lmargin1=14, lmargin2=28)
-    text.tag_configure("link", foreground=ACCENT, underline=True)
-
-    lines = md.split("\n")
-    in_code = False
-    code_buffer = []
-
-    for line in lines:
-        if line.startswith("```"):
-            if in_code:
-                code_buffer.append(line)
-                text.insert(tk.END, "\n".join(code_buffer) + "\n", "code_block")
-                code_buffer.clear()
-                in_code = False
-            else:
-                in_code = True
-                code_buffer = []
-            continue
-
-        if in_code:
-            code_buffer.append(line)
-            continue
-
-        if line.startswith("# "):
-            text.insert(tk.END, line[2:].strip() + "\n", "h1")
-        elif line.startswith("## "):
-            text.insert(tk.END, line[3:].strip() + "\n", "h2")
-        elif line.startswith("### "):
-            text.insert(tk.END, line[4:].strip() + "\n", "h3")
-        elif line.startswith("- ") or line.startswith("* "):
-            text.insert(tk.END, line[2:].strip() + "\n", "bullet")
-        elif "**" in line:
-            parts = re.split(r"(\*\*.*?\*\*)", line)
-            for p in parts:
-                if p.startswith("**") and p.endswith("**"):
-                    text.insert(tk.END, p[2:-2], "bold")
-                else:
-                    text.insert(tk.END, p)
-            text.insert(tk.END, "\n")
-        elif "`" in line:
-            parts = re.split(r"(`[^`]+`)", line)
-            for p in parts:
-                if p.startswith("`") and p.endswith("`"):
-                    text.insert(tk.END, p[1:-1], "code")
-                else:
-                    text.insert(tk.END, p)
-            text.insert(tk.END, "\n")
-        elif line.strip():
-            text.insert(tk.END, line + "\n")
-        else:
-            text.insert(tk.END, "\n")
-
-    text.configure(state=tk.DISABLED)
+def _extraer_body(html: str) -> str:
+    m = re.search(r'<body[^>]*>(.*?)</body>', html, re.DOTALL)
+    return m.group(1) if m else html
 
 
-def build_readme(parent, md_text: str):
+def build_guia(parent, html_content: str):
     _limpiar(parent)
+    body = _extraer_body(html_content)
 
-    frame = tk.Frame(parent, bg=BG, highlightbackground=BORDE, highlightthickness=1)
+    frame = tk.Frame(parent, bg=BG, highlightbackground=BORDE_CARD,
+                     highlightthickness=1)
     frame.pack(fill=tk.BOTH, expand=True)
 
-    text = tk.Text(frame, bg="#FAF7F2", fg=TEXTO, font=FUENTE,
-                   wrap=tk.WORD, relief="flat", padx=14, pady=10,
-                   highlightthickness=0, borderwidth=0)
-    text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-
-    scroll = tk.Scrollbar(frame, command=text.yview, bg=BG_HOVER,
-                          troughcolor=BG, relief="flat", borderwidth=0)
-    scroll.pack(side=tk.RIGHT, fill=tk.Y)
-    text.configure(yscrollcommand=scroll.set)
-
-    _insert_md_text(text, md_text)
+    lbl = HTMLLabel(frame, html=body, background=BG_CARD,
+                    font=FUENTE, padx=10, pady=10)
+    lbl.pack(fill=tk.BOTH, expand=True)

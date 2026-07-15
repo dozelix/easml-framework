@@ -9,7 +9,7 @@ Laboratorio educativo de malware en Python con 14 módulos independientes, cada 
 ```bash
 python core/lab_setup.py              # Genera 12 archivos de prueba en directorio_pruebas/
 python core/lab_setup.py --clean      # Limpia artefactos (lab_data/logs, output, samples, temp + directorio_pruebas)
-python gui.py                         # GUI funcional (requiere tkinter, pillow, markdown)
+python gui.py                         # GUI funcional (requiere tkinter, pillow, tkhtmlview, markdown)
 python -m unittest discover tests     # 38 tests (unittest, no pytest)
 python -m unittest tests.test_common  # Solo test_common (paths)
 python -m unittest tests.test_smoke   # Smoke tests: --help en cada script
@@ -65,7 +65,7 @@ Smoke tests solo verifican que `--help` funcione. No hay tests de integración n
 ## Requisitos
 
 - **Python 3.10+**, **tkinter** (incluido en python.org installer Windows/macOS, `apt install python3-tk` en Linux)
-- `pip install pillow markdown`
+- `pip install pillow tkhtmlview markdown`
 
 ## Seguridad
 

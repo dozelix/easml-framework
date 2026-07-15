@@ -1,4 +1,5 @@
 # Dependencias necesarias para la GUI del Laboratorio de Malware Educativo
 
 pillow
+tkhtmlview
 markdown

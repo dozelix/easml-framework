@@ -6,12 +6,11 @@ from tkinter import ttk, messagebox
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _DIR_RAIZ)
 
-from gui.config import MODULOS, NOMBRES_DEFENSA
-from gui.laboratorio import DESAFIOS_POR_MODULO
+from app.config import MODULOS, NOMBRES_DEFENSA
+from app.laboratorio import DESAFIOS_POR_MODULO
+from app.runner import ScriptRunner
 from gui.styles import *
-from gui.views import build_dashboard, build_tutorial, build_modulo_info, build_readme, leer_readme
-
-from gui.runner import ScriptRunner
+from gui.views import build_dashboard, build_tutorial, build_modulo_info, build_guia, leer_guia
 from gui.desafio import DesafioWindow
 
 try:
@@ -122,8 +121,6 @@ class LaboratorioGUI(tk.Tk):
         self.content_frame = tk.Frame(der, bg=BG)
         self.content_frame.pack(fill=tk.BOTH, expand=True, padx=14, pady=10)
 
-        # README rendering (uses Text widget — no HTMLLabel)
-
         # Action buttons
         bacc = tk.Frame(der, bg=BG, height=48)
         bacc.pack(fill=tk.X)
@@ -229,12 +226,12 @@ class LaboratorioGUI(tk.Tk):
         self._mostrar_widgets(build_modulo_info, index)
 
     def _mostrar_readme(self, index: int):
-        md = leer_readme(index)
-        if md is None:
-            self._mostrar_widgets(lambda p: tk.Label(p, text="Este modulo no tiene documentacion aun.",
+        html = leer_guia(index)
+        if html is None:
+            self._mostrar_widgets(lambda p: tk.Label(p, text="Este modulo no tiene guia disponible.",
                                      bg=BG, fg=TEXTO_DIM, font=FUENTE).pack(anchor="w"))
             return
-        self._mostrar_widgets(build_readme, md)
+        self._mostrar_widgets(build_guia, html)
         self.viendo_readme = True
 
     def _restaurar(self):

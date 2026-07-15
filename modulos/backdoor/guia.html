@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Modulo 06 - Puerta Trasera (Backdoor)</h1>
+<h2>📖 1. Definicion Teorica y Contexto Historico</h2>
+<p>Una <strong>puerta trasera</strong> (backdoor) es un mecanismo de acceso remoto que permite a un atacante comunicarse con un sistema comprometido sin pasar por los canales de autenticacion normales. A diferencia de un troyano, que se centra en la entrega inicial, la backdoor se enfoca en el <strong>mantenimiento de acceso</strong> a largo plazo.</p>
+<h3>Concepto fundamental</h3>
+<p>Una backdoor actua como una "puerta de servicio" en el sistema comprometido:</p>
+<ul>
+<li><strong>Canal de comunicacion</strong>: Establece una conexion persistente con el servidor de comando y control (C2) del atacante.</li>
+<li><strong>Autenticacion oculta</strong>: Permite al atacante autenticarse sin credenciales legitimas.</li>
+<li><strong>Persistencia</strong>: Sobrevive reinicios y actualizaciones del sistema.</li>
+<li><strong>Evacion</strong>: Utiliza puertos y protocolos que parecen legitimos (HTTPS, DNS).</li>
+</ul>
+<h3>Tipos de backdoors</h3>
+<ul>
+<li><strong>Reverse shell</strong>: La victima se conecta activamente al servidor del atacante, evitando firewalls de entrada.</li>
+<li><strong>Bind shell</strong>: Abre un puerto en la victima al que el atacante se conecta.</li>
+<li><strong>Web shell</strong>: Script web (PHP, ASP) que permite ejecutar comandos via HTTP.</li>
+<li><strong>C2 (Command and Control)</strong>: Framework centralizado que gestiona multiples victimsas.</li>
+</ul>
+<h3>Ejemplos historicos relevantes</h3>
+<table>
+<thead>
+<tr>
+<th>Ano</th>
+<th>Nombre</th>
+<th>Tipo</th>
+<th>Descripcion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2010</td>
+<td>Stuxnet</td>
+<td>Rootkit + C2</td>
+<td>Control de centrifugadoras iranies via PLC</td>
+</tr>
+<tr>
+<td>2016</td>
+<td>VPNFilter</td>
+<td>C2 multi-etapa</td>
+<td>Comprometio 500.000+ dispositivos IoT en 54 paises</td>
+</tr>
+<tr>
+<td>2019</td>
+<td>Maze</td>
+<td>Ransomware + C2</td>
+<td>Exfiltracion de datos antes de cifrar (doble extortion)</td>
+</tr>
+<tr>
+<td>2020</td>
+<td>SolarWinds Sunburst</td>
+<td>Supply chain + C2</td>
+<td>Backdoor en actualizaciones de Orion; comprometio agencias de EEUU</td>
+</tr>
+<tr>
+<td>2021</td>
+<td>Cobalt Strike</td>
+<td>Framework C2</td>
+<td>Herramienta legitima usada como backdoor por atacantes</td>
+</tr>
+</tbody>
+</table>
+<h3>SolarWinds: el ejemplo mas devastador</h3>
+<p>En diciembre de 2020, se descubrio que el grupo APT29 (Cozy Bear, atribuido a Russia) comprometio la cadena de suministro de SolarWinds:</p>
+<ol>
+<li>Inyectaron codigo malicioso en la actualizacion de Orion (SUNBURST).</li>
+<li>18.000+ organizaciones instalaron la actualizacion comprometida.</li>
+<li>Solo seleccionaron ~100 objetivos de alto valor (agencias gubernamentales).</li>
+<li>La backdoor permanecio oculta durante 9 meses.</li>
+<li>Utilizaron HTTPS para comunicarse con el C2, camuflado como trafico legitimo.</li>
+</ol>
+<h2>⚙️ 2. Mecanismo de Funcionamiento Tecnologico (Flujo Logico)</h2>
+<p>El flujo tipico de una backdoor con C2 se describe en los siguientes pasos:</p>
+<ol>
+<li>
+<p><strong>Instalacion</strong>: El atacante obtiene acceso inicial (phishing, exploit, supply chain).</p>
+</li>
+<li>
+<p><strong>Implantacion</strong>: Instala el implant backdoor en el sistema victim.</p>
+</li>
+<li>
+<p><strong>Beacon</strong>: El implante establece una conexion periodica (heartbeat) con el servidor C2:
+   <code>[Implant] ──── heartbeat (30s) ────&gt; [C2 Server]
+   [Implant] &lt;─── comando ──────────── [C2 Server]</code></p>
+</li>
+<li>
+<p><strong>Comando</strong>: El atacante envia instrucciones a traves del C2:</p>
+</li>
+<li><code>shell</code>: Abrir reverse shell interactiva</li>
+<li><code>download</code>: Descargar archivos del sistema victim</li>
+<li><code>upload</code>: Subir herramientas adicionales</li>
+<li><code>screenshot</code>: Capturar pantalla</li>
+<li>
+<p><code>persist</code>: Instalar persistencia adicional</p>
+</li>
+<li>
+<p><strong>Exfiltracion</strong>: Los datos robados se envian al C2 via el canal cifrado.</p>
+</li>
+<li>
+<p><strong>Movilidad lateral</strong>: El atacante usa el sistema comprometido para llegar a otros sistemas en la red.</p>
+</li>
+</ol>
+<div class="codehilite"><pre><span></span><code><span class="n">graph</span><span class="w"> </span><span class="n">LR</span>
+<span class="w">    </span><span class="n">subgraph</span><span class="w"> </span><span class="s">&quot;Sistema Victima&quot;</span>
+<span class="w">        </span><span class="n">B</span><span class="p">[</span><span class="n">Implant</span><span class="o">/</span><span class="n">Backdoor</span><span class="p">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">RC</span><span class="p">[</span><span class="n">Reverse</span><span class="w"> </span><span class="n">Shell</span><span class="p">]</span>
+<span class="w">        </span><span class="n">B</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">EX</span><span class="p">[</span><span class="n">Exfiltracion</span><span class="p">]</span>
+<span class="w">        </span><span class="n">B</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">DL</span><span class="p">[</span><span class="n">Descarga</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">payload</span><span class="p">]</span>
+<span class="w">    </span><span class="n">end</span>
+<span class="w">    </span><span class="n">subgraph</span><span class="w"> </span><span class="s">&quot;Servidor C2&quot;</span>
+<span class="w">        </span><span class="n">S</span><span class="p">[</span><span class="n">C2</span><span class="w"> </span><span class="n">Server</span><span class="p">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">CM</span><span class="p">[</span><span class="n">Comandos</span><span class="p">]</span>
+<span class="w">        </span><span class="n">S</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">LOG</span><span class="p">[</span><span class="n">Registro</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">sesiones</span><span class="p">]</span>
+<span class="w">    </span><span class="n">end</span>
+
+<span class="w">    </span><span class="n">B</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="s">&quot;HTTPS (heartbeat)&quot;</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">S</span>
+<span class="w">    </span><span class="n">S</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="s">&quot;Respuestas cifradas&quot;</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">B</span>
+<span class="w">    </span><span class="n">S</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="s">&quot;Carga util&quot;</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">DL</span>
+
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">B</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">f66</span><span class="p">,</span><span class="n">stroke</span><span class="o">:</span><span class="err">#</span><span class="mi">333</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">S</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="mf">66f</span><span class="p">,</span><span class="n">stroke</span><span class="o">:</span><span class="err">#</span><span class="mi">333</span>
+</code></pre></div>
+
+<h3>Estrategia de evasion</h3>
+<table>
+<thead>
+<tr>
+<th>Tecnica</th>
+<th>Descripcion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Canales legitimos</td>
+<td>Comunica via HTTPS (443) o DNS (53)</td>
+</tr>
+<tr>
+<td>Jitter</td>
+<td>Varia el intervalo de heartbeat para evitar deteccion temporal</td>
+</tr>
+<tr>
+<td>Encriptacion</td>
+<td>Usa AES-256-GCM o RSA para cifrar el trafico C2</td>
+</tr>
+<tr>
+<td>Domain Fronting</td>
+<td>Se camufla detras de dominios legítimos (CDN)</td>
+</tr>
+<tr>
+<td>DNS over HTTPS</td>
+<td>Oculta las consultas DNS en trafico HTTPS</td>
+</tr>
+</tbody>
+</table>
+<h2>🔺 3. Alineacion con la Triada CIA</h2>
+<ul>
+<li><strong>Pilar Afectado: Confidencialidad (Confidentiality)</strong></li>
+<li><strong>Justificacion Tecnica:</strong> La puerta trasera compromete la confidencialidad de multiples maneras:</li>
+<li><strong>Acceso no autorizado</strong>: El atacante tiene acceso remoto a archivos, procesos y datos del sistema sin autorizacion del propietario.</li>
+<li><strong>Exfiltracion de datos</strong>: A traves del canal C2, el atacante puede copiar archivos sensibles, credenciales, documentos y propiedad intelectual.</li>
+<li><strong>Intercepcion</strong>: Puede capturar teclas presionadas (keylogging), capturar pantallas y registrar comunicaciones.</li>
+<li><strong>Privilegios elevados</strong>: Muchas backdoors obtienen acceso de administrador, dando acceso total a toda la informacion del sistema.</li>
+<li><strong>Movilidad lateral</strong>: Un sistema comprometido se usa como punto de salto para acceder a otros sistemas y redes, multiplicando la exposicion de datos.</li>
+</ul>
+<h2>🛡️ 4. Mitigacion bajo la Norma de Controles CIS</h2>
+<ul>
+<li><strong>CIS Control 4: Seguridad de Dispositivos (Secure Configuration of Enterprise Assets and Software)</strong></li>
+<li><strong>Concepto:</strong> Este control establece la necesidad de configurar y mantener los dispositivos de empresa con configuraciones seguras, incluyendo la deshabilitacion de servicios innecesarios, el cierre de puertos abiertos y la auditoria periodica de configuraciones. Un sistema correctamente configurado reduce significativamente la superficie de ataque para backdoors.</li>
+<li><strong>Implementacion Practica en Laboratorio:</strong> El script <code>auditoria_de_persistencia.py</code> implementa este control de las siguientes formas:</li>
+<li><strong>Deteccion de configuraciones C2</strong>: Analiza archivos JSON en busca de direcciones IP y puertos sospechosos configurados para comunicacion C2.</li>
+<li><strong>Deteccion de persistencia</strong>: Identifica archivos de registro (.reg) y scripts de inicio (.bat) que configuran ejecucion automatica.</li>
+<li><strong>Deteccion de reverse shell</strong>: Escanea logs en busca de patrones de sesiones de shell remota.</li>
+<li><strong>Limpieza automatizada</strong>: Elimina todos los artefactos de backdoor y genera un registro forense.</li>
+</ul>
+<h2>🚀 5. Detalles de la Simulacion Educativa (Python)</h2>
+<ul>
+<li><strong>Que hace <code>backdoor.py</code>:</strong></li>
+<li>Crea <code>c2_config.json</code> con 3 servidores C2 simulados (IPs ficticias, puertos comunes) y configuracion de persistencia.</li>
+<li>Crea <code>shell_log.txt</code> con un registro simulado de reverse shell que muestra comandos ejecutados.</li>
+<li>Crea <code>persistence.reg</code> con claves de registro simuladas para ejecucion automatica.</li>
+<li>Crea <code>startup.bat</code> con un script de inicio simulado que establece conexion C2.</li>
+<li>Muestra un diagrama visual del flujo de comunicacion C2.</li>
+<li><strong>NO</strong> establece conexiones de red reales — todo es texto plano.</li>
+<li>
+<p><strong>NO</strong> modifica el registro real del sistema — los archivos .reg son solo texto.</p>
+</li>
+<li>
+<p><strong>Que hace <code>auditoria_de_persistencia.py</code>:</strong></p>
+</li>
+<li>Escanea archivos en busca de marcadores <code>C2_BACKDOOR_SIMULATION</code> y <code>SHELL_SIMULATION</code>.</li>
+<li>Analiza archivos JSON buscando IPs y puertos sospechosos configurados como C2.</li>
+<li>Detecta archivos de persistencia (.reg, .bat) con patrones de ejecucion automatica.</li>
+<li>Muestra hallazgos con hashes y detalles de cada artefacto.</li>
+<li>Elimina todos los artefactos detectados.</li>
+<li>Muestra recomendaciones de defensa: monitoreo de conexiones salientes, segmentacion de red, listas blancas de aplicaciones.</li>
+</ul>
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Conexiones C2 periodicas detectadas</strong>: Cuando el monitoreo de red identifica un patron de heartbeats (conexiones regulares y repetitivas) desde un host interno hacia IPs o dominios externos desconocidos, especialmente en puertos como 443 (HTTPS) o 53 (DNS) que son comunes para camuflar trafico C2</li>
+<li><strong>Archivos de configuracion con IPs/puertos sospechosos</strong>: Cuando se descubren archivos JSON, INI o XML que contienen direcciones IP, puertos o URLs de servidores de comando y control, particularmente si el software instalado no deberia tener esas configuraciones</li>
+<li><strong>Archivos de persistencia no autorizados</strong>: Deteccion de scripts .reg, .bat o .ps1 en directorios de inicio, tareas programadas o claves de registro que ejecutan codigo al arrancar el sistema sin autorizacion del administrador</li>
+<li><strong>Patrones de reverse shell en logs</strong>: Cuando los logs del sistema muestran sesiones de shell interactivas que no corresponden a sesiones SSH legitimas o administracion autorizada</li>
+<li><strong>Escenario real</strong>: Un analista de SOC detecta que un servidor interno realiza consultas DNS periodicas a un dominio registrado hace 2 dias. El dominio resuelve a una IP en un pais desconocido. Se activa la investigacion de posible backdoor</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Configuracion segura reduce la superficie de ataque</strong>: Al deshabilitar servicios innecesarios, cerrar puertos abiertos y aplicar el principio de minimo privilegio, se eliminan multiples vectores que una backdoor podria usar para establecer comunicacion C2 o persistencia</li>
+<li><strong>Monitoreo de conexiones salientes detecta C2</strong>: A diferencia del monitoreo de conexiones entrantes (firewall tradicional), el monitoreo de trafico saliente identifica cuando un host interno esta comunicandose activamente con un servidor externo no autorizado, que es el patron clasico de una backdoor</li>
+<li><strong>Segmentacion de red contiene la propagacion lateral</strong>: Si la red esta correctamente segmentada, un sistema comprometido no puede comunicarse libremente con otros hosts, limitando la capacidad del atacante para moverse lateralmente y escaladar privilegios</li>
+<li><strong>Auditoria de persistencia revela modificaciones</strong>: La comparacion periodica de las configuraciones de arranque, registros y tareas programadas contra un baseline conocido revela cualquier modificacion no autorizada que una backdoor haya implementado</li>
+</ul>
+<h3>Ejercicios practicos de defensa</h3>
+<ol>
+<li><strong>Detectar artefactos de backdoor</strong>: Ejecuta <code>python backdoor.py</code> para crear los archivos C2 simulados. Luego ejecuta <code>python auditoria_de_persistencia.py</code> y analiza cada hallazgo: que configuraciones C2 se detectaron, que archivos de persistencia existen, y que patrones de reverse shell se encontraron</li>
+<li><strong>Analisis de configuracion C2</strong>: Abre el archivo <code>c2_config.json</code> generado y analiza las direcciones IP y puertos configurados. Identifica por que son sospechosos (IPs en rangos privados vs publicas, puertos inusuales, intervalos de heartbeat). Compara con patrones de C2 conocidos de frameworks como Cobalt Strike</li>
+<li><strong>Evaluacion de monitoreo de red</strong>: Basandote en los patrones de comunicacion C2 observados, diseña una estrategia de monitoreo para una red corporativa que incluya: que trafico se monitorea, que alertas se generan, como se responde a cada nivel de severidad, y que herramientas se utilizan (firewall, IDS, SIEM)</li>
+</ol>
+<hr />
+<blockquote>
+<p><strong>Disclaimer:</strong> Este modulo es estrictamente educativo. No se establecen conexiones de red reales. Todos los archivos generados son texto plano inofensivo con marcadores simulados de IOC.</p>
+</blockquote>
+</body>
+</html>
