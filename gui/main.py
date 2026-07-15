@@ -9,8 +9,13 @@ sys.path.insert(0, _DIR_RAIZ)
 from gui.config import MODULOS, NOMBRES_DEFENSA
 from gui.laboratorio import DESAFIOS_POR_MODULO
 from gui.styles import *
-from gui.views import build_dashboard, build_tutorial, build_modulo_info, build_readme, leer_readme
+from gui.views import build_dashboard, build_tutorial, build_modulo_info, leer_readme, md_to_html
 
+try:
+    from tkhtmlview import HTMLLabel
+    HAS_HTML = True
+except ImportError:
+    HAS_HTML = False
 from gui.runner import ScriptRunner
 from gui.desafio import DesafioWindow
 
@@ -122,7 +127,17 @@ class LaboratorioGUI(tk.Tk):
         self.content_frame = tk.Frame(der, bg=BG)
         self.content_frame.pack(fill=tk.BOTH, expand=True, padx=14, pady=10)
 
-        # README rendering (uses Text widget — no HTMLLabel)
+        # HTML reader for README (shared)
+        self.html_readme = None
+        self.fallback_text = None
+        if HAS_HTML:
+            self.html_readme = HTMLLabel(self.content_frame, html="",
+                                         background=BG_PANEL, font=FUENTE)
+            self.html_readme.fit_height = True
+        else:
+            self.fallback_text = tk.Text(self.content_frame, bg=BG_PANEL, fg=TEXTO,
+                                         font=FUENTE, wrap=tk.WORD, relief="flat",
+                                         padx=10, pady=8, state=tk.DISABLED)
 
         # Action buttons
         bacc = tk.Frame(der, bg=BG, height=48)
@@ -134,7 +149,7 @@ class LaboratorioGUI(tk.Tk):
             (" Simular ", ROJO,     self._action_simular),
             (" Defensa ", AZUL,     self._action_defensa),
             ("  Clean  ", VERDE,    self._action_clean),
-            ("  Guía   ", MORADO,   self._action_readme),
+            (" Readme  ", MORADO,   self._action_readme),
             ("  Juego  ", NARANJA,  self._action_juego),
         ]:
             btn = tk.Button(bacc, text=texto, command=cmd,
@@ -189,6 +204,20 @@ class LaboratorioGUI(tk.Tk):
         self._limpiar_contenido()
         builder_fn(self.content_frame, *args)
 
+    def _mostrar_html(self, html: str):
+        self._limpiar_contenido()
+        if self.html_readme:
+            self.html_readme.set_html(html)
+            self.html_readme.pack(fill=tk.BOTH, expand=True)
+            self.viendo_readme = True
+        elif self.fallback_text:
+            self.fallback_text.configure(state=tk.NORMAL)
+            self.fallback_text.delete("1.0", tk.END)
+            self.fallback_text.insert("1.0", html.replace("<br>", "\n").replace("</p>", "\n\n"))
+            self.fallback_text.configure(state=tk.DISABLED)
+            self.fallback_text.pack(fill=tk.BOTH, expand=True)
+            self.viendo_readme = True
+
     # ── Logs / Consola ─────────────────────────────────────────────────────
 
     def _log(self, msg: str):
@@ -232,10 +261,9 @@ class LaboratorioGUI(tk.Tk):
         md = leer_readme(index)
         if md is None:
             self._mostrar_widgets(lambda p: tk.Label(p, text="Este modulo no tiene documentacion aun.",
-                                     bg=BG, fg=TEXTO_DIM, font=FUENTE).pack(anchor="w"))
+                                    bg=BG, fg=TEXTO_DIM, font=FUENTE).pack(anchor="w"))
             return
-        self._mostrar_widgets(build_readme, md)
-        self.viendo_readme = True
+        self._mostrar_html(md_to_html(md))
 
     def _restaurar(self):
         sel = self.lista.selection()
