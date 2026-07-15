@@ -73,7 +73,7 @@ class LaboratorioGUI(tk.Tk):
 
         # ─── Sidebar ────────────────────────────────────────────────────────
         izq = tk.Frame(main_frame, bg=BG_PANEL, width=200, highlightbackground=BORDE,
-                       highlightthickness=2)
+                       highlightthickness=1)
         izq.pack(side=tk.LEFT, fill=tk.Y)
         izq.pack_propagate(False)
 
@@ -108,7 +108,7 @@ class LaboratorioGUI(tk.Tk):
 
         # Header
         hdr = tk.Frame(der, bg=BG_PANEL, height=40, highlightbackground=BORDE,
-                       highlightthickness=2)
+                       highlightthickness=1)
         hdr.pack(fill=tk.X)
         hdr.pack_propagate(False)
 
@@ -153,10 +153,11 @@ class LaboratorioGUI(tk.Tk):
             ("  Juego  ", NARANJA,  self._action_juego),
         ]:
             btn = tk.Button(bacc, text=texto, command=cmd,
-                            bg=BG_PANEL, fg=color, font=FUENTE_BOLD,
+                            bg=BG_PANEL, fg=color, font=("JetBrains Mono", 10),
                             activebackground=color, activeforeground="#FFFFFF",
-                            relief="solid", padx=12, pady=6, cursor="hand2",
-                            highlightbackground=BORDE, highlightthickness=2)
+                            relief="flat", padx=14, pady=4, cursor="hand2",
+                            highlightbackground=BORDE, highlightthickness=1,
+                            borderwidth=0)
             btn.pack(side=tk.LEFT, padx=3)
             btn.bind("<Enter>", lambda e, b=btn, c=color: b.configure(bg=c, fg="#FFFFFF"))
             btn.bind("<Leave>", lambda e, b=btn, c=color: b.configure(bg=BG_PANEL, fg=c))
