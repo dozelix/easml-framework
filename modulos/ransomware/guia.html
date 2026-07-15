@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Modulo 01 - Ransomware</h1>
+<h2>📖 1. Definicion Teorica y Contexto Historico</h2>
+<p>El <strong>ransomware</strong> es un tipo de malware que cifra los archivos de la victima usando
+algoritmos criptograficos y exige un rescate — generalmente en criptomonedas como
+Bitcoin o Monero — a cambio de la clave de descifrado. Es actualmente una de las
+amenazas mas destructivas y lucrativas del panorama de ciberseguridad global.</p>
+<h3>Mecanismo general</h3>
+<p>Un ransomware tipico opera en dos fases criptograficas:</p>
+<ol>
+<li><strong>Cifrado simetrico</strong>: genera una clave unica por archivo (AES-256 o ChaCha20)
+   y cifra el contenido. Esto es rapido y eficiente para archivos grandes.</li>
+<li><strong>Cifrado asimetrico</strong>: cifra la clave simetrica con una clave publica RSA
+   incrustada en el binario del malware. Solo el atacante posee la clave privada
+   correspondiente.</li>
+</ol>
+<p>Este esquema hibrido garantiza que <strong>ningun tercero</strong> pueda descifrar los archivos
+sin la clave privada del atacante.</p>
+<h3>Ejemplos historicos</h3>
+<table>
+<thead>
+<tr>
+<th>Ano</th>
+<th>Nombre</th>
+<th>Impacto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2013</td>
+<td>CryptoLocker</td>
+<td>Pionero del modelo RaaS (Ransomware-as-a-Service), cifro 500.000+ sistemas</td>
+</tr>
+<tr>
+<td>2017</td>
+<td>WannaCry</td>
+<td>Exploto EternalBlue (MS17-010), infecto 200.000+ equipos en 150 paises incluyendo NHS (UK)</td>
+</tr>
+<tr>
+<td>2017</td>
+<td>NotPetya</td>
+<td>Disfrazado de ransomware pero en realidad era un wiper; causo $10B+ en danos globales</td>
+</tr>
+<tr>
+<td>2019</td>
+<td>Ryuk</td>
+<td>Ataques dirigidos a hospitales y grandes corporaciones, promedio de rescate $1.5M</td>
+</tr>
+<tr>
+<td>2021</td>
+<td>REvil/Sodinokibi</td>
+<td>Doble extorsion: cifrado + amenaza de publicacion de datos robados (Kaseya VSA)</td>
+</tr>
+<tr>
+<td>2023</td>
+<td>Cl0p</td>
+<td>Exploto MOVEit Transfer (CVE-2023-34362), afecto a 2.500+ organizaciones</td>
+</tr>
+</tbody>
+</table>
+<h3>WannaCry: el caso mas emblematico</h3>
+<p>El 12 de mayo de 2017, WannaCry se propago automaticamente explotando la
+vulnerabilidad <strong>EternalBlue</strong> (un exploit para el protocolo SMBv1 de Windows,
+filtrado por el grupo Equation Group). En cuestion de horas, infecto mas de
+200.000 computadoras en 150 paises, afectando hospitales del NHS en Reino Unido,
+fabricas de Renault en Francia, y Telefonica en Espana. La propagacion se detuvo
+gracias a un investigador britanico (MalwareTech) que registro un dominio "kill
+switch" contenido en el codigo del malware.</p>
+<hr />
+<h2>⚙️ 2. Mecanismo de Funcionamiento Tecnologico (Flujo Logico)</h2>
+<h3>Flujo detallado de un ataque ransomware</h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">VECTOR</span><span class="w"> </span><span class="n">DE</span><span class="w"> </span><span class="n">ENTRADA</span>
+<span class="w">   </span><span class="n">El</span><span class="w"> </span><span class="n">payload</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">ransomware</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">ejecuta</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">sistema</span><span class="w"> </span><span class="n">victima</span><span class="p">,</span><span class="w"> </span><span class="n">tipicamente</span>
+<span class="w">   </span><span class="n">via</span><span class="p">:</span><span class="w"> </span><span class="n">email</span><span class="w"> </span><span class="n">phishing</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">macro</span><span class="w"> </span><span class="n">maliciosa</span><span class="p">,</span><span class="w"> </span><span class="n">exploit</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">vulnerabilidad</span>
+<span class="w">   </span><span class="n">remota</span><span class="w"> </span><span class="p">(</span><span class="n">RCE</span><span class="p">),</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="n">drive</span><span class="o">-</span><span class="n">by</span><span class="w"> </span><span class="n">download</span><span class="o">.</span>
+
+<span class="mf">2.</span><span class="w"> </span><span class="n">EJECUCION</span><span class="w"> </span><span class="n">Y</span><span class="w"> </span><span class="n">PERSISTENCIA</span>
+<span class="w">   </span><span class="n">El</span><span class="w"> </span><span class="n">malware</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">instala</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">sistema</span><span class="w"> </span><span class="p">(</span><span class="n">AppData</span><span class="p">,</span><span class="w"> </span><span class="n">ProgramData</span><span class="p">,</span><span class="w"> </span><span class="n">etc</span><span class="o">.</span><span class="p">)</span>
+<span class="w">   </span><span class="n">y</span><span class="w"> </span><span class="n">configura</span><span class="w"> </span><span class="n">persistencia</span><span class="w"> </span><span class="n">mediante</span><span class="w"> </span><span class="n">Registro</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">Windows</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="n">tareas</span>
+<span class="w">   </span><span class="n">programadas</span><span class="o">.</span>
+
+<span class="mf">3.</span><span class="w"> </span><span class="n">RECONOCIMIENTO</span><span class="w"> </span><span class="n">DEL</span><span class="w"> </span><span class="n">SISTEMA</span>
+<span class="w">   </span><span class="n">El</span><span class="w"> </span><span class="n">ransomware</span><span class="w"> </span><span class="n">enumera</span><span class="p">:</span><span class="w"> </span><span class="n">tipo</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">disco</span><span class="p">,</span><span class="w"> </span><span class="n">espacio</span><span class="w"> </span><span class="n">disponible</span><span class="p">,</span><span class="w"> </span><span class="n">idioma</span>
+<span class="w">   </span><span class="n">del</span><span class="w"> </span><span class="n">sistema</span><span class="w"> </span><span class="p">(</span><span class="n">evita</span><span class="w"> </span><span class="n">CIS</span><span class="p">),</span><span class="w"> </span><span class="n">procesos</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">seguridad</span><span class="w"> </span><span class="n">activos</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">software</span>
+<span class="w">   </span><span class="n">de</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="n">instalado</span><span class="o">.</span>
+
+<span class="mf">4.</span><span class="w"> </span><span class="n">BUSQUEDA</span><span class="w"> </span><span class="n">DE</span><span class="w"> </span><span class="n">ARCHIVOS</span>
+<span class="w">   </span><span class="n">Recorre</span><span class="w"> </span><span class="n">todos</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">directorios</span><span class="w"> </span><span class="n">accesibles</span><span class="w"> </span><span class="n">buscando</span><span class="w"> </span><span class="n">extensiones</span>
+<span class="w">   </span><span class="n">objetivo</span><span class="w"> </span><span class="p">(</span><span class="o">.</span><span class="n">txt</span><span class="p">,</span><span class="w"> </span><span class="o">.</span><span class="n">docx</span><span class="p">,</span><span class="w"> </span><span class="o">.</span><span class="n">pdf</span><span class="p">,</span><span class="w"> </span><span class="o">.</span><span class="n">jpg</span><span class="p">,</span><span class="w"> </span><span class="o">.</span><span class="n">xlsx</span><span class="p">,</span><span class="w"> </span><span class="n">etc</span><span class="o">.</span><span class="p">)</span><span class="w"> </span><span class="n">usando</span><span class="w"> </span><span class="n">APIs</span>
+<span class="w">   </span><span class="n">como</span><span class="w"> </span><span class="n">FindFirstFile</span><span class="o">/</span><span class="n">FindNextFile</span><span class="w"> </span><span class="p">(</span><span class="n">Windows</span><span class="p">)</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">()</span><span class="w"> </span><span class="p">(</span><span class="n">Python</span><span class="p">)</span><span class="o">.</span>
+
+<span class="mf">5.</span><span class="w"> </span><span class="n">CIFRADO</span>
+<span class="w">   </span><span class="n">Para</span><span class="w"> </span><span class="n">cada</span><span class="w"> </span><span class="n">archivo</span><span class="p">:</span>
+<span class="w">   </span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="n">Genera</span><span class="w"> </span><span class="n">una</span><span class="w"> </span><span class="n">clave</span><span class="w"> </span><span class="n">simetrica</span><span class="w"> </span><span class="n">aleatoria</span><span class="w"> </span><span class="p">(</span><span class="n">AES</span><span class="o">-</span><span class="mi">256</span><span class="p">)</span>
+<span class="w">   </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="n">Cifra</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">contenido</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">archivo</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">esa</span><span class="w"> </span><span class="n">clave</span>
+<span class="w">   </span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="n">Cifra</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">clave</span><span class="w"> </span><span class="n">simetrica</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">clave</span><span class="w"> </span><span class="n">publica</span><span class="w"> </span><span class="n">RSA</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">atacante</span>
+<span class="w">   </span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="n">Almacena</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">clave</span><span class="w"> </span><span class="n">cifrada</span><span class="w"> </span><span class="n">junto</span><span class="w"> </span><span class="n">al</span><span class="w"> </span><span class="n">archivo</span><span class="w"> </span><span class="p">(</span><span class="n">en</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="o">.</span><span class="n">key</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="n">metadata</span><span class="p">)</span>
+
+<span class="mf">6.</span><span class="w"> </span><span class="n">ELIMINACION</span><span class="w"> </span><span class="n">DE</span><span class="w"> </span><span class="n">BACKUPS</span>
+<span class="w">   </span><span class="n">Ejecuta</span><span class="w"> </span><span class="n">comandos</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">eliminar</span><span class="w"> </span><span class="n">copias</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">seguridad</span><span class="p">:</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">vssadmin</span><span class="w"> </span><span class="n">delete</span><span class="w"> </span><span class="n">shadows</span><span class="w"> </span><span class="o">/</span><span class="n">all</span><span class="w"> </span><span class="o">/</span><span class="n">quiet</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">bcdedit</span><span class="w"> </span><span class="o">/</span><span class="n">set</span><span class="w"> </span><span class="p">{</span><span class="n">default</span><span class="p">}</span><span class="w"> </span><span class="n">recoveryenabled</span><span class="w"> </span><span class="n">No</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">wbadmin</span><span class="w"> </span><span class="n">delete</span><span class="w"> </span><span class="n">catalog</span><span class="w"> </span><span class="o">-</span><span class="n">quiet</span>
+
+<span class="mf">7.</span><span class="w"> </span><span class="n">NOTA</span><span class="w"> </span><span class="n">DE</span><span class="w"> </span><span class="n">RESCATE</span>
+<span class="w">   </span><span class="n">Deja</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="n">archivo</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">texto</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="n">HTML</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">cada</span><span class="w"> </span><span class="n">directorio</span><span class="w"> </span><span class="n">afectado</span>
+<span class="w">   </span><span class="n">con</span><span class="w"> </span><span class="n">instrucciones</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">pago</span><span class="w"> </span><span class="n">via</span><span class="w"> </span><span class="n">Tor</span><span class="o">/</span><span class="n">onion</span><span class="o">.</span>
+
+<span class="mf">8.</span><span class="w"> </span><span class="n">EXFILTRACION</span><span class="w"> </span><span class="p">(</span><span class="n">opcional</span><span class="p">,</span><span class="w"> </span><span class="n">doble</span><span class="w"> </span><span class="n">extorsion</span><span class="p">)</span>
+<span class="w">   </span><span class="n">Antes</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">cifrado</span><span class="p">,</span><span class="w"> </span><span class="n">exfiltra</span><span class="w"> </span><span class="n">datos</span><span class="w"> </span><span class="n">sensibles</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">servidores</span><span class="w"> </span><span class="n">del</span>
+<span class="w">   </span><span class="n">atacante</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">amenazar</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">publicarlos</span><span class="w"> </span><span class="n">si</span><span class="w"> </span><span class="n">no</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">paga</span><span class="o">.</span>
+</code></pre></div>
+
+<h3>En esta simulacion educativa</h3>
+<p>El algoritmo de <code>ransomware.py</code> reemplaza el cifrado real con un <strong>inversion de
+texto</strong>: invierte el orden de caracteres de cada linea del archivo. Esto es
+trivialmente reversible (volver a invertir restaura el contenido) pero demuestra
+el concepto de "perder acceso" al contenido original.</p>
+<hr />
+<h2>🔺 3. Alineacion con la Trisada CIA</h2>
+<ul>
+<li><strong>Pilar Afectado:</strong> Disponibilidad (Availability)</li>
+<li><strong>Justificacion Tecnica:</strong> El ransomware ataca directamente la Disponibilidad
+  al hacer que los archivos sean inaccesibles para el usuario legitimo. Aunque
+  los bytes siguen fisicamente en disco, el contenido queda cifrado (o invertido,
+  en esta simulacion) de forma que el usuario no puede leer ni usar sus archivos
+  sin la clave de descifrado. La perdida de Disponibilidad es el mecanismo de
+  extorsion: el atacante ofrece restaurarla a cambio de un pago. Ademas, la
+  eliminacion de copias de seguridad (shadow copies, etc.) refuerza este efecto
+  al bloquear los mecanismos nativos de recuperacion.</li>
+</ul>
+<hr />
+<h2>🛡️ 4. Mitigacion bajo la Norma de Controles CIS</h2>
+<ul>
+<li>
+<p><strong>CIS Control 11 — Recuperacion de Datos (Data Recovery):</strong>
+  Este control exige implementar y mantener procesos de respaldo de datos,
+  probar regularmente la recuperacion, y garantizar que las copias de
+  seguridad esten protegidas contra acceso no autorizado y cifrado por malware.
+  La regla <strong>3-2-1</strong> es el estandar: 3 copias de los datos, en 2 medios
+  diferentes, con 1 copia fuera de linea o remota.</p>
+</li>
+<li>
+<p><strong>Implementacion Practica en Laboratorio:</strong>
+  <code>respuesta_a_incidentes.py</code> implementa la fase de recuperacion verificando la integridad
+  de los archivos y restaurando el contenido original mediante la inversion
+  del texto (reverso del cifrado simulado). Luego muestra hashes SHA-256
+  para confirmar que los archivos restaurados son correctos. En produccion,
+  esto equivale a restaurar desde un backup verificado despues de un ataque
+  ransomware.</p>
+</li>
+</ul>
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Deteccion de cifrado masivo</strong>: Cuando un EDR o antivirus alerta sobre multiples archivos siendo modificados en un corto periodo de tiempo (modificacion de extensiones a <code>.locked</code>, <code>.encrypted</code>, <code>.WNCRY</code>, etc.)</li>
+<li><strong>Comandos de eliminacion de backups</strong>: Alertas generadas por la ejecucion de <code>vssadmin delete shadows</code>, <code>bcdedit /set recoveryenabled No</code> o <code>wbadmin delete catalog</code> — estos son indicadores casi concluyentes de un ransomware en ejecucion</li>
+<li><strong>Aparicion de notas de rescate</strong>: La presencia de archivos como <code>README_RESCATE.txt</code>, <code>DECRYPT_INSTRUCTIONS.html</code> o <code>HOW_TO_RECOVER.txt</code> en multiples directorios</li>
+<li><strong>Deteccion de patrones de cifrado</strong>: Cuando herramientas de monitoreo detectan que un proceso esta abriendo y modificando un volumen inusual de archivos con extensiones de documento</li>
+<li><strong>Escenario real</strong>: Un empleado reporta que no puede abrir sus archivos y encuentra un archivo de texto con instrucciones de pago. El equipo de seguridad activa el protocolo de respuesta a incidentes ransomware</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Backup offline es inalcanzable</strong>: Un backup fuera de linea (air-gapped) o en la nube con versionado no puede ser alcanzado por el ransomware porque este opera dentro del perimeter de la red comprometida. La regla 3-2-1 garantiza que siempre existe una copia que el malware no puede cifrar</li>
+<li><strong>Verificacion de integridad con hashes</strong>: El uso de SHA-256 permite confirmar que los archivos restaurados no han sido modificados ni corruptos durante la recuperacion. Si el hash del backup coincide con el original, la integridad esta garantizada</li>
+<li><strong>Ruptura de la cadena de extorsion</strong>: La restauracion desde backup elimina el incentivo del atacante: si la victima puede recuperar sus datos sin pagar, el modelo economico del ransomware colapsa. Esto es la base de la estrategia "no pagar"</li>
+<li><strong>Tiempo de recuperacion predecible</strong>: Tener backups verificados reduce el RTO (Recovery Time Objective) de dias/semanas a horas, minimizando el impacto operativo</li>
+</ul>
+<h3>Ejercicios practicos de defensa</h3>
+<ol>
+<li><strong>Flujo completo de ataque y recuperacion</strong>: Ejecuta <code>python ransomware.py</code> sobre <code>directorio_pruebas/</code>, observa como los archivos se cifran (texto invertido) y aparece la nota de rescate. Luego ejecuta <code>python respuesta_a_incidentes.py</code> y verifica que cada archivo restaurado tiene el mismo hash SHA-256 que el original. Documenta el tiempo que toma el proceso completo</li>
+<li><strong>Analisis de diferencias antes/despues</strong>: Antes de ejecutar el ransomware, calcula los hashes SHA-256 de todos los archivos en <code>directorio_pruebas/</code> con <code>sha256sum *</code>. Despues del cifrado, calcula los hashes de los archivos <code>.locked</code> y compara. Observa como el contenido cambia completamente pero el tamano se mantiene similar</li>
+<li><strong>Evaluacion del plan de recuperacion</strong>: Simula un escenario donde solo tienes 8 de los 12 archivos originales como backup. Ejecuta la restauracion y analiza que archivos se recuperaron y cuales se perdieron permanentemente. Discute como la regla 3-2-1 habria evitado esta perdida</li>
+</ol>
+<hr />
+<h2>🚀 5. Detalles de la Simulacion Educativa (Python)</h2>
+<h3>Que hace <code>ransomware.py</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span> <span class="nv">PREPARACION</span>
+   <span class="o">-</span> <span class="nv">Crea</span> <span class="s s-Atom">el</span> <span class="s s-Atom">directorio</span> <span class="p">.</span><span class="o">/</span><span class="s s-Atom">directorio_pruebas</span><span class="o">/</span>
+   <span class="o">-</span> <span class="nv">Copia</span> <span class="s s-Atom">los</span> <span class="mi">12</span> <span class="s s-Atom">archivos</span> <span class="s s-Atom">del</span> <span class="s s-Atom">laboratorio</span> <span class="nf">ahi</span> <span class="p">(</span><span class="s s-Atom">nunca</span> <span class="s s-Atom">toca</span> <span class="s s-Atom">los</span> <span class="s s-Atom">originales</span><span class="p">)</span>
+
+<span class="mf">2.</span> <span class="nv">RECONOCIMIENTO</span>
+   <span class="o">-</span> <span class="nv">Enumera</span> <span class="s s-Atom">archivos</span> <span class="s s-Atom">con</span> <span class="s s-Atom">extensiones</span> <span class="s s-Atom">de</span> <span class="nf">texto</span> <span class="p">(.</span><span class="s s-Atom">txt</span><span class="p">,</span> <span class="p">.</span><span class="s s-Atom">py</span><span class="p">,</span> <span class="p">.</span><span class="s s-Atom">html</span><span class="p">,</span> <span class="p">.</span><span class="s s-Atom">csv</span><span class="p">,</span> <span class="p">.</span><span class="s s-Atom">md</span><span class="p">)</span>
+   <span class="o">-</span> <span class="nv">Muestra</span> <span class="s s-Atom">tamano</span> <span class="s s-Atom">y</span> <span class="s s-Atom">nombre</span> <span class="s s-Atom">de</span> <span class="s s-Atom">cada</span> <span class="s s-Atom">archivo</span> <span class="s s-Atom">objetivo</span>
+
+<span class="mf">3.</span> <span class="nv">CIFRADO</span> <span class="nv">SIMULADO</span>
+   <span class="o">-</span> <span class="nv">Lee</span> <span class="s s-Atom">cada</span> <span class="s s-Atom">archivo</span> <span class="s s-Atom">de</span> <span class="s s-Atom">texto</span>
+   <span class="o">-</span> <span class="nv">Invierte</span> <span class="s s-Atom">el</span> <span class="s s-Atom">orden</span> <span class="s s-Atom">de</span> <span class="s s-Atom">caracteres</span> <span class="s s-Atom">de</span> <span class="s s-Atom">cada</span> <span class="nf">linea</span> <span class="p">(</span><span class="s s-Atom">texto</span><span class="p">[</span><span class="o">::-</span><span class="mi">1</span><span class="p">])</span>
+   <span class="o">-</span> <span class="nv">Guarda</span> <span class="s s-Atom">el</span> <span class="s s-Atom">resultado</span> <span class="s s-Atom">como</span> <span class="s2">&quot;nombre.txt.locked&quot;</span>
+   <span class="o">-</span> <span class="nv">Registra</span> <span class="s s-Atom">hash</span> <span class="nv">SHA</span><span class="o">-</span><span class="mi">256</span> <span class="s s-Atom">original</span> <span class="s s-Atom">para</span> <span class="s s-Atom">verificacion</span>
+
+<span class="mf">4.</span> <span class="nv">NOTA</span> <span class="nv">DE</span> <span class="nv">RESCATE</span>
+   <span class="o">-</span> <span class="nv">Genera</span> <span class="nv">README_RESCATE</span><span class="p">.</span><span class="s s-Atom">txt</span> <span class="s s-Atom">con</span> <span class="s s-Atom">instrucciones</span> <span class="s s-Atom">ficticias</span> <span class="s s-Atom">de</span> <span class="s s-Atom">pago</span>
+   <span class="o">-</span> <span class="nv">Simula</span> <span class="s s-Atom">el</span> <span class="s s-Atom">modelo</span> <span class="s s-Atom">de</span> <span class="s s-Atom">extorsion</span> <span class="s s-Atom">real</span>
+
+<span class="mf">5.</span> <span class="nv">RESUMEN</span>
+   <span class="o">-</span> <span class="nv">Muestra</span> <span class="s s-Atom">estadisticas</span> <span class="s s-Atom">del</span> <span class="s s-Atom">ataque</span>
+   <span class="o">-</span> <span class="nv">Explica</span> <span class="s s-Atom">la</span> <span class="s s-Atom">diferencia</span> <span class="s s-Atom">entre</span> <span class="s s-Atom">cifrado</span> <span class="s s-Atom">real</span> <span class="s s-Atom">e</span> <span class="s s-Atom">inversion</span> <span class="s s-Atom">de</span> <span class="s s-Atom">texto</span>
+</code></pre></div>
+
+<h3>Que hace <code>respuesta_a_incidentes.py</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">VERIFICACION</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Comprueba</span><span class="w"> </span><span class="n">si</span><span class="w"> </span><span class="n">existe</span><span class="w"> </span><span class="n">directorio_pruebas</span><span class="o">/</span>
+
+<span class="mf">2.</span><span class="w"> </span><span class="n">ESCANEO</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Busca</span><span class="w"> </span><span class="n">archivos</span><span class="w"> </span><span class="mf">.</span><span class="n">locked</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">directorio_pruebas</span><span class="o">/</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Detecta</span><span class="w"> </span><span class="ow">not</span><span class="n">as</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">rescate</span><span class="w"> </span><span class="kr">READ</span><span class="n">ME_RESCATE</span><span class="mf">.</span><span class="n">txt</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Muestra</span><span class="w"> </span><span class="n">hashes</span><span class="w"> </span><span class="n">SHA</span><span class="o">-</span><span class="mf">256</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">archivos</span><span class="w"> </span><span class="n">detectados</span>
+
+<span class="mf">3.</span><span class="w"> </span><span class="n">RESTAURACION</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Para</span><span class="w"> </span><span class="n">cada</span><span class="w"> </span><span class="mf">.</span><span class="n">locked</span><span class="p">:</span><span class="w"> </span><span class="n">invierte</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">texto</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">obtener</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="kr">cont</span><span class="n">enido</span><span class="w"> </span><span class="ow">or</span><span class="n">iginal</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Guarda</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">resultado</span><span class="w"> </span><span class="n">como</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">nombre</span><span class="w"> </span><span class="ow">or</span><span class="n">iginal</span><span class="w"> </span><span class="p">(</span><span class="nb">sin</span><span class="w"> </span><span class="mf">.</span><span class="n">locked</span><span class="p">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Verifica</span><span class="w"> </span><span class="nb">int</span><span class="n">egridad</span><span class="w"> </span><span class="nb">pos</span><span class="n">t</span><span class="o">-</span><span class="n">restauracion</span>
+
+<span class="mf">4.</span><span class="w"> </span><span class="n">VERIFICACION</span><span class="w"> </span><span class="n">DE</span><span class="w"> </span><span class="n">HASHES</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Muestra</span><span class="w"> </span><span class="n">hashes</span><span class="w"> </span><span class="n">SHA</span><span class="o">-</span><span class="mf">256</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="kr">to</span><span class="n">dos</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">archivos</span><span class="w"> </span><span class="n">restaurados</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Confirma</span><span class="w"> </span><span class="n">que</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">restauracion</span><span class="w"> </span><span class="n">fue</span><span class="w"> </span><span class="n">exitosa</span>
+
+<span class="mf">5.</span><span class="w"> </span><span class="n">RECOMENDACIONES</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Regla</span><span class="w"> </span><span class="mf">3</span><span class="o">-</span><span class="mf">2</span><span class="o">-</span><span class="mf">1</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">backups</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Parchado</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">vulnerabilidades</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Segmentacion</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">red</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Uso</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">EDR</span><span class="o">/</span><span class="n">antivirus</span>
+</code></pre></div>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Modulo 07 - Rootkit</h1>
+<h2>1. Definicion Teorica y Contexto Historico</h2>
+<p>Un <strong>rootkit</strong> es un conjunto de herramientas malware disenadas para ocultar la presencia de un proceso, archivo o conexion maliciosa del sistema operativo. El nombre combina "root" (acceso de administrador en Unix/Linux) y "kit" (conjunto de herramientas), indicando su objetivo: obtener y ocultar acceso de administrador.</p>
+<h3>Diferencia fundamental con otros malware</h3>
+<p>Mientras un virus, gusano o troyano buscan causar un efecto visible (cifrar, destruir, robar), el rootkit tiene un objetivo mucho mas peligroso: <strong>permanecer invisible</strong>. Un rootkit exitoso puede estar activo en un sistema durante anios sin ser detectado.</p>
+<h3>Niveles de operacion</h3>
+<table>
+<thead>
+<tr>
+<th>Nivel</th>
+<th>Nombre</th>
+<th>Capacidades</th>
+<th>Dificultad de deteccion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ring 3</td>
+<td>User-mode</td>
+<td>Interceptar APIs del SO</td>
+<td>Media</td>
+</tr>
+<tr>
+<td>Ring 0</td>
+<td>Kernel-mode</td>
+<td>Manipular estructuras del kernel</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>Bootkit</td>
+<td>Modificar MBR/UEFI</td>
+<td>Muy alta</td>
+</tr>
+<tr>
+<td>-2</td>
+<td>Hypervisor</td>
+<td>Controlar desde maquina virtual</td>
+<td>Extrema</td>
+</tr>
+</tbody>
+</table>
+<h3>Ejemplos historicos relevantes</h3>
+<table>
+<thead>
+<tr>
+<th>Ano</th>
+<th>Nombre</th>
+<th>Nivel</th>
+<th>Descripcion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2000</td>
+<td>HackerDefender</td>
+<td>User-mode</td>
+<td>Ocultaba procesos, archivos y puertos en Windows</td>
+</tr>
+<tr>
+<td>2005</td>
+<td>Sony Rootkit</td>
+<td>User-mode</td>
+<td>DRM oculto en CDs que instalaba un rootkit</td>
+</tr>
+<tr>
+<td>2008</td>
+<td>Necurs</td>
+<td>Kernel-mode</td>
+<td>Botnet con rootkit kernel que comprometio millones</td>
+</tr>
+<tr>
+<td>2010</td>
+<td>TDSS/Reaven</td>
+<td>Kernel-mode</td>
+<td>TDL4: uno de los rootkits kernel mas avanzados</td>
+</tr>
+<tr>
+<td>2012</td>
+<td>ZeroAccess</td>
+<td>Kernel-mode</td>
+<td>Botnet P2P con rootkit para mineria y fraude</td>
+</tr>
+<tr>
+<td>2014</td>
+<td>Rovnix</td>
+<td>Bootkit</td>
+<td>Modificaba el VBR (Volume Boot Record)</td>
+</tr>
+</tbody>
+</table>
+<h3>TDL4: el rootkit mas avanzado</h3>
+<p>TDSS (tambien conocido como Reaven o Alureon) representaba la vanguardia de los rootkits kernel:</p>
+<ol>
+<li><strong>Infeccion del MBR</strong>: Se instalaba antes del arranque del SO, siendo invisible para cualquier herramienta dentro del sistema.</li>
+<li><strong>Filtrado de drivers</strong>: Interceptaba las llamadas al sistema para ocultar archivos .sys maliciosos.</li>
+<li><strong>Redireccion DNS</strong>: Redirigia consultas DNS para inyectar publicidad y robar credenciales.</li>
+<li><strong>Botnet P2P</strong>: Utilizaba una red peer-to-peer para comunicarse, sin servidor C2 centralizable.</li>
+<li><strong>Defensa activa</strong>: Detectaba y deshabilitaba antivirus y herramientas de limpieza.</li>
+</ol>
+<h2>2. Mecanismo de Funcionamiento Tecnologico (Flujo Logico)</h2>
+<p>El flujo de operacion de un rootkit se describe en los siguientes pasos:</p>
+<ol>
+<li>
+<p><strong>Obtencion de privilegios</strong>: El rootkit necesita acceso de administrador/root para operar a nivel kernel.</p>
+</li>
+<li>
+<p><strong>Carga del driver</strong>: Se carga un modulo en el kernel del SO que intercepta las llamadas al sistema (syscalls).</p>
+</li>
+<li>
+<p><strong>Hooking de syscalls</strong>: Modifica las tablas de syscall para filtrar los resultados antes de que lleguen al usuario:</p>
+</li>
+<li><code>NtQueryDirectoryFile</code>: Filtra archivos del directorio (oculta archivos .sys maliciosos)</li>
+<li><code>NtQuerySystemInformation</code>: Filtra la lista de procesos (oculta procesos malware)</li>
+<li>
+<p><code>NtDeviceIoControlFile</code>: Filtra conexiones de red (oculta conexiones C2)</p>
+</li>
+<li>
+<p><strong>Ocultamiento</strong>: Los archivos, procesos y conexiones maliciosos desaparecen de todas las herramientas del sistema (ls, tasklist, netstat).</p>
+</li>
+<li>
+<p><strong>Proteccion</strong>: El rootkit puede detectar intentos de desinfeccion y protegerse contra ellos.</p>
+</li>
+</ol>
+<div class="codehilite"><pre><span></span><code><span class="w"> </span><span class="p">[</span><span class="n">Espacio</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">Usuario</span><span class="p">]</span><span class="w">          </span><span class="p">[</span><span class="n">User</span><span class="o">-</span><span class="n">mode</span><span class="w"> </span><span class="n">Rootkit</span><span class="p">]</span><span class="w">           </span><span class="p">[</span><span class="n">Kernel</span><span class="w"> </span><span class="n">Ring</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span>
+<span class="w">        </span><span class="o">|</span><span class="w">                            </span><span class="o">|</span><span class="w">                             </span><span class="o">|</span>
+<span class="w">   </span><span class="n">Llamadas</span><span class="w"> </span><span class="n">al</span><span class="w"> </span><span class="n">SO</span><span class="w">  </span><span class="o">-----&gt;</span><span class="w">   </span><span class="n">Hook</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">APIs</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Filtrado</span><span class="w"> </span><span class="o">-----&gt;</span><span class="w">   </span><span class="n">System</span><span class="w"> </span><span class="n">Calls</span>
+<span class="w">        </span><span class="o">|</span><span class="w">                            </span><span class="o">|</span><span class="w">                             </span><span class="o">|</span>
+<span class="w">   </span><span class="n">Resultados</span><span class="w"> </span><span class="n">visibles</span><span class="w">       </span><span class="n">Archivos</span><span class="w"> </span><span class="n">filtrados</span><span class="w">             </span><span class="n">Hook</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">syscalls</span>
+<span class="w">   </span><span class="p">(</span><span class="nf">sin</span><span class="w"> </span><span class="n">rootkit</span><span class="p">)</span><span class="w">             </span><span class="n">Procesos</span><span class="w"> </span><span class="n">filtrados</span><span class="w">             </span><span class="n">DKOM</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Manipulacion</span>
+<span class="w">                            </span><span class="n">Conexiones</span><span class="w"> </span><span class="n">filtradas</span><span class="w">            </span><span class="n">Resultados</span><span class="w"> </span><span class="n">filtrados</span>
+<span class="w">                                                                          </span><span class="o">|</span>
+<span class="w">                                                                 </span><span class="p">[</span><span class="n">Hardware</span><span class="o">/</span><span class="n">MBR</span><span class="p">]</span>
+<span class="w">                                                                      </span><span class="o">|</span>
+<span class="w">                                                                   </span><span class="n">Bootkit</span>
+</code></pre></div>
+
+<h3>Tecnicas de ocultamiento</h3>
+<table>
+<thead>
+<tr>
+<th>Tecnica</th>
+<th>Nivel</th>
+<th>Descripcion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API hooking</td>
+<td>User-mode</td>
+<td>Intercepts FindFirstFile, OpenProcess, etc.</td>
+</tr>
+<tr>
+<td>IAT hooking</td>
+<td>User-mode</td>
+<td>Modifica la Import Address Table de procesos</td>
+</tr>
+<tr>
+<td>Inline hooking</td>
+<td>Kernel-mode</td>
+<td>Reprime instrucciones de funcion del kernel</td>
+</tr>
+<tr>
+<td>DKOM</td>
+<td>Kernel-mode</td>
+<td>Manipula directamente estructuras del kernel</td>
+</tr>
+<tr>
+<td>SSDT hooking</td>
+<td>Kernel-mode</td>
+<td>Modifica la System Service Descriptor Table</td>
+</tr>
+<tr>
+<td>MBR infection</td>
+<td>Bootkit</td>
+<td>Reemplaza el cargador de arranque</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Alineacion con la Triada CIA</h2>
+<ul>
+<li><strong>Pilar Afectado: Integridad (Integrity)</strong></li>
+<li><strong>Justificacion Tecnica:</strong> El rootkit compromete la integridad de multiples maneras:</li>
+<li><strong>Manipulacion del kernel</strong>: Modifica las estructuras fundamentales del sistema operativo, invalidando toda garantia de integridad del SO.</li>
+<li><strong>Falsificacion de resultados</strong>: Al filtrar la salida de herramientas del sistema (tasklist, ls, netstat), el rootkit presenta una vision falsa del estado del sistema.</li>
+<li><strong>Escudo para otros malware</strong>: Un rootkit protege a virus, troyanos y backdoors de la deteccion, manteniendo su presencia sin ser descubierto.</li>
+<li><strong>Verificacion comprometida</strong>: Ninguna herramienta dentro del sistema puede ser considerada confiable si hay un rootkit activo, porque el rootkit puede modificar su salida.</li>
+<li><strong>Escalamiento de privilegios</strong>: El rootkit puede crear cuentas ocultas, modificar permisos y alterar politicas de seguridad sin que el administrador lo note.</li>
+</ul>
+<h2>4. Mitigacion bajo la Norma de Controles CIS</h2>
+<ul>
+<li><strong>CIS Control 8: Auditoria de Cuentas (Audit Log Management)</strong></li>
+<li><strong>Concepto:</strong> Este control establece la necesidad de recopilar, almacenar, revisar y responder a registros de auditoria del sistema. Los logs son esenciales para detectar la presencia de rootkits, ya que un rootkit que manipula las vistas en tiempo real puede no poder alterar los logs que ya fueron escritos en disco.</li>
+<li><strong>Implementacion Practica en Laboratorio:</strong> El script <code>monitoreo_del_kernel_ganchos.py</code> implementa este control de las siguientes formas:</li>
+<li><strong>Deteccion de archivos ocultos</strong>: Lista todos los archivos con prefijo dot (.) en el directorio de pruebas, revelando archivos que un rootkit intentaria ocultar de una vista normal.</li>
+<li><strong>Deteccion de marcadores de rootkit</strong>: Escanea archivos buscando el marcador <code>ROOTKIT_SIMULATION</code>, similar a como un analista buscaria IOC de rootkits conocidos.</li>
+<li><strong>Deteccion de manipulacion de procesos</strong>: Identifica archivos que contienen referencias a procesos maliciosos ocultos, reconstruyendo la lista real de procesos.</li>
+<li><strong>Limpieza automatizada</strong>: Elimina todos los artefactos y genera un registro forense con hashes.</li>
+</ul>
+<h2>5. Detalles de la Simulacion Educativa (Python)</h2>
+<ul>
+<li><strong>Que hace <code>rootkit.py</code>:</strong></li>
+<li>Crea 4 archivos ocultos con prefijo dot (.) dentro de <code>directorio_pruebas/</code>:<ul>
+<li><code>.hidden_system</code> - Configuracion del rootkit</li>
+<li><code>.config_sys.dat</code> - Base de datos de configuracion oculta</li>
+<li><code>.rootkit_payload</code> - Payload simulado</li>
+<li><code>.driver_sim.sys</code> - Driver falso del rootkit</li>
+</ul>
+</li>
+<li>Muestra la lista de procesos ANTES del rootkit (8 procesos normales).</li>
+<li>Muestra la lista DESPUES del rootkit (8 normales + 3 ocultos marcados).</li>
+<li>Guarda la lista de procesos manipulada en un archivo con el marcador <code>ROOTKIT_SIMULATION</code>.</li>
+<li>
+<p>Explica las tecnicas de ocultamiento: prefijo dot, filtrado de procesos, intercepcion de API, DKOM.</p>
+</li>
+<li>
+<p><strong>Que hace <code>monitoreo_del_kernel_ganchos.py</code>:</strong></p>
+</li>
+<li>Lista todos los archivos ocultos (prefijo dot) en el directorio de pruebas.</li>
+<li>Escanea archivos buscando el marcador <code>ROOTKIT_SIMULATION</code>.</li>
+<li>Detecta archivos con procesos ocultos simulados (rootkit_svc.exe, c2_beacon.exe, keylog_drv.sys).</li>
+<li>Muestra hallazgos con hashes SHA-256 de cada artefacto.</li>
+<li>Elimina todos los artefactos detectados.</li>
+<li>Muestra recomendaciones: EDR con proteccion kernel, Secure Boot, analisis offline desde USB.</li>
+</ul>
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Archivos ocultos con prefijo dot en directorios del sistema</strong>: Cuando herramientas de auditoria encuentran archivos ocultos (prefijo <code>.</code>) en directorios donde no deberian existir, o cuando <code>ls -la</code> revela archivos que <code>ls</code> normal no muestra</li>
+<li><strong>Inconsistencias entre herramientas de monitoreo</strong>: Cuando <code>tasklist</code> muestra un numero de procesos diferente al que reporta un analizador de procesos de bajo nivel, o cuando <code>netstat</code> no muestra conexiones que un firewall si detecta — estas inconsistencias son el sello de un rootkit que filtra la salida</li>
+<li><strong>Drivers no firmados o sospechosos</strong>: Deteccion de archivos <code>.sys</code> o modulos de kernel sin firma digital valida, o que estan cargados en memoria pero no aparecen en la lista de drivers del sistema</li>
+<li><strong>Modificaciones en tablas de syscall</strong>: Herramientas de integridad del kernel que detectan cambios en la SSDT (System Service Descriptor Table) o en las tablas de interrupciones</li>
+<li><strong>Escenario real</strong>: Un administrador nota que un servidor consume mucha CPU pero <code>tasklist</code> no muestra ningun proceso con alto consumo. Un analisis offline desde un USB de rescate revela procesos ocultos que el rootkit estaba filtrando de la vista del sistema</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Analisis offline evita la manipulacion del rootkit</strong>: Un rootkit solo puede filtrar la salida de herramientas que se ejecutan DENTRO del sistema comprometido. Un analisis desde un USB de rescate o un entorno de recuperacion offline opera fuera del alcance del rootkit, revelando la verdadera estado del sistema</li>
+<li><strong>Verificacion de integridad del kernel</strong>: Los controles de integridad (Secure Boot, UEFI) verifican que los componentes del kernel no hayan sido modificados desde la compilacion. Si un rootkit intenta modificar el kernel, estos controles detectan la alteracion y bloquean el arranque</li>
+<li><strong>EDR con proteccion de kernel</strong>: Los EDR modernos operan a nivel de kernel pero con protecciones contra modificaciones. Pueden detectar hooks de syscall, DKOM y otras tecnicas de rootkit porque monitorean las estructuras del kernel desde un contexto protegido</li>
+<li><strong>Deteccion por ausencia</strong>: Un rootkit exitoso se define por lo que OCULTA. La estrategia de defensa es comparar multiples fuentes de informacion: si una fuente reporta algo que otra no, la discrepancia indica manipulacion</li>
+</ul>
+<h3>Ejercicios practicos de defensa</h3>
+<ol>
+<li><strong>Revelar archivos ocultos</strong>: Ejecuta <code>python rootkit.py</code> para crear los archivos ocultos y la lista de procesos manipulada. Luego ejecuta <code>python monitoreo_del_kernel_ganchos.py</code> y analiza los archivos ocultos descubiertos: que tipo de archivo simula cada uno (.hidden_system, .config_sys.dat, .rootkit_payload, .driver_sim.sys) y que papel jugaria en un rootkit real</li>
+<li><strong>Comparar vistas del sistema</strong>: Antes de ejecutar el rootkit, lista los archivos y procesos con comandos normales. Despues de ejecutarlo, compara con los hallazgos de <code>monitoreo_del_kernel_ganchos.py</code>. Documenta las diferencias: que archivos/procesos adicionales revela la herramienta de auditoria que el sistema normal no muestra</li>
+<li><strong>Diseno de estrategia de deteccion</strong>: Basandote en las tecnicas de ocultamiento observadas (prefijo dot, filtrado de procesos, intercepcion de API), diseña un protocolo de deteccion de rootkits para un servidor critico. Incluye: analisis offline programado, verificacion de integridad del kernel, monitoreo de drivers, y respuesta ante inconsistencias detectadas</li>
+</ol>
+<hr />
+<blockquote>
+<p><strong>Disclaimer:</strong> Este modulo es estrictamente educativo. Los archivos creados son texto plano inofensivo. No se modifican procesos reales del sistema ni se cargan drivers en el kernel.</p>
+</blockquote>
+</body>
+</html>

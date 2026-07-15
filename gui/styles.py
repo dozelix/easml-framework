@@ -2,14 +2,16 @@ import tkinter as tk
 from tkinter import ttk
 
 BG = "#FFF8F0"
+BG_CARD = "#F2ECE4"
 BG_PANEL = "#FFFFFF"
-BG_HOVER = "#F0EBE3"
+BG_HOVER = "#E8E0D6"
 BG_ACTIVO = "#2563EB"
 TEXTO = "#1A1A1A"
 TEXTO_DIM = "#5C5C5C"
 TEXTO_MUTED = "#9C9C9C"
 ACCENT = "#2563EB"
 BORDE = "#1A1A1A"
+BORDE_CARD = "#4A4A4A"
 
 ROJO = "#D6394A"
 AZUL = "#2563EB"

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Módulo 10 — Malware Fileless</h1>
+<h2>📖 1. Definición Teórica y Contexto Histórico</h2>
+<p>El <strong>malware fileless</strong> es una categoría de amenazas que ejecutan código
+directamente en memoria RAM sin escribir artefactos persistentes en disco.
+Aprovecha herramientas legítimas del sistema operativo (PowerShell, WMI,
+regsvr32, mshta) para ejecutar código malicioso sin ser detectado por
+antivirus tradicionales basados en firmas de archivos.</p>
+<h3>¿Por qué evade el antivirus tradicional?</h3>
+<ol>
+<li><strong>Sin firma en disco</strong> — No hay archivo estático que escanear con firmas.</li>
+<li><strong>Herramientas legítimas (LOLBins)</strong> — Usa binarios del sistema como vehículos.</li>
+<li><strong>Ejecución en memoria</strong> — Solo existe durante la ejecución del proceso.</li>
+<li><strong>Ofuscación</strong> — Código codificado en Base64 o cifrado en runtime.</li>
+</ol>
+<h3>Técnicas fileless principales</h3>
+<table>
+<thead>
+<tr>
+<th>Técnica</th>
+<th>Descripción</th>
+<th>Persistencia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PowerShell en memoria</td>
+<td>Ejecuta scripts codificados directamente</td>
+<td>Temporal</td>
+</tr>
+<tr>
+<td>WMI Event Subscription</td>
+<td>Se ejecuta al cumplirse condición del evento</td>
+<td>Permanente</td>
+</tr>
+<tr>
+<td>Registry-based execution</td>
+<td>Código almacenado en claves Run/RunOnce</td>
+<td>Permanente</td>
+</tr>
+<tr>
+<td>Process hollowing</td>
+<td>Inyecta código en proceso legítimo en ejecución</td>
+<td>Temporal</td>
+</tr>
+<tr>
+<td>DLL search order hijacking</td>
+<td>Carga DLL maliciosa antes que la legítima</td>
+<td>Semi-perm.</td>
+</tr>
+</tbody>
+</table>
+<h3>Ejemplos históricos</h3>
+<table>
+<thead>
+<tr>
+<th>Año</th>
+<th>Malware</th>
+<th>Técnica fileless utilizada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2017</td>
+<td>PowerGhost</td>
+<td>Minero fileless propagado por WMI en servidores</td>
+</tr>
+<tr>
+<td>2018</td>
+<td>Emotet</td>
+<td>PowerShell para descargar payloads en memoria</td>
+</tr>
+<tr>
+<td>2019</td>
+<td>Astaroth</td>
+<td>Cadena de LOLBins: mshta → wscript → regsvr32</td>
+</tr>
+<tr>
+<td>2020</td>
+<td>SUNBURST</td>
+<td>Backdoor fileless en actualizaciones SolarWinds</td>
+</tr>
+</tbody>
+</table>
+<h2>⚙️ 2. Mecanismo de Funcionamiento Tecnológico (Flujo Lógico)</h2>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">VECTOR</span><span class="w"> </span><span class="n">DE</span><span class="w"> </span><span class="n">ENTRADA</span><span class="p">:</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">atacante</span><span class="w"> </span><span class="n">envía</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">payload</span><span class="w"> </span><span class="n">inicial</span><span class="w"> </span><span class="p">(</span><span class="n">email</span><span class="p">,</span><span class="w"> </span><span class="n">USB</span><span class="p">,</span><span class="w"> </span><span class="n">exploit</span><span class="p">)</span><span class="o">.</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">ACTIVACIÓN</span><span class="p">:</span><span class="w"> </span><span class="n">Un</span><span class="w"> </span><span class="n">LOLBin</span><span class="w"> </span><span class="p">(</span><span class="n">PowerShell</span><span class="p">,</span><span class="w"> </span><span class="n">WMI</span><span class="p">,</span><span class="w"> </span><span class="n">mshta</span><span class="p">)</span><span class="w"> </span><span class="n">ejecuta</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">código</span><span class="w"> </span><span class="n">desde</span><span class="w"> </span><span class="n">memoria</span><span class="o">.</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">DESCARGA</span><span class="p">:</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">código</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">memoria</span><span class="w"> </span><span class="n">descarga</span><span class="w"> </span><span class="n">etapas</span><span class="w"> </span><span class="n">adicionales</span><span class="w"> </span><span class="nb">sin</span><span class="w"> </span><span class="n">tocar</span><span class="w"> </span><span class="n">disco</span><span class="o">.</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">EJECUCIÓN</span><span class="p">:</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">payload</span><span class="w"> </span><span class="n">opera</span><span class="w"> </span><span class="n">exclusivamente</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">RAM</span><span class="w"> </span><span class="p">(</span><span class="n">robo</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">credenciales</span><span class="p">,</span><span class="w"> </span><span class="n">etc</span><span class="o">.</span><span class="p">)</span><span class="o">.</span>
+<span class="mf">5.</span><span class="w"> </span><span class="n">PERSISTENCIA</span><span class="w"> </span><span class="n">OPCIONAL</span><span class="p">:</span><span class="w"> </span><span class="n">Puede</span><span class="w"> </span><span class="n">escribir</span><span class="w"> </span><span class="n">al</span><span class="w"> </span><span class="n">registro</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="n">WMI</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">reiniciarse</span><span class="o">.</span>
+<span class="mf">6.</span><span class="w"> </span><span class="n">LIMPIEZA</span><span class="p">:</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">código</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">auto</span><span class="o">-</span><span class="n">elimina</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">memoria</span><span class="w"> </span><span class="n">al</span><span class="w"> </span><span class="n">completar</span><span class="w"> </span><span class="n">su</span><span class="w"> </span><span class="n">objetivo</span><span class="o">.</span>
+<span class="mf">7.</span><span class="w"> </span><span class="n">EVASIÓN</span><span class="p">:</span><span class="w"> </span><span class="n">Sin</span><span class="w"> </span><span class="n">archivos</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">disco</span><span class="p">,</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">antivirus</span><span class="w"> </span><span class="n">basados</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">firmas</span><span class="w"> </span><span class="n">no</span><span class="w"> </span><span class="n">lo</span><span class="w"> </span><span class="n">detectan</span><span class="o">.</span>
+</code></pre></div>
+
+<h2>🔺 3. Alineación con la Tríada CIA</h2>
+<ul>
+<li><strong>Pilar Afectado: Integridad (Integrity)</strong></li>
+<li><strong>Justificación Técnica:</strong> El malware fileless compromete la integridad al
+  ejecutar código no autorizado que modifica el comportamiento de procesos
+  legítimos del sistema. Al inyectarse en procesos existentes (process hollowing)
+  o usar herramientas del sistema (PowerShell), altera la integridad del entorno
+  de ejecución sin dejar rastro verificable en disco, haciendo imposible la
+  auditoría post-incidente con herramientas tradicionales.</li>
+</ul>
+<h2>🛡️ 4. Mitigación bajo la Norma de Controles CIS</h2>
+<ul>
+<li>
+<p><strong>CIS Control 2: Inventario y Control de Activos Empresariales (Inventory and Control of Enterprise Assets):</strong>
+  Mantener un inventario completo de todos los activos de red permite identificar
+  dispositivos no autorizados o procesos anómalos que podrían indicar ejecución
+  fileless.</p>
+</li>
+<li>
+<p><strong>Implementación Práctica en Laboratorio:</strong>
+  <code>inspeccion_de_memoria_volatile.py</code> verifica la existencia de archivos temporales residuales en <code>/tmp</code>,
+  analiza timestamps de ejecución y muestra cómo un analista SOC buscaría rastros
+  de ejecución fileless en un sistema real (logs de PowerShell, eventos WMI,
+  procesos en memoria).</p>
+</li>
+</ul>
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Procesos PowerShell con codificación Base64:</strong> Cuando se detecta un proceso
+  de PowerShell ejecutando argumentos codificados en Base64 (parámetro
+  <code>-EncodedCommand</code> o <code>-enc</code>), activar la inspección inmediata de memoria y
+  eventos del sistema.</li>
+<li><strong>Creación y borrado inmediato de archivos en /tmp:</strong> Si el monitoreo de
+  integridad de archivos detecta que un archivo temporal fue creado y eliminado
+  en un intervalo menor a 1 segundo, es un indicador de ejecución fileless.</li>
+<li><strong>Actividad WMI anómala:</strong> Eventos de suscripción WMI creados por procesos no
+  autorizados o con nombres sospechosos (ej: <code>wscript.exe</code> ejecutando scripts
+  desde registros del sistema) activan la investigación forense en memoria.</li>
+<li><strong>Procesos con hollowing detectado:</strong> Si un EDR reporta que un proceso legítimo
+  (explorer.exe, svchost.exe) tiene secciones de memoria con permisos RWX
+  (read-write-execute) inusuales, activar el análisis de inyección de código.</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Supervivencia forense:</strong> Aunque el malware fileless no deja archivos en
+  disco, genera artefactos transitorios (logs de PowerShell, eventos WMI,
+  entradas en <code>/tmp</code>) que pueden capturarse si el monitoreo está activo antes
+  de que el código se auto-elimine de memoria.</li>
+<li><strong>Detección comportamental:</strong> La inspección de memoria volatile permite
+  identificar procesos que contienen código no autorizado en sus espacios de
+  direcciones, algo que los antivirus basados en firmas no pueden hacer ya que
+  no hay archivo estático que escanear.</li>
+<li><strong>Principio de assume breach:</strong> Esta defensa asume que la prevención fallará
+  (el archivo no existe en disco) y se enfoca en detectar la ejecución activa,
+  lo cual es el único momento en que el malware fileless es observable.</li>
+</ul>
+<h3>Ejercicios prácticos de defensa</h3>
+<ol>
+<li><strong>Rastro temporal:</strong> Ejecuta <code>fileless.py</code> y observa la creación y
+   eliminación inmediata del script en <code>/tmp</code>. Luego ejecuta
+   <code>inspeccion_de_memoria_volatile.py</code> para buscar residuos. Intenta ejecutar
+   el script de defensa más rápido que la limpieza del malware para capturar
+   el archivo en tránsito.</li>
+<li><strong>Análisis de logs:</strong> Revisa <code>fileless.log</code> y extrae los timestamps de
+   creación y borrado del script temporal. Calcula la diferencia para demostrar
+   la velocidad de la auto-limpieza. En un entorno real, estos logs se
+   correlacionarían con eventos de Sysmon (Event ID 1: Process Create).</li>
+<li><strong>Simulación de EDR:</strong> Crea un script que monitoree <code>/tmp</code> cada 100ms durante
+   la ejecución de <code>fileless.py</code>. Intenta detectar el archivo temporal antes de
+   que sea eliminado. Esto simula el comportamiento de un EDR con monitoreo en
+   tiempo real.</li>
+</ol>
+<h2>🚀 5. Detalles de la Simulación Educativa (Python)</h2>
+<h3>Qué hace <code>fileless.py</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">Muestra</span><span class="w"> </span><span class="n">una</span><span class="w"> </span><span class="n">tabla</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">las</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="n">técnicas</span><span class="w"> </span><span class="n">fileless</span><span class="w"> </span><span class="n">más</span><span class="w"> </span><span class="n">conocidas</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">ejemplos</span><span class="o">.</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">Crea</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="n">script</span><span class="w"> </span><span class="n">Python</span><span class="w"> </span><span class="n">temporal</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="o">/</span><span class="n">tmp</span><span class="w"> </span><span class="p">(</span><span class="n">simula</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">carga</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">memoria</span><span class="p">)</span><span class="o">.</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">Ejecuta</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">script</span><span class="w"> </span><span class="n">inmediatamente</span><span class="w"> </span><span class="n">via</span><span class="w"> </span><span class="n">subprocess</span><span class="w"> </span><span class="p">(</span><span class="n">simula</span><span class="w"> </span><span class="n">ejecución</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">RAM</span><span class="p">)</span><span class="o">.</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">payload</span><span class="w"> </span><span class="n">solo</span><span class="w"> </span><span class="n">imprime</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="n">mensaje</span><span class="w"> </span><span class="n">educativo</span><span class="w"> </span><span class="p">(</span><span class="n">NO</span><span class="w"> </span><span class="n">realiza</span><span class="w"> </span><span class="n">acciones</span><span class="w"> </span><span class="n">maliciosas</span><span class="p">)</span><span class="o">.</span>
+<span class="mf">5.</span><span class="w"> </span><span class="n">Elimina</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">script</span><span class="w"> </span><span class="n">temporal</span><span class="w"> </span><span class="n">INMEDIATAMENTE</span><span class="w"> </span><span class="n">después</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">ejecución</span><span class="o">.</span>
+<span class="mf">6.</span><span class="w"> </span><span class="n">Verifica</span><span class="w"> </span><span class="n">que</span><span class="w"> </span><span class="n">no</span><span class="w"> </span><span class="n">queda</span><span class="w"> </span><span class="n">ningún</span><span class="w"> </span><span class="n">archivo</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">disco</span><span class="w"> </span><span class="p">(</span><span class="n">simula</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">limpieza</span><span class="w"> </span><span class="n">fileless</span><span class="p">)</span><span class="o">.</span>
+<span class="mf">7.</span><span class="w"> </span><span class="n">Registra</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">ejecución</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">fileless</span><span class="o">.</span><span class="n">log</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">análisis</span><span class="w"> </span><span class="n">educativo</span><span class="o">.</span>
+</code></pre></div>
+
+<h3>Qué hace <code>inspeccion_de_memoria_volatile.py</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">Busca</span><span class="w"> </span><span class="n">archivos</span><span class="w"> </span><span class="n">temporales</span><span class="w"> </span><span class="n">residuales</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">simulación</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="o">/</span><span class="n">tmp</span><span class="mf">.</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">Analiza</span><span class="w"> </span><span class="n">si</span><span class="w"> </span><span class="n">quedaron</span><span class="w"> </span><span class="n">scripts</span><span class="w"> </span><span class="n">fileless</span><span class="w"> </span><span class="nb">sin</span><span class="w"> </span><span class="n">eliminar</span><span class="w"> </span><span class="p">(</span><span class="n">fallo</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">limpieza</span><span class="p">)</span><span class="mf">.</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">Muestra</span><span class="w"> </span><span class="n">las</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="n">técnicas</span><span class="w"> </span><span class="n">fileless</span><span class="w"> </span><span class="n">reales</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">cómo</span><span class="w"> </span><span class="n">detectar</span><span class="w"> </span><span class="n">cada</span><span class="w"> </span><span class="n">una</span><span class="mf">.</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">Elimina</span><span class="w"> </span><span class="kr">to</span><span class="n">dos</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">artefactos</span><span class="w"> </span><span class="n">temporales</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="nb">log</span><span class="n">s</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">simulación</span><span class="mf">.</span>
+<span class="mf">5.</span><span class="w"> </span><span class="n">Recomienda</span><span class="w"> </span><span class="n">herramientas</span><span class="w"> </span><span class="n">reales</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">detección</span><span class="p">:</span><span class="w"> </span><span class="kr">Sys</span><span class="n">mon</span><span class="p">,</span><span class="w"> </span><span class="n">AMSI</span><span class="p">,</span><span class="w"> </span><span class="n">EDR</span><span class="w"> </span><span class="n">behavior</span><span class="o">-</span><span class="n">based</span><span class="mf">.</span>
+</code></pre></div>
+
+<hr />
+<h2>Ejecución</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Generar archivos de laboratorio</span>
+python<span class="w"> </span>core/lab_setup.py
+
+<span class="c1"># Ejecutar simulación</span>
+python<span class="w"> </span>modulos/10_fileless/fileless.py
+
+<span class="c1"># Ver ayuda</span>
+python<span class="w"> </span>modulos/10_fileless/fileless.py<span class="w"> </span>--help
+
+<span class="c1"># Eliminar artefactos residuales</span>
+python<span class="w"> </span>modulos/10_fileless/fileless.py<span class="w"> </span>--clean
+
+<span class="c1"># Detectar y limpiar desde defensa</span>
+python<span class="w"> </span>modulos/10_fileless/inspeccion_de_memoria_volatile.py
+</code></pre></div>
+
+<blockquote>
+<p><strong>NOTA:</strong> En un sistema real, este tipo de malware es extremadamente difícil de
+detectar porque no deja archivos en disco. La detección requiere monitoreo en
+tiempo real de procesos, memoria y eventos del sistema. Todos los archivos
+se generan y gestionan dentro de <code>directorio_pruebas/</code>.</p>
+</blockquote>
+</body>
+</html>
