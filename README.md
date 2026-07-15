@@ -10,7 +10,7 @@ Repositorio académico para el estudio de amenazas de seguridad informática.
 ```mermaid
 graph TB
     subgraph "Punto de entrada"
-        TUI["python tui.py<br/>Interfaz visual interactiva (Textual)"]
+        GUI["python gui.py<br/>Interfaz visual interactiva (tkinter)"]
     end
 
     subgraph "core/"
@@ -22,8 +22,8 @@ graph TB
         COMMON["paths.py, utils.py<br/>cleanup.py, generators.py"]
     end
 
-    subgraph "tui/"
-        TUIMOD["main.py, views.py<br/>styles.py, config.py"]
+    subgraph "gui/"
+        GUIMOD["main.py, views.py<br/>config.py"]
     end
 
     subgraph "modulos/ — 14 amenazas"
@@ -43,19 +43,19 @@ graph TB
         M14["14_dns_tunneling"]
     end
 
-    TUI --> TUIMOD
-    TUIMOD --> M01 & M02 & M03 & M04 & M05 & M06 & M07
-    TUIMOD --> M08 & M09 & M10 & M11 & M12 & M13 & M14
+    GUI --> GUIMOD
+    GUIMOD --> M01 & M02 & M03 & M04 & M05 & M06 & M07
+    GUIMOD --> M08 & M09 & M10 & M11 & M12 & M13 & M14
     M01 & M02 & M03 & M04 & M05 & M06 & M07 --> COMMON
     M08 & M09 & M10 & M11 & M12 & M13 & M14 --> COMMON
-    TUIMOD --> SETUP
+    GUIMOD --> SETUP
 
 ```
 
 ## Requisitos
 
 * Python 3.10+
-* `textual`: `pip install textual`
+* pillow, tkhtmlview, markdown: `pip install pillow tkhtmlview markdown`
 
 ## Inicio rápido
 
@@ -64,7 +64,7 @@ graph TB
 python core/lab_setup.py
 
 # 2. Abrir la interfaz visual interactiva
-python tui.py
+python gui.py
 
 # 3. Limpiar todo el entorno al finalizar
 python core/lab_setup.py --clean
@@ -97,21 +97,21 @@ Cada módulo es autocontenido e incluye el script de emulación (`{nombre}.py`),
 ```mermaid
 sequenceDiagram
     participant E as Estudiante
-    participant T as tui.py (Textual)
+    participant G as gui.py (tkinter)
     participant S as core/lab_setup.py
     participant M as modulos/XX/
 
-    E->>T: python tui.py
-    T->>E: Renderiza interfaz visual (Paneles + Datos CIA/CIS)
-    E->>T: Selecciona módulo y presiona [Enter]
-    T->>S: Verifica que existan archivos de prueba
-    T->>M: Ejecuta subproceso (simulacion.py) de forma asíncrona
-    M-->>T: Envía salida estándar en tiempo real
-    T->>E: Muestra output en el panel de logs
-    E->>T: Presiona [D] para mitigar
-    T->>M: Ejecuta subproceso ({defensa}.py)
-    M-->>T: Limpieza y restauración completada
-    T->>E: Actualiza panel de logs con éxito
+    E->>G: python gui.py
+    G->>E: Renderiza interfaz visual (Paneles + Datos CIA/CIS)
+    E->>G: Selecciona módulo y presiona [Enter]
+    G->>S: Verifica que existan archivos de prueba
+    G->>M: Ejecuta subproceso (simulacion.py) de forma asíncrona
+    M-->>G: Envía salida estándar en tiempo real
+    G->>E: Muestra output en el panel de logs
+    E->>G: Presiona [D] para mitigar
+    G->>M: Ejecuta subproceso ({defensa}.py)
+    M-->>G: Limpieza y restauración completada
+    G->>E: Actualiza panel de logs con éxito
 
 ```
 
@@ -142,8 +142,8 @@ flowchart LR
     DRY --> SETUP["lab_setup.py unico"]
     DRY --> COMMON["paths.py, utils.py<br/>cleanup.py, generators.py"]
     SAFE --> CHECK["verifica archivos de prueba"]
-    SAFE --> CLEAN["TUI/Setup reversa todo"]
-    EDU --> BANNER["información en panel TUI"]
+    SAFE --> CLEAN["Setup reversa todo"]
+    EDU --> BANNER["información en panel GUI"]
     EDU --> STEP["output asíncrono en logs"]
     MOD --> ISOLATE["cada modulo autocontenido"]
 
@@ -153,7 +153,7 @@ flowchart LR
 
 1. Clonar el repositorio.
 2. Ejecutar `python core/lab_setup.py` para generar el entorno seguro con archivos de prueba.
-3. Navegar el laboratorio visual interactivo mediante `python tui.py`.
+3. Navegar el laboratorio visual interactivo mediante `python gui.py`.
 4. Cada módulo cuenta con documentación que profundiza en la teoría del malware, su impacto de gobernanza y bibliografía.
 5. Al finalizar la práctica, limpiar el entorno con: `python core/lab_setup.py --clean`.
 
