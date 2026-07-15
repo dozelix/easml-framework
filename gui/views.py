@@ -12,7 +12,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def _card(parent, **kwargs):
     card = tk.Frame(parent, bg=BG_PANEL, highlightbackground=BORDE,
-                    highlightthickness=2, **kwargs)
+                    highlightthickness=1, **kwargs)
     return card
 
 
@@ -48,13 +48,14 @@ def build_dashboard(parent):
     stats_row = tk.Frame(parent, bg=BG)
     stats_row.pack(fill=tk.X, pady=(0, 20))
 
-    for tit, val, color in [
+    for i, (tit, val, color) in enumerate([
         ("ESTADO", "ACTIVO" if activo else "VACIO", VERDE if activo else ROJO),
         ("ARCHIVOS", str(archivos_lab), TEXTO),
         ("LOGS", str(logs_lab), TEXTO),
-    ]:
+    ]):
+        stats_row.grid_columnconfigure(i, weight=1, uniform="stats")
         c = _card(stats_row, padx=18, pady=14)
-        c.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
+        c.grid(row=0, column=i, sticky="nsew", padx=(0 if i == 0 else 4, 0 if i == 2 else 4))
         tk.Label(c, text=tit, bg=BG_PANEL, fg=TEXTO_DIM,
                  font=FUENTE_SM).pack(anchor="w")
         tk.Label(c, text=val, bg=BG_PANEL, fg=color,
@@ -68,21 +69,18 @@ def build_dashboard(parent):
     cia_row = tk.Frame(parent, bg=BG)
     cia_row.pack(fill=tk.X)
 
-    for cia_name, icon_key in [
+    for i, (cia_name, icon_key) in enumerate([
         ("Confidencialidad", "confidencialidad"),
         ("Integridad", "integridad"),
         ("Disponibilidad", "disponibilidad"),
-    ]:
+    ]):
+        cia_row.grid_columnconfigure(i, weight=1, uniform="cia")
         c = _card(cia_row, padx=16, pady=14)
-        c.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
+        c.grid(row=0, column=i, sticky="nsew", padx=(0 if i == 0 else 4, 0 if i == 2 else 4))
         tk.Label(c, text=cia_name, bg=BG_PANEL, fg=TEXTO_DIM,
                  font=FUENTE_SM).pack(anchor="w")
         tk.Label(c, text=str(cia_counter.get(cia_name, 0)),
                  bg=BG_PANEL, fg=TEXTO, font=FUENTE_STAT).pack(anchor="w", pady=(4, 0))
-
-    _separador(parent)
-    tk.Label(parent, text=f"Total: {len(MODULOS)} modulos ordenados por CIS (2 -> 15)",
-             bg=BG, fg=TEXTO_DIM, font=FUENTE_SM).pack(anchor="w")
 
 
 def build_tutorial(parent):
