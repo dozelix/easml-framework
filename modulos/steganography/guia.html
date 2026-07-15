@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Módulo 09 — Esteganografía</h1>
+<h2>📖 1. Definición Teórica y Contexto Histórico</h2>
+<p>La <strong>esteganografía</strong> es la técnica de ocultar información dentro de otros datos
+(imágenes, audio, video, texto) de forma que un observador no sospeche de su
+existencia. A diferencia del cifrado (que hace el mensaje ilegible), la
+esteganografía <strong>oculta la existencia misma del mensaje</strong>.</p>
+<h3>Diferencia fundamental con el cifrado</h3>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Cifrado</th>
+<th>Esteganografía</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Objetivo</td>
+<td>Hacer el mensaje ilegible</td>
+<td>Ocultar que existe un mensaje</td>
+</tr>
+<tr>
+<td>Visible</td>
+<td>Se ve texto cifrado</td>
+<td>No se ve nada sospechoso</td>
+</tr>
+<tr>
+<td>Detección</td>
+<td>Fácil (texto anómalo)</td>
+<td>Difícil (apariencia normal)</td>
+</tr>
+<tr>
+<td>Uso combinado</td>
+<td>Cifrar + luego esteganografiar</td>
+<td>Capa adicional de ocultación</td>
+</tr>
+</tbody>
+</table>
+<h3>Técnicas principales</h3>
+<table>
+<thead>
+<tr>
+<th>Técnica</th>
+<th>Medio</th>
+<th>Descripción</th>
+<th>Detección</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LSB</strong></td>
+<td>Imágenes</td>
+<td>Modifica bit menos significativo de cada canal RGB</td>
+<td>Muy baja</td>
+</tr>
+<tr>
+<td><strong>DCT</strong></td>
+<td>JPEG</td>
+<td>Modifica coeficientes en dominio de frecuencia</td>
+<td>Baja</td>
+</tr>
+<tr>
+<td><strong>Palette</strong></td>
+<td>PNG indexada</td>
+<td>Reordena colores en la paleta</td>
+<td>Media</td>
+</tr>
+<tr>
+<td><strong>ECC</strong></td>
+<td>Cualquier medio</td>
+<td>Usa corrección de errores para inserción</td>
+<td>Baja</td>
+</tr>
+<tr>
+<td><strong>Audio</strong></td>
+<td>WAV/MP3</td>
+<td>Oculta datos en frecuencias imperceptibles</td>
+<td>Baja</td>
+</tr>
+</tbody>
+</table>
+<h3>Herramientas conocidas</h3>
+<ul>
+<li><strong>Steghide</strong> — Inserción en JPEG/BMP con passphrase.</li>
+<li><strong>zsteg</strong> — Detección automática de LSB en PNG y BMP.</li>
+<li><strong>StegSolve</strong> — Análisis visual por planos de bits (Java).</li>
+<li><strong>OpenStego</strong> — Implementación open-source de LSB con marca de agua.</li>
+</ul>
+<h3>Ejemplos históricos</h3>
+<ul>
+<li><strong>2010:</strong> Se descubrió que el grupo Anonymous usaba esteganografía en imágenes de
+  foros para coordinar operaciones sin ser detectados.</li>
+<li><strong>2013:</strong> El malware Duqu 2.0 (atribuido a la NSA) usaba esteganografía para
+  ocultar datos en archivos de sistema de Windows.</li>
+<li><strong>2017:</strong> Se detectó tráfico C2 de botnets oculto en la cabecera de imágenes
+  JPEG compartidas en redes sociales.</li>
+<li><strong>2020:</strong> Actores APT usaban LSB en imágenes PNG para exfiltrar credenciales
+  capturadas fuera de la red corporativa.</li>
+</ul>
+<h2>⚙️ 2. Mecanismo de Funcionamiento Tecnológico (Flujo Lógico)</h2>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">CAPTURA</span><span class="p">:</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">atacante</span><span class="w"> </span><span class="n">obtiene</span><span class="w"> </span><span class="n">una</span><span class="w"> </span><span class="n">imagen</span><span class="o">/</span><span class="n">portadora</span><span class="w"> </span><span class="p">(</span><span class="n">cover</span><span class="w"> </span><span class="n">image</span><span class="p">)</span><span class="w"> </span><span class="n">legítima</span><span class="mf">.</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">CONVERSIÓN</span><span class="p">:</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">mensaje</span><span class="w"> </span><span class="n">secreto</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">convierte</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">una</span><span class="w"> </span><span class="n">secuencia</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">bits</span><span class="mf">.</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">INSERCIÓN</span><span class="w"> </span><span class="n">LSB</span><span class="p">:</span><span class="w"> </span><span class="n">Se</span><span class="w"> </span><span class="n">reemplaza</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">bit</span><span class="w"> </span><span class="n">menos</span><span class="w"> </span><span class="n">significativo</span><span class="w"> </span><span class="p">(</span><span class="n">LSB</span><span class="p">)</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">cada</span><span class="w"> </span><span class="n">canal</span>
+<span class="w">   </span><span class="n">RGB</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">imagen</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">cada</span><span class="w"> </span><span class="n">bit</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">mensaje</span><span class="w"> </span><span class="n">secreto</span><span class="mf">.</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">REEMPLAZO</span><span class="p">:</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">LSB</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="n">pixel</span><span class="w"> </span><span class="p">(</span><span class="n">ej</span><span class="p">:</span><span class="w"> </span><span class="mf">11010010</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="mf">11010011</span><span class="p">)</span><span class="w"> </span><span class="n">cambia</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="err">±</span><span class="mf">1</span><span class="p">,</span>
+<span class="w">   </span><span class="n">lo</span><span class="w"> </span><span class="n">cual</span><span class="w"> </span><span class="n">es</span><span class="w"> </span><span class="n">invisible</span><span class="w"> </span><span class="n">al</span><span class="w"> </span><span class="n">ojo</span><span class="w"> </span><span class="n">humano</span><span class="w"> </span><span class="n">pero</span><span class="w"> </span><span class="n">almacena</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="n">bit</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">información</span><span class="mf">.</span>
+<span class="mf">5.</span><span class="w"> </span><span class="n">GUARDADO</span><span class="p">:</span><span class="w"> </span><span class="n">La</span><span class="w"> </span><span class="n">imagen</span><span class="w"> </span><span class="n">modificada</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">guarda</span><span class="w"> </span><span class="n">como</span><span class="w"> </span><span class="n">nuevo</span><span class="w"> </span><span class="n">archivo</span><span class="mf">.</span>
+<span class="mf">6.</span><span class="w"> </span><span class="n">EXTRACCIÓN</span><span class="p">:</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">destinatario</span><span class="w"> </span><span class="n">conoce</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">técnica</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">extrae</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">LSB</span><span class="w"> </span><span class="n">para</span>
+<span class="w">   </span><span class="n">reconstruir</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">mensaje</span><span class="w"> </span><span class="n">oculto</span><span class="mf">.</span>
+<span class="mf">7.</span><span class="w"> </span><span class="n">REVERSIBILIDAD</span><span class="p">:</span><span class="w"> </span><span class="n">Si</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">creó</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="n">backup</span><span class="p">,</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">imagen</span><span class="w"> </span><span class="ow">or</span><span class="n">iginal</span><span class="w"> </span><span class="n">puede</span><span class="w"> </span><span class="n">restaurarse</span><span class="mf">.</span>
+</code></pre></div>
+
+<h3>Capacidad de inserción LSB</h3>
+<p>Una imagen de 32×32 píxeles con 3 canales (RGB) ofrece:
+- 32 × 32 × 3 = 3,072 bits de capacidad
+- 3,072 / 8 = 384 bytes de mensaje oculto
+- Aproximadamente 384 caracteres ASCII</p>
+<h2>🔺 3. Alineación con la Tríada CIA</h2>
+<ul>
+<li><strong>Pilar Afectado: Confidencialidad (Confidentiality)</strong></li>
+<li><strong>Justificación Técnica:</strong> La esteganografía compromete la confidencialidad al
+  permitir la exfiltración de datos sensibles a través de canales aparentemente
+  legítimos. Un empleado malicioso puede ocultar listas de contraseñas, planos
+  o información clasificada dentro de imágenes compartidas en redes sociales,
+  evadiendo los controles DLP (Data Loss Prevention) que solo inspeccionan
+  metadatos y contenido visible.</li>
+</ul>
+<h2>🛡️ 4. Mitigación bajo la Norma de Controles CIS</h2>
+<ul>
+<li>
+<p><strong>CIS Control 3: Protección de Datos (Data Protection):</strong>
+  Establece políticas y procedimientos para clasificar, etiquetar y proteger
+  datos sensibles, incluyendo controles contra exfiltración no autorizada.</p>
+</li>
+<li>
+<p><strong>Implementación Práctica en Laboratorio:</strong>
+  <code>analisis_esteganografico.py</code> analiza la distribución estadística de LSB en imágenes PNG para
+  detectar patrones anómalos (ratio ~0.5 sugiere datos ocultos). También
+  restaura la imagen original desde un backup y elimina las copias modificadas,
+  demostrando cómo un equipo de seguridad verificaría la integridad de archivos
+  multimedia en un entorno corporativo.</p>
+</li>
+</ul>
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Archivos multimedia en departamentos sensibles:</strong> Cuando se detecta que
+  usuarios de áreas con alta exposición a datos clasificados (RRHH, finanzas,
+  I+D) suben o comparten imágenes PNG/JPEG fuera de la organización, activar el
+  análisis esteganográfico.</li>
+<li><strong>Alerta de DLP por contenido encriptado o comprimido:</strong> Si un sistema DLP
+  detecta archivos con entropía inusualmente alta en regiones de imagen, o si
+  hay discrepancias en metadatos (tamaño de archivo anómalo para las
+  dimensiones declaradas), activar el análisis estadístico de LSB.</li>
+<li><strong>Investigación forense post-breach:</strong> Tras una brecha de datos, revisar todas
+  las imágenes compartidas externamente durante el período de compromiso. La
+  esteganografía es un vector frecuente de exfiltración por APTs.</li>
+<li><strong>Monitoreo de uploads a redes sociales:</strong> Si un empleado muestra patrones
+  inusuales de subida de imágenes a plataformas públicas, evaluar si podría
+  estar exfiltrando datos ocultos en LSB.</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Detección estadística, no de firmas:</strong> El análisis de distribución de bits
+  LSB funciona porque la inserción de datos aleatorios tiende a igualar la
+  proporción de bits 0 y 1 en los LSB (ratio ~0.5). Imágenes naturales tienen
+  distribuciones de LSB predecibles, por lo que esta desviación es un indicador
+  confiable de manipulación.</li>
+<li><strong>Rompe el canal de exfiltración:</strong> Al restaurar la imagen original desde
+  backups y eliminar las copias modificadas, se invalida el canal de
+  comunicación oculta, haciendo que los datos exfiltrados sean inutilizables
+  para el atacante.</li>
+<li><strong>Principio de mínima sorpresa:</strong> El análisis estadístico no requiere conocer
+  la técnica específica de esteganografía usada — funciona contra LSB, y puede
+  extenderse a otras técnicas verificando entropía y distribuciones de bytes.</li>
+</ul>
+<h3>Ejercicios prácticos de defensa</h3>
+<ol>
+<li><strong>Comparación de entropía:</strong> Ejecuta <code>steganography.py</code> para generar la
+   imagen modificada. Luego ejecuta <code>analisis_esteganografico.py</code> y observa el
+   ratio de LSB. Compara con el hash SHA-256 de ambas imágenes para cuantificar
+   las diferencias a nivel de bits.</li>
+<li><strong>Análisis forense manual:</strong> Abre <code>imagen.png</code> e <code>imagen_steg.png</code> con
+   cualquier visor de imágenes. Verifica que son visualmente idénticas. Luego
+   ejecuta el script de defensa para demostrar que solo el análisis estadístico
+   puede revelar la manipulación.</li>
+<li><strong>Detección de artefactos:</strong> Después de ejecutar <code>--clean</code> en ambos scripts,
+   verifica que no quedan archivos <code>.bak_steg</code> ni copias modificadas. En un
+   entorno real, este paso de limpieza es crítico para eliminar evidencia
+   forense del atacante.</li>
+</ol>
+<h2>🚀 5. Detalles de la Simulación Educativa (Python)</h2>
+<h3>Qué hace <code>steganography.py</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">Crea</span><span class="w"> </span><span class="n">una</span><span class="w"> </span><span class="n">imagen</span><span class="w"> </span><span class="n">PNG</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="mf">32</span><span class="err">×</span><span class="mf">32</span><span class="w"> </span><span class="n">píxeles</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">colores</span><span class="w"> </span><span class="n">variados</span><span class="w"> </span><span class="p">(</span><span class="n">o</span><span class="w"> </span><span class="n">usa</span><span class="w"> </span><span class="n">imagen</span><span class="w"> </span><span class="n">existente</span><span class="p">)</span><span class="mf">.</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">Lee</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">estructura</span><span class="w"> </span><span class="n">IHDR</span><span class="o">/</span><span class="n">IDAT</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">PNG</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">extraer</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">datos</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">píxeles</span><span class="w"> </span><span class="n">crudos</span><span class="mf">.</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">Convierte</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="n">mensaje</span><span class="w"> </span><span class="n">secreto</span><span class="w"> </span><span class="n">educativo</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">una</span><span class="w"> </span><span class="n">secuencia</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">bits</span><span class="mf">.</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">Crea</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">imagen</span><span class="w"> </span><span class="ow">or</span><span class="n">iginal</span><span class="w"> </span><span class="p">(</span><span class="n">imagen</span><span class="mf">.</span><span class="n">png</span><span class="mf">.</span><span class="n">bak_steg</span><span class="p">)</span><span class="mf">.</span>
+<span class="mf">5.</span><span class="w"> </span><span class="n">Aplica</span><span class="w"> </span><span class="n">LSB</span><span class="w"> </span><span class="n">embedding</span><span class="p">:</span><span class="w"> </span><span class="n">reemplaza</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">bit</span><span class="w"> </span><span class="n">menos</span><span class="w"> </span><span class="n">significativo</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">cada</span><span class="w"> </span><span class="n">canal</span><span class="w"> </span><span class="n">RGB</span><span class="mf">.</span>
+<span class="mf">6.</span><span class="w"> </span><span class="n">Reconstruye</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">PNG</span><span class="w"> </span><span class="n">modificado</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">lo</span><span class="w"> </span><span class="n">guarda</span><span class="w"> </span><span class="n">como</span><span class="w"> </span><span class="n">imagen_steg</span><span class="mf">.</span><span class="n">png</span><span class="mf">.</span>
+<span class="mf">7.</span><span class="w"> </span><span class="n">Verifica</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">extracción</span><span class="w"> </span><span class="n">reversiva</span><span class="p">:</span><span class="w"> </span><span class="n">lee</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">LSB</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">imagen</span><span class="w"> </span><span class="n">modificada</span><span class="w"> </span><span class="n">y</span>
+<span class="w">   </span><span class="n">reconstruye</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">mensaje</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">confirmar</span><span class="w"> </span><span class="nb">int</span><span class="n">egridad</span><span class="mf">.</span>
+<span class="mf">8.</span><span class="w"> </span><span class="n">Compara</span><span class="w"> </span><span class="n">hashes</span><span class="w"> </span><span class="n">SHA</span><span class="o">-</span><span class="mf">256</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="ow">or</span><span class="n">iginal</span><span class="w"> </span><span class="n">vs</span><span class="w"> </span><span class="n">modificada</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">demostrar</span><span class="w"> </span><span class="n">diferencias</span><span class="mf">.</span>
+</code></pre></div>
+
+<h3>Qué hace <code>analisis_esteganografico.py</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">Escanea</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">directorio</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">busca</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">imagen_steg</span><span class="mf">.</span><span class="n">png</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">backups</span><span class="w"> </span><span class="mf">.</span><span class="n">bak_steg</span><span class="mf">.</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">Analiza</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">distribución</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">LSB</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">cada</span><span class="w"> </span><span class="n">imagen</span><span class="w"> </span><span class="n">PNG</span><span class="w"> </span><span class="n">encontrada</span><span class="mf">.</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">Calcula</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">ratio</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">bits</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="n">vs</span><span class="w"> </span><span class="n">bits</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">canales</span><span class="w"> </span><span class="n">RGB</span><span class="mf">.</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">Detecta</span><span class="w"> </span><span class="n">anomalías</span><span class="p">:</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="n">ratio</span><span class="w"> </span><span class="n">cercano</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="n">sugiere</span><span class="w"> </span><span class="n">datos</span><span class="w"> </span><span class="n">ocultos</span><span class="w"> </span><span class="p">(</span><span class="n">aleatorización</span><span class="p">)</span><span class="mf">.</span>
+<span class="mf">5.</span><span class="w"> </span><span class="n">Restaura</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">imagen</span><span class="w"> </span><span class="ow">or</span><span class="n">iginal</span><span class="w"> </span><span class="n">desde</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="n">si</span><span class="w"> </span><span class="n">existe</span><span class="mf">.</span>
+<span class="mf">6.</span><span class="w"> </span><span class="n">Elimina</span><span class="w"> </span><span class="kr">to</span><span class="n">das</span><span class="w"> </span><span class="n">las</span><span class="w"> </span><span class="n">copias</span><span class="w"> </span><span class="n">modificadas</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">artefactos</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">simulación</span><span class="mf">.</span>
+</code></pre></div>
+
+<hr />
+<h2>Ejecución</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Generar archivos de laboratorio</span>
+python<span class="w"> </span>core/lab_setup.py
+
+<span class="c1"># Ejecutar simulación</span>
+python<span class="w"> </span>modulos/09_steganography/steganography.py
+
+<span class="c1"># Ver ayuda</span>
+python<span class="w"> </span>modulos/09_steganography/steganography.py<span class="w"> </span>--help
+
+<span class="c1"># Restaurar imagen y limpiar</span>
+python<span class="w"> </span>modulos/09_steganography/steganography.py<span class="w"> </span>--clean
+
+<span class="c1"># Analizar y limpiar desde defensa</span>
+python<span class="w"> </span>modulos/09_steganography/analisis_esteganografico.py
+</code></pre></div>
+
+<blockquote>
+<p><strong>NOTA:</strong> La imagen modificada es visualmente idéntica a la original. La técnica
+LSB es prácticamente indetectable sin análisis estadístico. Todos los archivos
+se generan y gestionan dentro de <code>directorio_pruebas/</code>.</p>
+</blockquote>
+</body>
+</html>

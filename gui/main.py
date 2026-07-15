@@ -1,22 +1,17 @@
 import os
 import sys
+import webbrowser
 import tkinter as tk
 from tkinter import ttk, messagebox
 
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _DIR_RAIZ)
 
-from gui.config import MODULOS, NOMBRES_DEFENSA
-from gui.laboratorio import DESAFIOS_POR_MODULO
+from app.config import MODULOS, NOMBRES_DEFENSA
+from app.laboratorio import DESAFIOS_POR_MODULO
+from app.runner import ScriptRunner
 from gui.styles import *
-from gui.views import build_dashboard, build_tutorial, build_modulo_info, leer_readme, md_to_html
-
-try:
-    from tkhtmlview import HTMLLabel
-    HAS_HTML = True
-except ImportError:
-    HAS_HTML = False
-from gui.runner import ScriptRunner
+from gui.views import build_dashboard, build_tutorial, build_modulo_info
 from gui.desafio import DesafioWindow
 
 try:
@@ -126,18 +121,6 @@ class LaboratorioGUI(tk.Tk):
         # Content area
         self.content_frame = tk.Frame(der, bg=BG)
         self.content_frame.pack(fill=tk.BOTH, expand=True, padx=14, pady=10)
-
-        # HTML reader for README (shared)
-        self.html_readme = None
-        self.fallback_text = None
-        if HAS_HTML:
-            self.html_readme = HTMLLabel(self.content_frame, html="",
-                                         background=BG_PANEL, font=FUENTE)
-            self.html_readme.fit_height = True
-        else:
-            self.fallback_text = tk.Text(self.content_frame, bg=BG_PANEL, fg=TEXTO,
-                                         font=FUENTE, wrap=tk.WORD, relief="flat",
-                                         padx=10, pady=8, state=tk.DISABLED)
 
         # Action buttons
         bacc = tk.Frame(der, bg=BG, height=48)
@@ -258,12 +241,14 @@ class LaboratorioGUI(tk.Tk):
         self._mostrar_widgets(build_modulo_info, index)
 
     def _mostrar_readme(self, index: int):
-        md = leer_readme(index)
-        if md is None:
-            self._mostrar_widgets(lambda p: tk.Label(p, text="Este modulo no tiene documentacion aun.",
-                                    bg=BG, fg=TEXTO_DIM, font=FUENTE).pack(anchor="w"))
+        num, nombre = MODULOS[index][0], MODULOS[index][1]
+        html_path = os.path.join(_DIR_RAIZ, 'modulos', nombre, "guia.html")
+        if not os.path.exists(html_path):
+            self._mostrar_widgets(lambda p: tk.Label(p, text="Este modulo no tiene guia disponible.",
+                                     bg=BG, fg=TEXTO_DIM, font=FUENTE).pack(anchor="w"))
             return
-        self._mostrar_html(md_to_html(md))
+        webbrowser.open(f"file://{html_path}")
+        self._log(f"[GUIA] Abriendo {nombre}/guia.html en el navegador")
 
     def _restaurar(self):
         sel = self.lista.selection()

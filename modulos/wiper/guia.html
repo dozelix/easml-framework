@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Modulo 02 - Wiper</h1>
+<h2>📖 1. Definicion Teorica y Contexto Historico</h2>
+<p>Un <strong>wiper</strong> (limpiador) es un tipo de malware disenado para <strong>destruir datos de
+forma permanente</strong>, sin posibilidad de recuperacion sin un backup. A diferencia del
+ransomware, el wiper <strong>no busca rescate monetario</strong>: su objetivo es causar el mayor
+dano posible al sistema victima, generalmente en contextos de ciberguerra o
+sabotaje corporativo.</p>
+<h3>Diferencia clave con ransomware</h3>
+<table>
+<thead>
+<tr>
+<th>Caracteristica</th>
+<th>Ransomware</th>
+<th>Wiper</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Objetivo</td>
+<td>Extorsion monetaria</td>
+<td>Destruccion / sabotaje</td>
+</tr>
+<tr>
+<td>Cifrado</td>
+<td>Si (reversible con clave)</td>
+<td>No (corrupcion irreversible)</td>
+</tr>
+<tr>
+<td>Nota de rescate</td>
+<td>Si</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Recuperacion</td>
+<td>Posible con clave o backup</td>
+<td>Solo con backup</td>
+</tr>
+<tr>
+<td>Motivacion</td>
+<td>Economica</td>
+<td>Politica / geopolitica</td>
+</tr>
+<tr>
+<td>Velocidad</td>
+<td>Lenta (cifrado)</td>
+<td>Rapida (sobrescritura)</td>
+</tr>
+</tbody>
+</table>
+<h3>Variantes historicas</h3>
+<table>
+<thead>
+<tr>
+<th>Año</th>
+<th>Nombre</th>
+<th>Contexto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2012</td>
+<td>Shamoon</td>
+<td>Ataco Saudi Aramco, destruyo datos de 35.000+ computadoras con imagen de bandera de EEUU</td>
+</tr>
+<tr>
+<td>2016</td>
+<td>Shamoon 2</td>
+<td>Segundo ataque a Saudi Aramco y otras empresas del Golfo</td>
+</tr>
+<tr>
+<td>2022</td>
+<td>WhisperGate</td>
+<td>Previo a la invasion rusa de Ucrania; se disfrazo como ransomware pero era un wiper</td>
+</tr>
+<tr>
+<td>2022</td>
+<td>HermeticWiper</td>
+<td>Ataco sistemas ucranianos con driver firmado legítimo (WinMon32.sys)</td>
+</tr>
+<tr>
+<td>2022</td>
+<td>CaddyWiper</td>
+<td>Desplegado en Ucrania durante la invasion; evitaba dispositivos con WinPE</td>
+</tr>
+<tr>
+<td>2022</td>
+<td>AcidRain</td>
+<td>Wiper para routers/modems Viasat usado el dia de la invasion</td>
+</tr>
+</tbody>
+</table>
+<h3>Contexto geopolitico</h3>
+<p>Los wipers son el arma de ciberguerra preferida para degradar la capacidad
+operativa del adversario. En 2022, Ucrania fue blanco de <strong>cuatro wipers
+diferentes</strong> en semanas: WhisperGate, HermeticWiper, CaddyWiper y IsaacWiper,
+representando el mayor despliegue coordinado de armas ciberneticas jamas visto.</p>
+<hr />
+<h2>⚙️ 2. Mecanismo de Funcionamiento Tecnologico (Flujo Logico)</h2>
+<h3>Flujo detallado de un ataque wiper</h3>
+<div class="codehilite"><pre><span></span><code>1. INFECCION INICIAL
+   El wiper se instala en el sistema via: supply chain comprometida,
+   phishing dirigido, explotacion de vulnerabilidad, o USB malicioso.
+
+2. ESCALAMIENTO DE PRIVILEGIOS
+   El malware obtiene permisos de administrador/root para poder
+   sobreescribir archivos criticos y accesos al disco.
+
+3. RECONOCIMIENTO
+   Identifica archivos y sistemas objetivo:
+   - Tipos de archivo (.docx, .xlsx, .pdf, .jpg, .sql, etc.)
+   - Unidades de disco y particiones
+   - Sistemas de archivos montados
+
+4. CORRUPCION / SOBRESCRITURA
+   Para cada archivo objetivo:
+   a) Sobreescribe los primeros N bytes con datos aleatorios o ceros
+   b) En wipers avanzados: sobreescribe TODO el archivo
+   c) Shamoon usaba una imagen de bandera de 19KB
+   d) NotPetya cifraba el MBR con una clave hardcodeada
+
+5. ELIMINACION DE BACKUPS
+   - vssadmin delete shadows /all /quiet
+   - bcdedit /set {default} recoveryenabled No
+   - wbadmin delete catalog -quiet
+   - Elimina puntos de restauracion del sistema
+
+6. SOBRESCRITURA DEL MBR / GPT
+   Algunos wipers (Shamoon, NotPetya) sobreescriben el Master Boot
+   Record para hacer el disco completamente inoperativo.
+
+7. RESULTADO
+   El sistema queda inoperativo. Sin backup = perdida total.
+</code></pre></div>
+
+<h3>En esta simulacion educativa</h3>
+<p>El algoritmo de <code>wiper.py</code> sobreescribe los <strong>primeros 64 bytes</strong> de cada
+archivo con datos aleatorios generados por <code>random.randint(0, 255)</code>. Esto corrompe
+la estructura del archivo (headers de imagenes, metadatos, etc.) demostrando como
+un wiper destruye datos sin necesidad de cifrarlos.</p>
+<hr />
+<h2>🔺 3. Alineacion con la Trisada CIA</h2>
+<ul>
+<li><strong>Pilar Afectado:</strong> Disponibilidad (Availability)</li>
+<li><strong>Justificacion Tecnica:</strong> El wiper ataca la Disponibilidad de forma mas agresiva
+  que el ransomware: mientras el ransomware cifra (reversible con clave), el wiper
+  <strong>destruye</strong> los datos sobreescribiendo sus bytes con basura. El resultado es
+  que los archivos dejan de ser legibles — no solo inaccesibles, sino
+  <strong>irrecuperables</strong> sin un backup externo. A diferencia del ransomware, no hay
+  "clave" que pagar. La unica defensa es un backup offline que el wiper no pueda
+  alcanzar. El wiper es el ataque mas puro contra la Disponibilidad porque su
+  efecto es permanente e irreversible.</li>
+</ul>
+<hr />
+<h2>🛡️ 4. Mitigacion bajo la Norma de Controles CIS</h2>
+<ul>
+<li>
+<p><strong>CIS Control 10 — Copias de Seguridad (Data Recovery):</strong>
+  Este control exige establecer y mantener un proceso de copias de seguridad
+  regulares, con prueba periodica de restauracion. Las copias deben estar
+  protegidas contra acceso no autorizado, cifrado por malware, y eliminacion
+  por wipers. Los backups deben ser <strong>inmutables</strong> (WORM) y mantener al menos
+  una copia offline o air-gapped.</p>
+</li>
+<li>
+<p><strong>Implementacion Practica en Laboratorio:</strong>
+  <code>auditoria_de_integridad.py</code> implementa la verificacion de integridad comparando hashes
+  SHA-256 de los archivos actuales contra una copia segura en <code>.backup_wiper/</code>.
+  Si detecta diferencias, restaura los archivos desde el backup y verifica
+  que los hashes coincidan post-restauracion. Esto demuestra el flujo que un
+  equipo de respuesta a incidentes seguiria en produccion.</p>
+</li>
+</ul>
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Corrupcion masiva de archivos</strong>: Cuando se detecta que multiples archivos tienen sus primeros bytes sobrescritos con datos aleatorios, o cuando archivos de sistema pierden su formato (headers corruptos, imagenes que no se abren)</li>
+<li><strong>Eliminacion de copias de seguridad</strong>: Igual que en ransomware, la ejecucion de comandos de eliminacion de shadow copies es un indicador critico, pero en el contexto de wiper se ejecuta inmediatamente antes de la destruccion</li>
+<li><strong>Alertas de integridad de archivos</strong>: Herramientas FIM (File Integrity Monitoring) que reportan cambios en archivos criticos del sistema o de datos en lote</li>
+<li><strong>Destruccion de MBR/GPT</strong>: Cuando el sistema no puede arrancar o reporta corrupcion del Master Boot Record — esto indica un wiper avanzado que destruye la tabla de particiones</li>
+<li><strong>Escenario real</strong>: Durante un incidente geopolitico, un equipo de TI detecta que archivos en multiples servidores tienen headers corruptos y no se pueden abrir. Se activa inmediatamente el protocolo de recuperacion desde backups offline</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Backup inmutable (WORM)</strong>: Un backup WORM (Write Once Read Many) no puede ser modificado ni eliminado ni siquiera por un usuario con privilegios de administrador, porque esta diseniado para ser grabado una sola vez. El wiper no tiene capacidad de destruir algo que no puede modificar</li>
+<li><strong>Deteccion temprana por comparacion de hashes</strong>: La comparacion SHA-256 entre archivos actuales y su copia segura revela exactamente cuales archivos fueron corrompidos, permitiendo una recuperacion quirurgica en lugar de una restauracion ciega completa</li>
+<li><strong>Irreversibilidad del ataque</strong>: A diferencia del ransomware, el wiper no tiene punto de retorno — los datos destruidos estan perdidos para siempre sin backup. Esto hace que el backup offline sea la <strong>unica</strong> defensa efectiva, no una opcion</li>
+<li><strong>Restauracion verificable</strong>: El proceso de restaurar desde backup y verificar hashes garantiza que el sistema queda exactamente como estaba antes del ataque, sin residuos de corrupcion</li>
+</ul>
+<h3>Ejercicios practicos de defensa</h3>
+<ol>
+<li><strong>Observar la destruccion en accion</strong>: Ejecuta <code>python wiper.py</code> y observa como los primeros 64 bytes de cada archivo son sobrescritos con datos aleatorios. Luego intenta abrir los archivos corruptos (imagenes, CSVs) y documenta que tipo de danio observas en cada formato</li>
+<li><strong>Verificacion de integridad con auditoria</strong>: Ejecuta <code>python auditoria_de_integridad.py</code> y analiza el reporte de hashes. Identifica cuales archivos fueron corrompidos (hash diferente al backup) y cuales sobrevivieron intactos. Compara los hashes antes/despues de la restauracion</li>
+<li><strong>Diseno de estrategia de backup</strong>: Basandote en los resultados del laboratorio, diseña un plan de backups WORM para una empresa de 50 empleados. Define frecuencia, retencion, ubicacion (offline/on-premise/nube) y prueba de restauracion. Justifica cada decision usando los principios CIS</li>
+</ol>
+<hr />
+<h2>🚀 5. Detalles de la Simulacion Educativa (Python)</h2>
+<h3>Que hace <code>wiper.py</code></h3>
+<div class="codehilite"><pre><span></span><code>1. PREPARACION
+   - Crea directorio_pruebas/ y copia los 12 archivos del lab
+
+2. BACKUP SEGURO
+   - Crea .backup_wiper/ con copias intactas antes de corromper
+   - Representa un backup WORM/air-gapped
+
+3. RECONOCIMIENTO
+   - Enumera todos los archivos con extensiones objetivo
+   - Muestra tamano y nombre de cada archivo
+
+4. CORRUPCION
+   - Para cada archivo: sobreescribe primeros 64 bytes con basura
+   - Genera datos aleatorios con random.randint(0, 255)
+   - Registra hashes antes/despues de la corrupcion
+
+5. ELIMINACION DE BACKUPS (simulada)
+   - Muestra comandos reales que un wiper ejecutaria
+   - No ejecuta nada realmente
+
+6. COMPARACION RANSOMWARE vs WIPER
+   - Explica las diferencias clave entre ambos tipos
+</code></pre></div>
+
+<h3>Que hace <code>auditoria_de_integridad.py</code></h3>
+<div class="codehilite"><pre><span></span><code>1. VERIFICACION DE BACKUP
+   - Comprueba que .backup_wiper/ existe y tiene archivos
+
+2. ESCANEO DE ARCHIVOS
+   - Lista archivos en directorio_pruebas/
+
+3. COMPARACION DE HASHES
+   - Calcula SHA-256 de cada archivo actual vs backup
+   - Los archivos con hashes diferentes estan corruptos
+
+4. RESTAURACION
+   - Copia archivos intactos desde .backup_wiper/
+   - Verifica hash post-restauracion
+
+5. VERIFICACION FINAL
+   - Muestra hashes SHA-256 de todos los archivos restaurados
+   - Confirma integridad
+
+6. RECOMENDACIONES
+   - Backups inmutables (WORM)
+   - Copias offline/air-gapped
+   - Pruebas de restauracion periodicas
+</code></pre></div>
+</body>
+</html>

@@ -3,7 +3,7 @@ import re
 import tkinter as tk
 import webbrowser
 from collections import Counter
-from gui.config import MODULOS, NOMBRES_DEFENSA
+from app.config import MODULOS, NOMBRES_DEFENSA
 from gui.styles import *
 
 
@@ -128,7 +128,7 @@ def build_modulo_info(parent, index: int):
 
     sim_existe = os.path.exists(os.path.join(dir_modulo, f"{script}.py"))
     def_existe = os.path.exists(os.path.join(dir_modulo, f"{arch_defensa}.py"))
-    md_existe = os.path.exists(os.path.join(dir_modulo, "README.md"))
+    md_existe = os.path.exists(os.path.join(dir_modulo, "guia.html"))
 
     _titulo(parent, "INFORMACION DEL MODULO")
 
@@ -148,7 +148,7 @@ def build_modulo_info(parent, index: int):
     for label, existe in [
         (f"Simulacion: {script}.py", sim_existe),
         (f"Defensa:    {arch_defensa}.py", def_existe),
-        ("Documentacion (README.md)", md_existe),
+        ("Guia (guia.html)", md_existe),
     ]:
         c = _card(parent, padx=16, pady=8)
         c.pack(fill=tk.X, pady=2)

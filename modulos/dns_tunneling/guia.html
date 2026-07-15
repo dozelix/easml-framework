@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Modulo 14 - DNS Tunneling</h1>
+<h2>1. Definicion Teorica y Contexto Historico</h2>
+<p>El <strong>DNS Tunneling</strong> es una tecnica de exfiltracion de datos y comunicacion
+Command and Control (C2) que codifica la informacion dentro de consultas DNS
+aparentemente normales. Dado que el DNS es un protocolo esencial para el
+funcionamiento de cualquier red, rara vez se bloquea completamente, lo que lo
+convierte en un canal ideal para eludir firewalls y sistemas de deteccion.</p>
+<h3>Como funciona el tunel DNS</h3>
+<p>En un ataque de DNS tunneling, el atacante controla un servidor DNS autoritativo
+que recibe las consultas de la victima. Los datos se codifican en los subdominios
+de las consultas DNS (labels), que pueden contener hasta 63 caracteres cada uno.
+El servidor del atacante decodifica estas consultas para recuperar los datos
+exfiltrados, y puede enviar comandos de retorno codificados en las respuestas DNS.</p>
+<h3>Herramientas reales de DNS tunneling</h3>
+<table>
+<thead>
+<tr>
+<th>Herramienta</th>
+<th>Plataforma</th>
+<th>Metodo</th>
+<th>Velocidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>iodine</td>
+<td>Linux/macOS/Windows</td>
+<td>Codifica en subdominios A/TXT</td>
+<td>~200 Kbps</td>
+</tr>
+<tr>
+<td>dnscat2</td>
+<td>Linux/macOS/Windows</td>
+<td>Canales cifrados via DNS</td>
+<td>Variable</td>
+</tr>
+<tr>
+<td>DNSExfiltrator</td>
+<td>Windows (PowerShell)</td>
+<td>Exfiltracion via subdominios</td>
+<td>Lento</td>
+</tr>
+<tr>
+<td>Iodine-ng</td>
+<td>Linux</td>
+<td>Tunnel IPv4 sobre DNS</td>
+<td>~300 Kbps</td>
+</tr>
+<tr>
+<td>Dnscat</td>
+<td>Linux</td>
+<td>Tunel bidireccional cifrado</td>
+<td>Variable</td>
+</tr>
+</tbody>
+</table>
+<h3>Por que el DNS es dificil de bloquear</h3>
+<ul>
+<li><strong>Infraestructura critica</strong>: DNS es esencial para el funcionamiento de la red</li>
+<li><strong>Puerto 53 siempre abierto</strong>: Firewalls raramente bloquean el DNS</li>
+<li><strong>Protocolo legitimo</strong>: El trafico DNS se ve normal en logs de red</li>
+<li><strong>Codificacion en subdominios</strong>: Los datos caben en la consulta (63 bytes/label)</li>
+<li><strong>UDP</strong>: Sin estado, dificil de rastrear sesiones</li>
+<li><strong>Baja frecuencia</strong>: Las consultas DNS son poco frecuentes y cortas</li>
+</ul>
+<h3>Ataques notorios</h3>
+<table>
+<thead>
+<tr>
+<th>Ano</th>
+<th>Nombre</th>
+<th>Descripcion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2016</td>
+<td>OilRush</td>
+<td>Grupo APT irani que uso DNS tunneling para exfiltrar datos de organizaciones energeticas.</td>
+</tr>
+<tr>
+<td>2017</td>
+<td>DNSMessenger</td>
+<td>Malware que usaba TXT records para comunicacion C2 via DNS.</td>
+</tr>
+<tr>
+<td>2019</td>
+<td>ROPIRUN</td>
+<td>Trafico masivo de DNS como mecanismo de propagacion de malware.</td>
+</tr>
+<tr>
+<td>2020</td>
+<td>DNSpionage</td>
+<td>Campana APT que uso DNS tunneling para robar credenciales de VPN y correo.</td>
+</tr>
+<tr>
+<td>2023</td>
+<td>BPFDoor</td>
+<td>Malware que evadia firewalls usando tunneles DNS para mantener acceso persistente.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>2. Mecanismo de Funcionamiento Tecnologico (Flujo Logico)</h2>
+<ol>
+<li>
+<p><strong>Instalacion del payload</strong>: El malware se instala en el sistema victima y
+   comienza a generar consultas DNS al dominio controlado por el atacante.</p>
+</li>
+<li>
+<p><strong>Codificacion de datos</strong>: Los datos a exfiltrar (credenciales, archivos,
+   comandos) se codifican en base32 o base64 para ser seguros en DNS.</p>
+</li>
+<li>
+<p><strong>Division en chunks</strong>: Los datos codificados se dividen en fragmentos de
+   maximo 63 caracteres (limite de un label DNS).</p>
+</li>
+<li>
+<p><strong>Consulta DNS</strong>: Cada chunk se envia como subdominio de una consulta:
+   <code>[chunk].d00.evil-server.com</code></p>
+</li>
+<li>
+<p><strong>Recepcion en C2</strong>: El servidor DNS autoritativo del atacante recibe la
+   consulta, extrae el subdominio, y decodifica los datos.</p>
+</li>
+<li>
+<p><strong>Respuesta C2</strong>: El servidor responde con una IP controlada o un registro
+   TXT que contiene comandos codificados para la victima.</p>
+</li>
+<li>
+<p><strong>Ejecucion de comandos</strong>: La victima decodifica la respuesta y ejecuta
+   los comandos recibidos, enviando los resultados via nuevas consultas DNS.</p>
+</li>
+</ol>
+<hr />
+<h2>3. Alineacion con la Triada CIA</h2>
+<ul>
+<li>
+<p><strong>Pilar Afectado: Confidencialidad (Confidentiality)</strong></p>
+</li>
+<li>
+<p><strong>Justificacion Tecnica</strong>: El DNS tunneling compromete la confidencialidad al
+  exfiltrar datos sensibles (credenciales, archivos, informacion proprietaria)
+  a traves de un canal que se infiltra como trafico DNS legitimo. Los firewalls
+  y sistemas de deteccion tipicamente permiten el DNS (puerto 53), por lo que
+  los datos exfiltrados escapan de los controles de seguridad perimetral. Ademas,
+  el canal C2 bidireccional permite al atacante ejecutar comandos remotos en el
+  sistema victima, accediendo a informacion que no deberia ser accesible externamente.</p>
+</li>
+</ul>
+<hr />
+<h2>4. Mitigacion bajo la Norma de Controles CIS</h2>
+<ul>
+<li>
+<p><strong>CIS Control 13: Defensa de Red (Network Monitoring and Defense)</strong></p>
+</li>
+<li>
+<p><strong>Justificacion</strong>: El monitoreo de red es esencial para detectar trafico DNS
+  anomalo que pueda indicar tunneling. Este control establece que las
+  organizaciones deben monitorear el trafico de red en busca de patrones
+  sospechosos, incluyendo subdominios inusualmente largos, alta frecuencia de
+  consultas al mismo dominio, y presencia de codificacion (base32/base64) en
+  consultas DNS.</p>
+</li>
+<li>
+<p><strong>Implementacion Practica en Laboratorio</strong>: El script <code>deteccion_de_anomalias_dns.py</code> implementa
+  5 verificaciones: (1) busqueda de archivos de logs DNS y scripts payload,
+  (2) analisis de contenido de logs DNS buscando trafico tunneled (labels largos,
+  dominios .evil, base32), (3) deteccion de scripts con funciones de codificacion
+  DNS y dominios C2 hardcodeados, (4) escaneo de subdominios inusualmente largos
+  (&gt;30 caracteres) en archivos del proyecto, y (5) deteccion de secuencias base32
+  sospechosas en archivos. Herramientas de produccion recomendadas: Suricata
+  (reglas DNS tunneling), Zeek/Bro (analisis de trafico DNS), y DNS analytics
+  con Machine Learning.</p>
+</li>
+</ul>
+<hr />
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Subdominios inusualmente largos (&gt;30 caracteres):</strong> Cuando el análisis de
+  logs DNS revela consultas con labels que exceden la longitud normal de
+  subdominios (típicamente 5-15 caracteres), es un IOC fuerte de DNS tunneling
+  ya que los datos codificados en base32/base64 requieren espacio extra.</li>
+<li><strong>Alta frecuencia de consultas al mismo dominio:</strong> Si un host realiza decenas
+  o cientos de consultas DNS al mismo dominio en un período corto (minutos),
+  sugiere que está fragmentando datos para exfiltrarlos a través del canal DNS.</li>
+<li><strong>Consultas con patrones de codificación:</strong> La presencia de caracteres válidos
+  en base32/base64 (A-Z, 2-7, +, /) en subdominios de consultas DNS es un
+  indicador de que se están encapsulando datos en el protocolo.</li>
+<li><strong>Tráfico TXT record anómalo:</strong> Las consultas de tipo TXT son el vector más
+  frecuente para DNS tunneling bidireccional. Un volumen inusual de consultas
+  TXT hacia un dominio específico activa la inspección profunda.</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Análisis de dimensionalidad anómala:</strong> El DNS tunneling requiere labels más
+  largos y más frecuentes que el tráfico DNS legítimo. Al establecer umbrales
+  de longitud y frecuencia, se detecta la desviación del comportamiento normal
+  sin necesidad de inspeccionar el contenido cifrado de las consultas.</li>
+<li><strong>Correlación multi-vector:</strong> La combinación de análisis de logs DNS,
+  detección de scripts con funciones de codificación y escaneo de patrones
+  base32 proporciona visibilidad desde múltiples ángulos, haciendo que la
+  evasión sea significativamente más difícil para el atacante.</li>
+<li><strong>Desarticulación del canal C2:</strong> Al identificar y bloquear el dominio
+  utilizado para el tunelDNS, se corta tanto la exfiltración de datos como el
+  canal de comandos C2, neutralizando completamente la operación del atacante.</li>
+</ul>
+<h3>Ejercicios prácticos de defensa</h3>
+<ol>
+<li><strong>Análisis de logs DNS:</strong> Ejecuta <code>dns_tunneling.py</code> y revisa los logs
+   generados en <code>logs_dns/</code>. Identifica los chunks codificados en base32 y
+   calcula la longitud de los labels. Luego ejecuta
+   <code>deteccion_de_anomalias_dns.py</code> y verifica que detecta los patrones de
+   tunneling.</li>
+<li><strong>Detección de dominios C2:</strong> Busca en los archivos generados referencias a
+   <code>evil-server.example.com</code>. En un entorno real, este dominio se bloquearía
+   en el DNS resolver y se agregaría a una lista de Indicators of Compromise
+   para bloqueo perimetral.</li>
+<li><strong>Prueba de limpieza:</strong> Ejecuta <code>deteccion_de_anomalias_dns.py --clean</code> y
+   verifica que se eliminan los logs DNS, scripts payload y artefactos de
+   tunneling. Luego ejecuta una segunda pasada para confirmar que no quedan
+   evidencias de la actividad maliciosa.</li>
+</ol>
+<h2>5. Detalles de la Simulacion Educativa (Python)</h2>
+<ul>
+<li>
+<p><strong>Que hace <code>dns_tunneling.py</code></strong>:
+  El script simula el proceso completo de DNS tunneling sin generar trafico DNS real.
+  Copia archivos del laboratorio a <code>./directorio_pruebas/</code> y luego codifica un mensaje
+  secreto (credenciales, datos del sistema) en base32, lo divide en chunks, y simula
+  consultas DNS al dominio <code>evil-server.example.com</code>. Muestra cada paso: codificacion,
+  envio de chunks con labels largos, simulacion de respuestas del servidor C2, y
+  decodificacion. Tambien demuestra un canal C2 bidireccional con comandos simulados
+  (whoami, id, hostname). Incluye un panel de deteccion que muestra los indicadores
+  que veria un analista de SOC. Genera logs de trafico DNS y un script payload.</p>
+</li>
+<li>
+<p><strong>Que hace <code>deteccion_de_anomalias_dns.py</code></strong>:
+  Implementa un escaneo de 5 verificaciones: (1) busqueda de archivos de logs DNS y
+  scripts payload en <code>logs_dns/</code> y <code>scripts_dns/</code>, (2) analisis de contenido de logs
+  DNS buscando labels largos, dominios .evil, y secuencias base32 validas, (3) deteccion
+  de scripts con funciones de codificacion DNS (<code>codificar_dns</code>, <code>DOMINIO_C2</code>,
+  <code>base32encode</code>), (4) escaneo de subdominios largos (&gt;30 chars) en archivos del
+  proyecto, y (5) deteccion de secuencias base32 sospechosas (&gt;20 chars). Incluye
+  funcion de limpieza con <code>--clean</code>.</p>
+</li>
+</ul>
+<hr />
+<div class="codehilite"><pre><span></span><code><span class="n">flowchart</span><span class="w"> </span><span class="n">TD</span>
+<span class="w">    </span><span class="n">A</span><span class="p">[</span><span class="n">Atacante</span><span class="w"> </span><span class="n">controla</span><span class="w"> </span><span class="n">DNS</span><span class="w"> </span><span class="n">autoritativo</span><span class="p">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">B</span><span class="p">[</span><span class="n">Victima</span><span class="w"> </span><span class="n">ejecuta</span><span class="w"> </span><span class="n">payload</span><span class="p">]</span>
+<span class="w">    </span><span class="n">B</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">C</span><span class="p">[</span><span class="n">Datos</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">exfiltrar</span><span class="p">]</span>
+<span class="w">    </span><span class="n">C</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">D</span><span class="p">[</span><span class="n">Codifica</span><span class="w"> </span><span class="n">datos</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">base32</span><span class="p">]</span>
+<span class="w">    </span><span class="n">D</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">E</span><span class="p">[</span><span class="n">Divide</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">chunks</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="mi">63</span><span class="w"> </span><span class="n">chars</span><span class="p">]</span>
+<span class="w">    </span><span class="n">E</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">F</span><span class="p">[</span><span class="s2">&quot;DNS query: aGVsbG8=.d00.evil.com&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="n">F</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">G</span><span class="p">[</span><span class="n">Servidor</span><span class="w"> </span><span class="n">DNS</span><span class="w"> </span><span class="n">local</span><span class="w"> </span><span class="n">reenvia</span><span class="p">]</span>
+<span class="w">    </span><span class="n">G</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">H</span><span class="p">[</span><span class="n">Servidor</span><span class="w"> </span><span class="n">DNS</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">atacante</span><span class="p">]</span>
+<span class="w">    </span><span class="n">H</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">I</span><span class="p">[</span><span class="n">Decodifica</span><span class="w"> </span><span class="n">datos</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">subdominio</span><span class="p">]</span>
+<span class="w">    </span><span class="n">I</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">J</span><span class="p">[</span><span class="n">Atacante</span><span class="w"> </span><span class="n">obtiene</span><span class="w"> </span><span class="n">datos</span><span class="p">]</span>
+<span class="w">    </span><span class="n">H</span><span class="w"> </span><span class="o">--&gt;|</span><span class="n">Respuesta</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">comando</span><span class="o">|</span><span class="w"> </span><span class="n">K</span><span class="p">[</span><span class="n">IP</span><span class="w"> </span><span class="n">controlada</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="n">TXT</span><span class="w"> </span><span class="n">record</span><span class="p">]</span>
+<span class="w">    </span><span class="n">K</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">L</span><span class="p">[</span><span class="n">Payload</span><span class="w"> </span><span class="n">recibe</span><span class="w"> </span><span class="n">comando</span><span class="p">]</span>
+<span class="w">    </span><span class="n">L</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">M</span><span class="p">[</span><span class="n">Ejecuta</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">victima</span><span class="p">]</span>
+<span class="w">    </span><span class="n">M</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">C</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">fill</span><span class="p">:</span><span class="c1">#e74c3c,color:#fff</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">H</span><span class="w"> </span><span class="n">fill</span><span class="p">:</span><span class="c1">#e74c3c,color:#fff</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">I</span><span class="w"> </span><span class="n">fill</span><span class="p">:</span><span class="c1">#e74c3c,color:#fff</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">J</span><span class="w"> </span><span class="n">fill</span><span class="p">:</span><span class="c1">#e74c3c,color:#fff</span>
+</code></pre></div>
+</body>
+</html>

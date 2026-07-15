@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Modulo 13 - Ataque de Cadena de Suministro (Supply Chain Attack)</h1>
+<h2>1. Definicion Teorica y Contexto Historico</h2>
+<p>Un <strong>ataque a la cadena de suministro</strong> (supply chain attack) es una tecnica en la
+que el atacante compromete un componente legitimo del proceso de desarrollo de
+software para distribuir malware a usuarios finales que confian en ese componente.
+En lugar de atacar directamente al objetivo, el atacante explota la confianza en
+herramientas, dependencias o procesos de distribucion.</p>
+<h3>Vectores de ataque en cadena de suministro</h3>
+<ul>
+<li><strong>Typosquatting</strong>: Publicar paquetes con nombres similares a los populares
+  (ej: <code>requets</code> en vez de <code>requests</code>) para capturar errores de tipeo.</li>
+<li><strong>Dependency Confusion</strong>: Publicar en el registry publico un paquete con el mismo
+  nombre que un paquete interno de una organizacion, con version mas alta.</li>
+<li><strong>Account Takeover</strong>: Comprometer la cuenta del maintainer de un paquete popular
+  para publicar versiones maliciosas.</li>
+<li><strong>Build Compromise</strong>: Inyectar codigo malicioso en el proceso de compilacion
+  (CI/CD), como en el caso SolarWinds.</li>
+<li><strong>Maintainer Insider</strong>: Un desarrollador malicioso dentro del equipo de
+  desarrollo inserta codigo backdoor.</li>
+</ul>
+<h3>Ataques notorios</h3>
+<table>
+<thead>
+<tr>
+<th>Ano</th>
+<th>Nombre</th>
+<th>Impacto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2017</td>
+<td>CCleaner</td>
+<td>Backdoor insertada en versions 5.33-5.34, afectando a 2.27 millones de usuarios.</td>
+</tr>
+<tr>
+<td>2018</td>
+<td>event-stream</td>
+<td>Maintainer comprometido, dependencia flatmap-stream robo credenciales de wallets cryptocurrency.</td>
+</tr>
+<tr>
+<td>2020</td>
+<td>SolarWinds (SUNBURST)</td>
+<td>Backdoor en actualizaciones de Orion, 18,000+ organizaciones comprometidas incluyendo agencias gubernamentales.</td>
+</tr>
+<tr>
+<td>2021</td>
+<td>ua-parser-js</td>
+<td>Account takeover, versions comprometidas 0.7.29 y 1.0.0 con minero y credential stealer.</td>
+</tr>
+<tr>
+<td>2021</td>
+<td>Log4Shell</td>
+<td>Vulnerabilidad en dependencia ubiquitua (Log4j), CVE-2021-44228, CVSS 10.0.</td>
+</tr>
+<tr>
+<td>2023</td>
+<td>XZ Utils</td>
+<td>Backdoor insertada por maintainer ficticio durante 2 anos, comprometiendo SSH en distribuciones Linux.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>2. Mecanismo de Funcionamiento Tecnologico (Flujo Logico)</h2>
+<ol>
+<li>
+<p><strong>Reconocimiento</strong>: El atacante identifica paquetes populares o dependencias
+   internas de la organizacion objetivo.</p>
+</li>
+<li>
+<p><strong>Preparacion</strong>: Crea paquetes maliciosos con nombres similares (typosquatting)
+   o identicos (dependency confusion) a los paquetes legitimos.</p>
+</li>
+<li>
+<p><strong>Infeccion del registro</strong>: Publica los paquetes maliciosos en registries publicos
+   (npm, PyPI, RubyGems) o compromete cuentas de maintainers existentes.</p>
+</li>
+<li>
+<p><strong>Distribucion</strong>: Los desarrolladores instalan o actualizan dependencias,
+   descargando automaticamente el paquete malicioso.</p>
+</li>
+<li>
+<p><strong>Ejecucion del payload</strong>: El codigo malicioso se ejecuta durante la instalacion
+   (post-install scripts) o en tiempo de ejecucion.</p>
+</li>
+<li>
+<p><strong>Exfiltracion/Backdoor</strong>: El payload roba credenciales, instala backdoors,
+   mina criptomonedas o establece comunicacion C2.</p>
+</li>
+<li>
+<p><strong>Persistencia</strong>: El malware se mantiene en el sistema incluso despues de
+   actualizar el paquete, ya que puede haber modificado archivos del sistema.</p>
+</li>
+</ol>
+<hr />
+<h2>3. Alineacion con la Triada CIA</h2>
+<ul>
+<li>
+<p><strong>Pilar Afectado: Integridad (Integrity)</strong></p>
+</li>
+<li>
+<p><strong>Justificacion Tecnica</strong>: El ataque a la cadena de suministro compromete la
+  integridad del software al modificar dependencias legitimas sin que el desarrollador
+  lo detecte. Cuando un paquete malicioso reemplaza o se agrega a una dependencia,
+  la integridad del codigo fuente se ve afectada: el software que el desarrollador
+  cree que es legitimo en realidad contiene codigo no autorizado. Esto viola la
+  integridad porque los datos (codigo fuente, dependencias) han sido modificados
+  sin autorizacion, y el sistema no tiene forma de verificar que los componentes
+  no han sido alterados.</p>
+</li>
+</ul>
+<hr />
+<h2>4. Mitigacion bajo la Norma de Controles CIS</h2>
+<ul>
+<li>
+<p><strong>CIS Control 15: Seguridad de Servidores (Service Provider Security)</strong></p>
+</li>
+<li>
+<p><strong>Justificacion</strong>: Este control establece que las organizaciones deben verificar
+  la seguridad de los proveedores de servicios y herramientas que utilizan en su
+  cadena de suministro. Incluye la verificacion de integridad de paquetes,
+  el uso de lockfiles para fijar versiones, y la auditoria regular de
+  dependencias. Las organizaciones deben mantener un SBOM (Software Bill of
+  Materials) y verificar hashes de paquetes contra registros oficiales.</p>
+</li>
+<li>
+<p><strong>Implementacion Practica en Laboratorio</strong>: El script <code>verificacion_de_dependencias_sca.py</code> implementa
+  6 verificaciones: (1) analisis de <code>requirements.txt</code> contra lista de paquetes
+  maliciosos conocidos y patrones de version anormal, (2) inspeccion de
+  <code>package.json</code> para dependencias sospechosas, (3) revision de <code>package-lock.json</code>
+  contra paquetes comprometidos, (4) deteccion de scripts de hook de instalacion
+  (post-install, pre-install), (5) verificacion de SBOM con metadatos de ataque,
+  y (6) verificacion de integridad de archivos criticos del proyecto.</p>
+</li>
+</ul>
+<hr />
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Actualización o instalación de dependencias nuevas:</strong> Después de cada
+  <code>npm install</code>, <code>pip install</code> o actualización de dependencias, ejecutar el
+  análisis SCA para verificar que no se han introducido paquetes maliciosos.
+  Especialmente crítico cuando se actualizan paquetes de terceros frecuentemente
+  utilizados.</li>
+<li><strong>Alerta de typosquatting en registries públicos:</strong> Cuando un desarrollador
+  reporta un paquete con nombre sospechosamente similar a uno legítimo, o
+  cuando un scanner de seguridad detecta paquetes no verificados en el
+  <code>requirements.txt</code> o <code>package.json</code>, activar la auditoría completa de
+  dependencias.</li>
+<li><strong>Nuevo colaborador o cambio de maintainers:</strong> Cuando un paquete cambia de
+  maintainer o cuando se incorpora un nuevo desarrollador con acceso al
+  repositorio, revisar las dependencias del proyecto para detectar posibles
+  backdoors o dependencias nuevas no autorizadas.</li>
+<li><strong>Auditorías de seguridad periódicas:</strong> Ejecutar el análisis SCA como parte
+  del pipeline CI/CD en cada commit, especialmente antes de despliegues a
+  producción, para detectar cambios en la cadena de suministro.</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Verificación de integridad en múltiples capas:</strong> Al analizar
+  <code>requirements.txt</code>, <code>package.json</code>, <code>package-lock.json</code> y scripts de hook
+  simultáneamente, se detectan amenazas en cada etapa del proceso de
+  instalación de dependencias, no solo al momento de la descarga.</li>
+<li><strong>Detección de patrones de ataque conocidos:</strong> La comparación contra listas
+  de paquetes maliciosos conocidos (flask-utils, enterprise-tool) y patrones de
+  version anormal permite identificar ataques de supply chain documentados
+  antes de que el payload sea ejecutado.</li>
+<li><strong>SBOM como línea de defensa:</strong> El Software Bill of Materials proporciona un
+  inventario completo de todas las dependencias del proyecto, permitiendo
+  rastrear rápidamente qué componentes están comprometidos cuando se publica
+  una nueva vulnerabilidad (como Log4Shell).</li>
+</ul>
+<h3>Ejercicios prácticos de defensa</h3>
+<ol>
+<li><strong>Análisis de typosquatting:</strong> Ejecuta <code>supply_chain.py</code> y revisa los
+   archivos <code>requirements.txt</code> y <code>package.json</code> generados. Luego ejecuta
+   <code>verificacion_de_dependencias_sca.py</code> e identifica qué paquetes son
+   legítimos y cuáles son typosquatting (ej: <code>flask-utils</code> vs <code>flask</code>).</li>
+<li><strong>Auditoría de hooks de instalación:</strong> Revisa los scripts de hook generados
+   por la simulación. Identifica los patrones sospechosos (<code>exec()</code>,
+   <code>subprocess</code>, <code>os.system</code>) que el script de defensa detecta. Compara con
+   hooks legítimos de paquetes populares.</li>
+<li><strong>Verificación de SBOM:</strong> Analiza el SBOM generado y verifica que contiene
+   los metadatos de tipo de ataque. En un entorno real, este SBOM se usaría
+   para cumplir con regulaciones de seguridad de software y para responder
+   rápidamente a nuevas CVEs afectando dependencias del proyecto.</li>
+</ol>
+<h2>5. Detalles de la Simulacion Educativa (Python)</h2>
+<ul>
+<li>
+<p><strong>Que hace <code>supply_chain.py</code></strong>:
+  El script simula un ataque completo a la cadena de suministro. Copia archivos del
+  laboratorio a <code>./directorio_pruebas/</code> y genera manifest de dependencias falsas:
+  <code>requirements.txt</code> con paquetes Python (flask-utils, enterprise-tool) y
+  <code>package.json</code> con paquetes Node.js (event-stream, ua-parser-js). Demuestra
+  cuatro tecnicas: typosquatting (nombres similares), dependency confusion (paquetes
+  internos publicados), account takeover (compromiso de maintainer), y build
+  compromise (SolarWinds-style). Genera un SBOM (Software Bill of Materials) falso
+  que incluye metadatos de tipo de ataque. Todo es reversble con <code>--clean</code>.</p>
+</li>
+<li>
+<p><strong>Que hace <code>verificacion_de_dependencias_sca.py</code></strong>:
+  Implementa un escaneo de 6 verificaciones: (1) analisis de <code>requirements.txt</code>
+  buscando paquetes maliciosos conocidos (flask-utils, enterprise-tool) y patrones
+  de version anormal, (2) inspeccion de <code>package.json</code> para dependencias con
+  sufijos maliciosos, (3) revision de <code>package-lock.json</code> contra paquetes
+  comprometidos, (4) deteccion de scripts de hook de instalacion con patrones
+  sospechosos (exec, subprocess, os.system), (5) verificacion de SBOM con
+  metadatos de tipo de ataque, y (6) verificacion de integridad de archivos
+  criticos. Incluye funcion de limpieza con <code>--clean</code>.</p>
+</li>
+</ul>
+<hr />
+<div class="codehilite"><pre><span></span><code><span class="n">flowchart</span><span class="w"> </span><span class="n">TD</span>
+<span class="w">    </span><span class="n">A</span><span class="p">[</span><span class="n">Atacante</span><span class="w"> </span><span class="n">identifica</span><span class="w"> </span><span class="n">paquete</span><span class="w"> </span><span class="n">popular</span><span class="p">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">B</span><span class="p">{</span><span class="n">Tipo</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">ataque</span><span class="p">}</span>
+<span class="w">    </span><span class="n">B</span><span class="w"> </span><span class="o">--&gt;|</span><span class="n">Typosquatting</span><span class="o">|</span><span class="w"> </span><span class="n">C</span><span class="p">[</span><span class="n">Publica</span><span class="w"> </span><span class="n">paquete</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">nombre</span><span class="w"> </span><span class="n">similar</span><span class="p">]</span>
+<span class="w">    </span><span class="n">B</span><span class="w"> </span><span class="o">--&gt;|</span><span class="n">Account</span><span class="w"> </span><span class="n">Takeover</span><span class="o">|</span><span class="w"> </span><span class="n">D</span><span class="p">[</span><span class="n">Compromete</span><span class="w"> </span><span class="n">cuenta</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">maintainer</span><span class="p">]</span>
+<span class="w">    </span><span class="n">B</span><span class="w"> </span><span class="o">--&gt;|</span><span class="n">Build</span><span class="w"> </span><span class="n">Compromise</span><span class="o">|</span><span class="w"> </span><span class="n">E</span><span class="p">[</span><span class="n">Inyecta</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">pipeline</span><span class="w"> </span><span class="n">CI</span><span class="o">/</span><span class="n">CD</span><span class="p">]</span>
+<span class="w">    </span><span class="n">B</span><span class="w"> </span><span class="o">--&gt;|</span><span class="n">Dep</span><span class="p">.</span><span class="w"> </span><span class="n">Confusion</span><span class="o">|</span><span class="w"> </span><span class="n">F</span><span class="p">[</span><span class="n">Publica</span><span class="w"> </span><span class="n">paquete</span><span class="w"> </span><span class="n">interno</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">registry</span><span class="w"> </span><span class="n">publico</span><span class="p">]</span>
+<span class="w">    </span><span class="n">C</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">G</span><span class="p">[</span><span class="n">Desarrollador</span><span class="w"> </span><span class="n">instala</span><span class="w"> </span><span class="n">paquete</span><span class="p">]</span>
+<span class="w">    </span><span class="n">D</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">G</span>
+<span class="w">    </span><span class="n">E</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">H</span><span class="p">[</span><span class="n">Actualizacion</span><span class="w"> </span><span class="n">distribuida</span><span class="p">]</span>
+<span class="w">    </span><span class="n">F</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">G</span>
+<span class="w">    </span><span class="n">G</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">I</span><span class="p">[</span><span class="n">Dependencia</span><span class="w"> </span><span class="n">maliciosa</span><span class="w"> </span><span class="n">instalada</span><span class="p">]</span>
+<span class="w">    </span><span class="n">I</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">J</span><span class="p">[</span><span class="n">Codigo</span><span class="w"> </span><span class="n">malicioso</span><span class="w"> </span><span class="n">ejecutado</span><span class="p">]</span>
+<span class="w">    </span><span class="n">J</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">K</span><span class="p">[</span><span class="n">Data</span><span class="w"> </span><span class="n">exfiltration</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Backdoor</span><span class="p">]</span>
+<span class="w">    </span><span class="n">J</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">L</span><span class="p">[</span><span class="n">Minero</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">Ransomware</span><span class="p">]</span>
+<span class="w">    </span><span class="n">J</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">M</span><span class="p">[</span><span class="n">Credenciales</span><span class="w"> </span><span class="n">comprometidas</span><span class="p">]</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">e74c3c</span><span class="p">,</span><span class="n">color</span><span class="o">:</span><span class="err">#</span><span class="n">fff</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">I</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">e67e22</span><span class="p">,</span><span class="n">color</span><span class="o">:</span><span class="err">#</span><span class="n">fff</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">J</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">e74c3c</span><span class="p">,</span><span class="n">color</span><span class="o">:</span><span class="err">#</span><span class="n">fff</span>
+</code></pre></div>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Modulo 12 - Criptominero (Cryptominer)</h1>
+<h2>1. Definicion Teorica y Contexto Historico</h2>
+<p>Un <strong>criptominero</strong> (o cryptojacker) es un tipo de malware que secuestra los recursos
+computacionales de un sistema victima para minar criptomonedas sin el consentimiento
+del propietario. A diferencia del ransomware, que busca un rescate directo, el
+criptominero genera ganancias continuas para el atacante mientras permanezca oculto.</p>
+<h3>Algoritmo de minado: Proof of Work (PoW)</h3>
+<p>El minado de criptomonedas como Bitcoin y Monero se basa en el algoritmo <strong>Proof of
+Work (PoW)</strong>, que requiere que el minero encuentre un valor (nonce) tal que el hash
+SHA-256 del bloque sea menor que un umbral de dificultad. Esto significa que el hash
+debe comenzar con un numero determinado de ceros. El proceso es intensivo en CPU/GPU
+porque implica calcular millones de hashes por segundo hasta encontrar uno valido.</p>
+<h3>Contexto historico y ataques notorios</h3>
+<table>
+<thead>
+<tr>
+<th>Ano</th>
+<th>Nombre</th>
+<th>Descripcion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2017</td>
+<td>Coinhive</td>
+<td>Servicio JavaScript que minaba Monero en el navegador de visitantes. Infecto mas de 30,000 sitios web, incluyendo The Pirate Bay. Cerrado en 2019.</td>
+</tr>
+<tr>
+<td>2018</td>
+<td>CreativeFan</td>
+<td>Minero que se propagaba via exploits de EternalBlue, comprometiendo servidores Windows desactualizados.</td>
+</tr>
+<tr>
+<td>2019</td>
+<td>Lemon Duck</td>
+<td>Minero de Python que explotaba Redis y Docker, propagandose via CVE-2020-14882. Minaba Monero usando CPU del servidor.</td>
+</tr>
+<tr>
+<td>2020</td>
+<td>PowerGhost</td>
+<td>Minero fileless que se ejecuta en memoria, propagandose via EternalBlue (MS17-010) e instalando persistencia como servicio.</td>
+</tr>
+<tr>
+<td>2021</td>
+<td>8220 Gang</td>
+<td>Grupo de actores maliciosos que针对 vulnerabilities en Oracle WebLogic y Apache para instalar mineros.</td>
+</tr>
+<tr>
+<td>2023</td>
+<td>Kinsing</td>
+<td>Minero que explotaba vulnerabilidades en contenedores Docker y servidores Linux para minar Monero.</td>
+</tr>
+</tbody>
+</table>
+<h3>Por que es peligroso</h3>
+<ul>
+<li><strong>Disponibilidad</strong>: El minero consume CPU/GPU al 100%, degradando el rendimiento
+  del sistema y causando disponibilidad de servicio.</li>
+<li><strong>Ocultamiento</strong>: Los mineros modernos utilizan tecnicas de ofuscacion, nomenclatura
+  de procesos legitimos y persistencia avanzada para evitar la deteccion.</li>
+<li><strong>Escalabilidad</strong>: Un solo minero comprometido puede propagarse a otros sistemas
+  de la red, convirtiendose en un botnet de minado.</li>
+</ul>
+<hr />
+<h2>2. Mecanismo de Funcionamiento Tecnologico (Flujo Logico)</h2>
+<ol>
+<li>
+<p><strong>Infeccion inicial</strong>: El minero se instala en el sistema via phishing, exploits,
+   dependencias comprometidas o drive-by downloads.</p>
+</li>
+<li>
+<p><strong>Conexion al pool</strong>: El malware establece conexion con un pool de minado (servidor
+   que coordina el trabajo entre mineros) usando el protocolo Stratum sobre TCP.</p>
+</li>
+<li>
+<p><strong>Recepcion de trabajo</strong>: El pool envia al minero un bloque de trabajo que incluye
+   la transaccion coinbase, el merkle root y el umbral de dificultad.</p>
+</li>
+<li>
+<p><strong>Calculo de hashes</strong>: El minero calcula hashes SHA-256 (o RandomX para Monero)
+   iterando sobre diferentes valores de nonce hasta encontrar uno que cumpla la
+   dificultad requerida.</p>
+</li>
+<li>
+<p><strong>Envio de resultado</strong>: Cuando encuentra un hash valido, lo envia al pool como
+   prueba de trabajo. El pool verifica y otorga una fraccion de recompensa.</p>
+</li>
+<li>
+<p><strong>Persistencia</strong>: El minero se auto-ejecuta al inicio del sistema via cron,
+   systemd, WMI o modificaciones al registro.</p>
+</li>
+<li>
+<p><strong>Evasion</strong>: Utiliza nombres de proceso similares a procesos del sistema (svchost,
+   csrss), ofuscacion de codigo, y ejecucion en memoria para evadir antivirus.</p>
+</li>
+</ol>
+<hr />
+<h2>3. Alineacion con la Triada CIA</h2>
+<ul>
+<li>
+<p><strong>Pilar Afectado: Disponibilidad (Availability)</strong></p>
+</li>
+<li>
+<p><strong>Justificacion Tecnica</strong>: El criptominero consume recursos computacionales (CPU,
+  GPU, memoria, ancho de banda) al maximo nivel, dejando insuficientes recursos para
+  las operaciones normales del sistema. Esto resulta en degradacion de rendimiento,
+  tiempos de respuesta elevados, y en casos criticos, caida completa de servicios
+  criticos. La disponibilidad se ve comprometida porque el sistema no puede prestar
+  el servicio para el cual fue disenido, ya que sus recursos estan siendo utilizados
+  por la actividad minera maliciosa.</p>
+</li>
+</ul>
+<hr />
+<h2>4. Mitigacion bajo la Norma de Controles CIS</h2>
+<ul>
+<li>
+<p><strong>CIS Control 8: Auditoria de Cuentas (Audit Log Management)</strong></p>
+</li>
+<li>
+<p><strong>Justificacion</strong>: Los registros de auditoria permiten detectar patrones de consumo
+  anormal de recursos, procesos sospechosos y conexiones a pools de minado. Un
+  sistema de gestion de logs debe capturar eventos de sistema, cambios en procesos
+  y actividad de red para que un equipo de seguridad pueda identificar indicadores
+  de compromiso (IOCs) de cryptojacking.</p>
+</li>
+<li>
+<p><strong>Implementacion Practica en Laboratorio</strong>: El script <code>monitoreo_de_recursos_cpu.py</code> implementa
+  auditoria de 6 vectores: (1) monitoreo de uso de CPU via <code>/proc/loadavg</code>,
+  (2) busqueda de archivos de configuracion de minero, (3) deteccion de codigo
+  de minado inyectado en scripts, (4) escaneo de archivos temporales sospechosos
+  en <code>/tmp</code>, (5) revision de procesos activos contra una lista de mineros conocidos
+  (xmrig, minerd, cpuminer, etc.), y (6) analisis de conexiones de red en puertos
+  tipicos de minado (3333, 4444, 5555, 8888, 9999).</p>
+</li>
+</ul>
+<hr />
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Uso de CPU anormalmente alto sostenido:</strong> Cuando el monitoreo de recursos
+  reporta un consumo de CPU superior al 90% durante períodos prolongados sin
+  una carga de trabajo legítima asociada, activar la inspección de procesos y
+  conexiones de red.</li>
+<li><strong>Procesos con nombres similares a mineros conocidos:</strong> La detección de
+  procesos como <code>xmrig</code>, <code>minerd</code>, <code>cpuminer</code>, o variantes con nombres
+  ofuscados (ej: <code>xmr-stak</code>, <code>kthreaddi</code>) activa la investigación forense
+  inmediata.</li>
+<li><strong>Conexiones a puertos de minado:</strong> Tráfico de salida hacia los puertos
+  típicos de pools de minado (3333, 4444, 5555, 8888, 9999) es un IOC fuerte
+  de cryptojacking que requiere respuesta inmediata.</li>
+<li><strong>Archivos de configuración de minero:</strong> La presencia de archivos JSON con
+  campos como <code>pool</code>, <code>wallet</code>, <code>algo</code>, <code>threads</code> en directorios temporales o
+  del usuario es un indicador directo de actividad minera maliciosa.</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Múltiples vectores de detección:</strong> La auditoría de 6 vectores simultáneos
+  (CPU, archivos de config, código inyectado, procesos, conexiones, archivos
+  temporales) asegura que la detección no dependa de un solo indicador,
+  reduciendo la probabilidad de falsos negativos.</li>
+<li><strong>Correlación de artefactos:</strong> Un criptominero genera múltiples artefactos
+  simultáneos (alto consumo CPU + conexión a puerto de minado + archivos de
+  configuración). La correlación de estos indicadores proporciona una señal
+  más fuerte que cualquiera de ellos individualmente.</li>
+<li><strong>Principio de least privilege aplicado a monitoreo:</strong> Al auditar recursos,
+  procesos y red simultáneamente, se implementa un modelo de defensa que cubre
+  las tres dimensiones principales donde un minero puede ser detectado, haciendo
+  que la evasión requiera comprometer los tres vectores a la vez.</li>
+</ul>
+<h3>Ejercicios prácticos de defensa</h3>
+<ol>
+<li><strong>Análisis de artefactos:</strong> Ejecuta <code>cryptominer.py</code> y observa las métricas
+   de hashrate generadas. Luego ejecuta <code>monitoreo_de_recursos_cpu.py</code> y
+   verifica cuáles de las 6 verificaciones detectan los artefactos de la
+   simulación. Compara los resultados con lo que verías en un sistema real.</li>
+<li><strong>Escaneo de configuración:</strong> Inspecciona el archivo de configuración JSON
+   generado por la simulación. Identifica los campos que revelarían la dirección
+   del pool y la wallet del atacante. En un entorno real, estos datos se
+   usarían para atribuir el ataque y bloquear las IPs del pool.</li>
+<li><strong>Prueba de limpieza:</strong> Ejecuta <code>monitoreo_de_recursos_cpu.py --clean</code> y
+   verifica que se eliminan todos los artefactos (configuración JSON, logs,
+   scripts temporales). Luego ejecuta la verificación de procesos para confirmar
+   que no queda ningún proceso sospechoso activo.</li>
+</ol>
+<h2>5. Detalles de la Simulacion Educativa (Python)</h2>
+<ul>
+<li>
+<p><strong>Que hace <code>cryptominer.py</code></strong>:
+  El script simula el comportamiento completo de un criptominero sin generar danio.
+  Copia archivos del laboratorio a <code>./directorio_pruebas/</code> y luego ejecuta un
+  algoritmo de minado que calcula hashes SHA-256 sobre datos aleatorios. Muestra
+  metricas en tiempo real: hashrate (hashes/segundo), dificultad (numero de ceros
+  requeridos), nonce, porcentaje de CPU, y bloques encontrados. Genera artefactos
+  de prueba: un archivo de configuracion JSON con datos ficticios del pool/wallet,
+  un log de estadisticas de minado, y un script temporal que simula actividad
+  sospechosa. Todo el proceso es reversble con <code>--clean</code>.</p>
+</li>
+<li>
+<p><strong>Que hace <code>monitoreo_de_recursos_cpu.py</code></strong>:
+  Implementa un escaneo de deteccion de 6 verificaciones: (1) analisis de uso de CPU
+  via <code>/proc/loadavg</code>, (2) busqueda de archivos de configuracion de minero en el
+  directorio de artefactos, (3) verificacion de integridad de <code>script.py</code> buscando
+  patrones de codigo de minado inyectado, (4) escaneo de archivos temporales en
+  <code>/tmp</code> con patrones de minero, (5) inspeccion de procesos activos contra la lista
+  de mineros conocidos, y (6) analisis de conexiones de red en puertos tipicos de
+  minado. Incluye funcion de limpieza completa con <code>--clean</code>.</p>
+</li>
+</ul>
+<hr />
+<div class="codehilite"><pre><span></span><code><span class="n">flowchart</span><span class="w"> </span><span class="n">TD</span>
+<span class="w">    </span><span class="n">A</span><span class="p">[</span><span class="n">Infeccion</span><span class="w"> </span><span class="n">via</span><span class="w"> </span><span class="n">phishing</span><span class="o">/</span><span class="n">exploit</span><span class="p">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">B</span><span class="p">[</span><span class="n">Conexion</span><span class="w"> </span><span class="n">al</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">minado</span><span class="p">]</span>
+<span class="w">    </span><span class="n">B</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">C</span><span class="p">[</span><span class="n">Recibe</span><span class="w"> </span><span class="n">trabajo</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">pool</span><span class="p">]</span>
+<span class="w">    </span><span class="n">C</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">D</span><span class="p">[</span><span class="n">Calcula</span><span class="w"> </span><span class="n">hashes</span><span class="w"> </span><span class="n">SHA</span><span class="mi">-256</span><span class="p">]</span>
+<span class="w">    </span><span class="n">D</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">E</span><span class="p">{</span><span class="n">Hash</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">dificultad</span><span class="o">?</span><span class="p">}</span>
+<span class="w">    </span><span class="n">E</span><span class="w"> </span><span class="o">--&gt;|</span><span class="n">No</span><span class="o">|</span><span class="w"> </span><span class="n">D</span>
+<span class="w">    </span><span class="n">E</span><span class="w"> </span><span class="o">--&gt;|</span><span class="n">Si</span><span class="o">|</span><span class="w"> </span><span class="n">F</span><span class="p">[</span><span class="n">Envia</span><span class="w"> </span><span class="n">resultado</span><span class="w"> </span><span class="n">al</span><span class="w"> </span><span class="n">pool</span><span class="p">]</span>
+<span class="w">    </span><span class="n">F</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">G</span><span class="p">[</span><span class="n">Recibe</span><span class="w"> </span><span class="n">recompensa</span><span class="p">]</span>
+<span class="w">    </span><span class="n">G</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">C</span>
+<span class="w">    </span><span class="n">A</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">H</span><span class="p">[</span><span class="n">Oculta</span><span class="w"> </span><span class="n">proceso</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">nombre</span><span class="w"> </span><span class="n">falso</span><span class="p">]</span>
+<span class="w">    </span><span class="n">A</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">I</span><span class="p">[</span><span class="n">Consumo</span><span class="w"> </span><span class="n">maximo</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">CPU</span><span class="o">/</span><span class="n">GPU</span><span class="p">]</span>
+<span class="w">    </span><span class="n">I</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">J</span><span class="p">[</span><span class="n">Degradacion</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">sistema</span><span class="p">]</span>
+<span class="w">    </span><span class="n">I</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">K</span><span class="p">[</span><span class="n">Fans</span><span class="w"> </span><span class="n">acelerados</span><span class="p">,</span><span class="w"> </span><span class="n">calor</span><span class="w"> </span><span class="n">excesivo</span><span class="p">]</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">e74c3c</span><span class="p">,</span><span class="n">color</span><span class="o">:</span><span class="err">#</span><span class="n">fff</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">I</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">e67e22</span><span class="p">,</span><span class="n">color</span><span class="o">:</span><span class="err">#</span><span class="n">fff</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">J</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">e74c3c</span><span class="p">,</span><span class="n">color</span><span class="o">:</span><span class="err">#</span><span class="n">fff</span>
+</code></pre></div>
+</body>
+</html>

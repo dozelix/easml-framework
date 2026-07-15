@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Modulo 03 - Keylogger</h1>
+<h2>📖 1. Definicion Teorica y Contexto Historico</h2>
+<p>Un <strong>keylogger</strong> (registrador de teclas o keystroke logger) es un software o
+hardware que captura cada tecla presionada por el usuario en un teclado.
+Es una de las herramientas de espionaje y robo de informacion mas antiguas
+y efectivas en ciberseguridad, utilizada tanto por actores de amenaza
+estatales como por cibercriminales comunes.</p>
+<h3>Tipos de keyloggers</h3>
+<p><strong>Hardware:</strong>
+Dispositivo fisico conectado entre el teclado y la PC (o integrado en un dongle
+USB). Son extremadamente dificiles de detectar con software porque operan a nivel
+de capa fisica. La unica defensa efectiva es la inspeccion fisica del equipo.</p>
+<p><strong>Software — API-based:</strong>
+Utilizan la API de Windows <code>SetWindowsHookEx</code> con el hook <code>WH_KEYBOARD</code> para
+interceptar teclas antes de que lleguen a la aplicacion destino. Son los mas
+comunes y relativamente faciles de detectar con antivirus modernos.</p>
+<p><strong>Software — Driver-based:</strong>
+Instalan un driver de teclado virtual que intercepta las pulsaciones a nivel
+de kernel. Mas dificiles de detectar que los API-based porque operan por debajo
+del nivel de las aplicaciones de usuario.</p>
+<p><strong>Kernel-level (rootkit):</strong>
+Se integran directamente en el kernel del sistema operativo, interceptando las
+interrupciones de hardware del teclado (IRQ). Extremadamente dificiles de
+detectar sin herramientas forenses especializadas.</p>
+<p><strong>Form-based (web injection):</strong>
+Capturan contenido de formularios web usando JavaScript inyectado en el
+navegador. No capturan todas las teclas, solo los datos introducidos en
+campos de formulario (login, checkout, etc.).</p>
+<h3>Ejemplos historicos</h3>
+<table>
+<thead>
+<tr>
+<th>Ano</th>
+<th>Nombre</th>
+<th>Contexto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2000</td>
+<td>Perfect Keylogger</td>
+<td>Primer keylogger commercial masivo, vendido como "herramienta de monitoreo parental"</td>
+</tr>
+<tr>
+<td>2007</td>
+<td>ZeuS/Zbot</td>
+<td>Banking trojan con keylogger integrado, robo de $100M+ en credenciales bancarias</td>
+</tr>
+<tr>
+<td>2014</td>
+<td>DarkComet</td>
+<td>RAT con keylogger, usado en ataques APT contra gobiernos</td>
+</tr>
+<tr>
+<td>2015</td>
+<td>Pawn Storm (APT28)</td>
+<td>Grupo rususado keyloggers en ataques a la OTAN y gobiernos europeos</td>
+</tr>
+<tr>
+<td>2020</td>
+<td>Agent Tesla</td>
+<td>.NET keylogger usado en campañas de phishing contra empresas energéticas</td>
+</tr>
+<tr>
+<td>2023</td>
+<td>Ongoing campaigns</td>
+<td>Keyloggers siguen siendo el top 3 de malware en detections globales</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>⚙️ 2. Mecanismo de Funcionamiento Tecnologico (Flujo Logico)</h2>
+<h3>Flujo detallado de un keylogger</h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">INSTALACION</span>
+<span class="w">   </span><span class="n">El</span><span class="w"> </span><span class="n">keylogger</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">instala</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">sistema</span><span class="w"> </span><span class="n">via</span><span class="p">:</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Trojan</span><span class="w"> </span><span class="n">disfrazado</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">software</span><span class="w"> </span><span class="n">legitimo</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Phishing</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">archivo</span><span class="w"> </span><span class="n">adjunto</span><span class="w"> </span><span class="n">malicioso</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Vulnerabilidad</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">ejecucion</span><span class="w"> </span><span class="c1">remota de codigo (RCE)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Dispositivo</span><span class="w"> </span><span class="n">USB</span><span class="w"> </span><span class="n">malicioso</span><span class="w"> </span><span class="p">(</span><span class="n">hardware</span><span class="w"> </span><span class="n">keylogger</span><span class="p">)</span>
+
+<span class="mf">2.</span><span class="w"> </span><span class="n">REGISTRO</span><span class="w"> </span><span class="n">DE</span><span class="w"> </span><span class="n">HOOK</span><span class="w"> </span><span class="p">(</span><span class="n">modo</span><span class="w"> </span><span class="n">API</span><span class="p">)</span>
+<span class="w">   </span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="n">Llama</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">SetWindowsHookEx</span><span class="p">(</span><span class="n">WH_KEYBOARD_LL</span><span class="p">,</span><span class="w"> </span><span class="n">callback</span><span class="p">,</span><span class="w"> </span><span class="n">hMod</span><span class="p">,</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span>
+<span class="w">   </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">sistema</span><span class="w"> </span><span class="n">operativo</span><span class="w"> </span><span class="n">ejecuta</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">callback</span><span class="w"> </span><span class="n">del</span><span class="w"> </span><span class="n">keylogger</span>
+<span class="w">      </span><span class="n">ANTES</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">entregar</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">tecla</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">aplicacion</span><span class="w"> </span><span class="n">destino</span>
+<span class="w">   </span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="n">El</span><span class="w"> </span><span class="n">callback</span><span class="w"> </span><span class="n">registra</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">tecla</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">keycode</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="n">buffer</span>
+
+<span class="mf">3.</span><span class="w"> </span><span class="n">CAPTURA</span><span class="w"> </span><span class="n">DE</span><span class="w"> </span><span class="n">TECLAS</span>
+<span class="w">   </span><span class="n">Para</span><span class="w"> </span><span class="n">cada</span><span class="w"> </span><span class="n">evento</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">teclado</span><span class="p">:</span>
+<span class="w">   </span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="n">Recibe</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">virtual</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="p">(</span><span class="n">VK_CODE</span><span class="p">)</span>
+<span class="w">   </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="n">Convierte</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">caracter</span><span class="w"> </span><span class="n">usando</span><span class="w"> </span><span class="kr">Get</span><span class="n">KeyNameText</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">MapVirtualKey</span>
+<span class="w">   </span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="n">Detecta</span><span class="w"> </span><span class="n">teclas</span><span class="w"> </span><span class="n">especiales</span><span class="p">:</span><span class="w"> </span><span class="n">ENTER</span><span class="p">,</span><span class="w"> </span><span class="nb">TAB</span><span class="p">,</span><span class="w"> </span><span class="n">SHIFT</span><span class="p">,</span><span class="w"> </span><span class="n">CTRL</span><span class="p">,</span><span class="w"> </span><span class="n">etc</span><span class="mf">.</span>
+<span class="w">   </span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="n">Almacena</span><span class="w"> </span><span class="n">timestamp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">keycode</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">caracter</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">buffer</span>
+
+<span class="mf">4.</span><span class="w"> </span><span class="n">FILTRADO</span><span class="w"> </span><span class="n">Y</span><span class="w"> </span><span class="n">ALMACENAMIENTO</span>
+<span class="w">   </span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="n">Filtra</span><span class="w"> </span><span class="n">por</span><span class="w"> </span><span class="n">ventana</span><span class="w"> </span><span class="n">activa</span><span class="w"> </span><span class="p">(</span><span class="n">titulo</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">ventana</span><span class="w"> </span><span class="n">actual</span><span class="p">)</span>
+<span class="w">   </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="n">Si</span><span class="w"> </span><span class="n">la</span><span class="w"> </span><span class="n">ventana</span><span class="w"> </span><span class="kr">cont</span><span class="n">iene</span><span class="w"> </span><span class="s">&quot;bank&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;login&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;gmail&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">alta</span><span class="w"> </span><span class="n">prioridad</span>
+<span class="w">   </span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="n">Almacena</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">archivo</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="nb">log</span><span class="w"> </span><span class="n">cifrado</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">memoria</span>
+
+<span class="mf">5.</span><span class="w"> </span><span class="n">EXFILTRACION</span>
+<span class="w">   </span><span class="n">Los</span><span class="w"> </span><span class="n">datos</span><span class="w"> </span><span class="n">capturados</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">envian</span><span class="w"> </span><span class="n">al</span><span class="w"> </span><span class="n">atacante</span><span class="w"> </span><span class="n">via</span><span class="p">:</span>
+<span class="w">   </span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="n">Email</span><span class="w"> </span><span class="n">cifrado</span><span class="w"> </span><span class="n">periodico</span>
+<span class="w">   </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="n">Conexion</span><span class="w"> </span><span class="n">HTTP</span><span class="o">/</span><span class="n">HTTPS</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">servidor</span><span class="w"> </span><span class="n">C2</span>
+<span class="w">   </span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="n">DNS</span><span class="w"> </span><span class="n">tunneling</span><span class="w"> </span><span class="p">(</span><span class="n">oculto</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">consultas</span><span class="w"> </span><span class="n">DNS</span><span class="p">)</span>
+<span class="w">   </span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="n">Almacenamiento</span><span class="w"> </span><span class="n">local</span><span class="w"> </span><span class="n">para</span><span class="w"> </span><span class="n">acceso</span><span class="w"> </span><span class="n">fisico</span>
+
+<span class="mf">6.</span><span class="w"> </span><span class="n">IMPACTO</span>
+<span class="w">   </span><span class="n">El</span><span class="w"> </span><span class="n">atacante</span><span class="w"> </span><span class="n">obtiene</span><span class="p">:</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Credenciales</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">acceso</span><span class="w"> </span><span class="p">(</span><span class="n">email</span><span class="p">,</span><span class="w"> </span><span class="n">redes</span><span class="w"> </span><span class="n">sociales</span><span class="p">,</span><span class="w"> </span><span class="n">VPN</span><span class="p">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Datos</span><span class="w"> </span><span class="n">bancarios</span><span class="w"> </span><span class="p">(</span><span class="n">DNI</span><span class="p">,</span><span class="w"> </span><span class="n">tarjeta</span><span class="p">,</span><span class="w"> </span><span class="n">clave</span><span class="p">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Mensajes</span><span class="w"> </span><span class="n">privados</span><span class="w"> </span><span class="p">(</span><span class="n">chats</span><span class="p">,</span><span class="w"> </span><span class="n">emails</span><span class="p">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Informacion</span><span class="w"> </span><span class="n">corporativa</span><span class="w"> </span><span class="p">(</span><span class="n">secretos</span><span class="p">,</span><span class="w"> </span><span class="n">propiedad</span><span class="w"> </span><span class="nb">int</span><span class="n">electual</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>En esta simulacion educativa</h3>
+<p><code>keylogger.py</code> <strong>NO captura teclas reales</strong>. Genera un <code>keylog.log</code> con
+5 sesiones ficticias que simulan a un usuario escribiendo:
+- Login de correo electronico (gmail.com + contrasena)
+- Mensajes de chat de trabajo (Slack/Teams)
+- Login de portal bancario (DNI + contrasena)
+- Busquedas en Google
+- Checkout con tarjeta de credito</p>
+<p>Cada sesion incluye timestamps, teclas individuales con keycodes, y
+teclas especiales (ENTER, TAB) para demostrar como un keylogger real
+reconstruye la actividad del usuario.</p>
+<hr />
+<h2>🔺 3. Alineacion con la Trisada CIA</h2>
+<ul>
+<li><strong>Pilar Afectado:</strong> Confidencialidad (Confidentiality)</li>
+<li><strong>Justificacion Tecnica:</strong> El keylogger ataca directamente la Confidencialidad
+  al capturar informacion que el usuario introduce con la expectativa de que
+  solo la aplicacion destino la recibira. Cada tecla presionada — desde una
+  contrasena hasta un mensaje privado o un numero de tarjeta de credito — queda
+  expuesta a un tercero no autorizado. El usuario no tiene forma de saber que
+  su entradas estan siendo monitoreadas, lo que viola el principio de Confidencialidad
+  de que la informacion solo sea accesible para autorizados. A diferencia del
+  ransomware (Disponibilidad) o el wiper (Disponibilidad), el keylogger no
+  destruye ni bloquea datos: los <strong>lee sin autorizacion</strong>.</li>
+</ul>
+<hr />
+<h2>🛡️ 4. Mitigacion bajo la Norma de Controles CIS</h2>
+<ul>
+<li>
+<p><strong>CIS Control 3 — Proteccion de Datos (Data Protection):</strong>
+  Este control exige desarrollar procesos y controles para clasificar datos,
+  asignar dueños, y proteger la informacion confidencial. Incluye el uso de
+  cifrado, DLP (Data Loss Prevention), y controles de acceso que garanticen
+  que solo personas autorizadas accedan a datos sensibles. La proteccion
+  contra keyloggers se implementa evitando que los datos sensibles viajen
+  por canales inseguros (como un teclado monitoreado).</p>
+</li>
+<li>
+<p><strong>Implementacion Practica en Laboratorio:</strong>
+  <code>cazador_de_amenazas.py</code> implementa la deteccion analizando archivos de log en busca de
+  patrones de datos sensibles: expresiones regulares para DNIs, numeros de
+  tarjeta, emails, y contrasenas. Tambien monitorea procesos sospechosos
+  y recomienda medidas preventivas como 2FA, gestores de contrasenas, y
+  teclados virtuales.</p>
+</li>
+</ul>
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Deteccion de hooks de teclado no autorizados</strong>: Cuando un EDR reporta que un proceso ha registrado un hook de teclado (<code>SetWindowsHookEx</code> con <code>WH_KEYBOARD_LL</code>) que no corresponde a un software legitimo conocido</li>
+<li><strong>Archivos de log con datos sensibles</strong>: Cuando se descubren archivos de log que contienen patrones de DNIs, numeros de tarjeta de credito, credenciales de acceso o mensajes privados — esto indica que un keylogger esta capturando la actividad del usuario</li>
+<li><strong>Procesos sospechosos en memoria</strong>: Procesos sin firma digital, con nombres genéricos (svchost.exe duplicados), o que consumen recursos de forma inusual pueden alojar keyloggers</li>
+<li><strong>Alertas de red inusuales</strong>: Conexiones salientes periodicas a servidores desconocidos, especialmente via DNS tunneling o HTTPS a IPs no estandar, pueden indicar exfiltracion de datos capturados por un keylogger</li>
+<li><strong>Escenario real</strong>: Un departamento de finanzas reporta que su portal bancario detecta accesos sospechosos desde ubicaciones desconocidas. El equipo de seguridad sospecha de un keylogger y activa la busqueda de artefactos</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Clasificacion reduce la superficie de ataque</strong>: Si los datos sensibles (credenciales, datos financieros) nunca viajan por canales que un keylogger pueda monitorear (teclado fisico), la captura se vuelve inutil. Gestores de contrasenas y autenticadores 2FA eliminan la necesidad de escribir credenciales</li>
+<li><strong>DLP bloquea la exfiltracion</strong>: Incluso si un keylogger captura datos, un sistema DLP (Data Loss Prevention) puede detectar y bloquear el envio de informacion clasificada a destinos no autorizados, cortando la cadena de robo</li>
+<li><strong>Deteccion por patrones regulatorios</strong>: Las expresiones regulares para DNIs, tarjetas y emails funcionan porque estos datos tienen formatos estandarizados. Un keylogger que capture este tipo de informacion inevitablemente creara patrones detectables en sus logs</li>
+<li><strong>2FA mitiga el impacto</strong>: Si la autenticacion de dos factores esta habilitada, las credenciales robadas por un keylogger son insuficientes para acceder a las cuentas, reduciendo dramaticamente el valor del ataque</li>
+</ul>
+<h3>Ejercicios practicos de defensa</h3>
+<ol>
+<li><strong>Caza de datos sensibles en logs</strong>: Ejecuta <code>python keylogger.py</code> para generar el log simulado. Luego ejecuta <code>python cazador_de_amenazas.py</code> y analiza los patrones detectados: emails, DNIs, numeros de tarjeta, contrasenas. Documenta que tipo de informacion se revelaria en un escenario real y que dano causaria</li>
+<li><strong>Evaluacion de controles preventivos</strong>: Revisa el informe generado por <code>cazador_de_amenazas.py</code> sobre procesos sospechosos. Para cada tipo de proceso identificado, investiga como se veria en un sistema real (nombre, consumo de recursos, puertos abiertos) y que herramienta de deteccion lo identificaria</li>
+<li><strong>Diseno de politica de datos sensibles</strong>: Basandote en los patrones detectados por la herramienta, diseña una politica de proteccion de datos para un equipo de 20 personas. Incluye: cuales datos se clasifican como sensibles, que herramientas se usan para protegerlos (gestor de contrasenas, 2FA, teclado virtual), y como se entrena a los usuarios</li>
+</ol>
+<hr />
+<h2>🚀 5. Detalles de la Simulacion Educativa (Python)</h2>
+<h3>Que hace <code>keylogger.py</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">PREPARACION</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Crea</span><span class="w"> </span><span class="n">directorio_pruebas</span><span class="o">/</span><span class="w"> </span><span class="n">si</span><span class="w"> </span><span class="n">no</span><span class="w"> </span><span class="n">existe</span>
+
+<span class="mf">2.</span><span class="w"> </span><span class="n">INSTALACION</span><span class="w"> </span><span class="p">(</span><span class="n">informativa</span><span class="p">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Muestra</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">vectores</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">infeccion</span><span class="w"> </span><span class="n">tipicos</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="nb">Exp</span><span class="n">lica</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="n">tipos</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">keylogger</span><span class="w"> </span><span class="p">(</span><span class="n">API</span><span class="p">,</span><span class="w"> </span><span class="n">driver</span><span class="p">,</span><span class="w"> </span><span class="n">kernel</span><span class="p">,</span><span class="w"> </span><span class="n">hardware</span><span class="p">)</span>
+
+<span class="mf">3.</span><span class="w"> </span><span class="n">CAPTURA</span><span class="w"> </span><span class="n">DE</span><span class="w"> </span><span class="n">TECLAS</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Genera</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="n">sesiones</span><span class="w"> </span><span class="n">ficticias</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">escritura</span><span class="p">:</span>
+<span class="w">     </span><span class="o">*</span><span class="w"> </span><span class="n">Sesion</span><span class="w"> </span><span class="mf">1</span><span class="p">:</span><span class="w"> </span><span class="nb">Log</span><span class="n">in</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">correo</span><span class="w"> </span><span class="p">(</span><span class="n">gmail</span><span class="mf">.</span><span class="n">com</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kr">cont</span><span class="n">rasena</span><span class="p">)</span>
+<span class="w">     </span><span class="o">*</span><span class="w"> </span><span class="n">Sesion</span><span class="w"> </span><span class="mf">2</span><span class="p">:</span><span class="w"> </span><span class="n">Mensaje</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">chat</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">trabajo</span>
+<span class="w">     </span><span class="o">*</span><span class="w"> </span><span class="n">Sesion</span><span class="w"> </span><span class="mf">3</span><span class="p">:</span><span class="w"> </span><span class="nb">Log</span><span class="n">in</span><span class="w"> </span><span class="n">bancario</span><span class="w"> </span><span class="p">(</span><span class="n">DNI</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kr">cont</span><span class="n">rasena</span><span class="p">)</span>
+<span class="w">     </span><span class="o">*</span><span class="w"> </span><span class="n">Sesion</span><span class="w"> </span><span class="mf">4</span><span class="p">:</span><span class="w"> </span><span class="n">Busqueda</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="kr">Go</span><span class="n">ogle</span>
+<span class="w">     </span><span class="o">*</span><span class="w"> </span><span class="n">Sesion</span><span class="w"> </span><span class="mf">5</span><span class="p">:</span><span class="w"> </span><span class="n">Checkout</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">tarjeta</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">credito</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Cada</span><span class="w"> </span><span class="n">tecla</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">registra</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">timestamp</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="n">keycode</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Guarda</span><span class="w"> </span><span class="kr">to</span><span class="n">do</span><span class="w"> </span><span class="n">en</span><span class="w"> </span><span class="n">directorio_pruebas</span><span class="o">/</span><span class="n">keylog</span><span class="mf">.</span><span class="nb">log</span>
+
+<span class="mf">4.</span><span class="w"> </span><span class="n">EXFILTRACION</span><span class="w"> </span><span class="p">(</span><span class="n">informativa</span><span class="p">)</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Muestra</span><span class="w"> </span><span class="n">los</span><span class="w"> </span><span class="n">metodos</span><span class="w"> </span><span class="n">que</span><span class="w"> </span><span class="n">un</span><span class="w"> </span><span class="n">keylogger</span><span class="w"> </span><span class="n">real</span><span class="w"> </span><span class="n">usaria</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Email</span><span class="w"> </span><span class="n">cifrado</span><span class="p">,</span><span class="w"> </span><span class="n">DNS</span><span class="w"> </span><span class="n">tunneling</span><span class="p">,</span><span class="w"> </span><span class="n">HTTP</span><span class="o">/</span><span class="n">HTTPS</span><span class="p">,</span><span class="w"> </span><span class="n">almacenamiento</span><span class="w"> </span><span class="n">local</span>
+
+<span class="mf">5.</span><span class="w"> </span><span class="n">ANALISIS</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Resume</span><span class="w"> </span><span class="n">que</span><span class="w"> </span><span class="n">tipo</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="n">datos</span><span class="w"> </span><span class="n">se</span><span class="w"> </span><span class="n">revelarian</span>
+<span class="w">   </span><span class="o">-</span><span class="w"> </span><span class="n">Credenciales</span><span class="p">,</span><span class="w"> </span><span class="n">datos</span><span class="w"> </span><span class="n">bancarios</span><span class="p">,</span><span class="w"> </span><span class="n">mensajes</span><span class="w"> </span><span class="n">privados</span>
+</code></pre></div>
+
+<h3>Que hace <code>cazador_de_amenazas.py</code></h3>
+<div class="codehilite"><pre><span></span><code><span class="mi">1</span>. <span class="n">ESCANEO</span> <span class="n">DE</span> <span class="n">ARCHIVOS</span>
+   - <span class="n">Busca</span> <span class="n">keylog</span>.<span class="nb">log</span> <span class="n">en</span> <span class="n">directorio_pruebas</span>/
+   - <span class="n">Detecta</span> <span class="n">otros</span> <span class="n">archivos</span> .<span class="nb">log</span> <span class="n">con</span> <span class="n">patrones</span> <span class="n">de</span> <span class="n">keylogger</span>
+
+<span class="mi">2</span>. <span class="n">ANALISIS</span> <span class="n">DE</span> <span class="n">CONTENIDO</span>
+   - <span class="n">Cuenta</span> <span class="n">teclas</span> <span class="n">totales</span>, <span class="k">ENTER</span>, <span class="n">TAB</span>, <span class="n">sesiones</span>
+   - <span class="n">Usa</span> <span class="k">regex</span><span class="n"> para</span> <span class="n">detectar</span> <span class="n">patrones</span> <span class="n">sensibles:</span>
+     * <span class="n">Emails</span> (<span class="n">usuario</span><span class="nv">@dominio</span>.<span class="n">com</span>)
+     * <span class="n">Contrasenas</span> (<span class="n">palabras</span> <span class="n">clave</span>)
+     * <span class="n">DNI</span> <span class="n">argentino</span> (<span class="n">XX</span>.<span class="n">XXX</span>.<span class="n">XXX</span>)
+     * <span class="n">Tarjetas</span> <span class="n">de</span> <span class="n">credito</span> (<span class="n">XXXX</span> <span class="n">XXXX</span> <span class="n">XXXX</span> <span class="n">XXXX</span>)
+     * <span class="n">Fechas</span> (<span class="n">DD</span><span class="o">/</span><span class="n">MM</span><span class="o">/</span><span class="n">AAAA</span>)
+
+<span class="mi">3</span>. <span class="n">MONITOREO</span> <span class="n">DE</span> <span class="n">PROCESOS</span>
+   - <span class="n">Muestra</span> <span class="n">procesos</span> <span class="n">tipicos</span> <span class="n">que</span> <span class="n">pueden</span> <span class="n">ocultar</span> <span class="n">keyloggers</span>
+   - <span class="n">Niveles</span> <span class="n">de</span> <span class="n">riesgo</span> <span class="n">por</span> <span class="n">tipo</span> <span class="n">de</span> <span class="n">proceso</span>
+
+<span class="mi">4</span>. <span class="n">PREVENCION</span>
+   - <span class="n">Recomienda</span> <span class="mi">2</span><span class="n">FA</span>, <span class="n">gestor</span> <span class="n">de</span> <span class="n">contrasenas</span>
+   - <span class="n">Teclado</span> <span class="n">virtual</span> <span class="n">para</span> <span class="n">datos</span> <span class="n">sensibles</span>
+   - <span class="n">Inspeccion</span> <span class="n">fisica</span> <span class="n">de</span> <span class="n">USB</span>
+   - <span class="n">EDR</span> <span class="n">con</span> <span class="n">monitoreo</span> <span class="n">de</span> <span class="n">hooks</span>
+</code></pre></div>
+</body>
+</html>

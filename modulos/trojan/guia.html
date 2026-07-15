@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía del Módulo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF8F0;
+  color: #1A1A1A;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10pt;
+  line-height: 1.6;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 { font-size: 16pt; font-weight: bold; color: #2563EB; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1A1A1A; }
+h2 { font-size: 13pt; font-weight: bold; color: #2563EB; margin: 14px 0 6px; }
+h3 { font-size: 11pt; font-weight: bold; color: #2563EB; margin: 12px 0 4px; }
+p { margin: 6px 0; }
+ul, ol { margin: 6px 0; padding-left: 24px; }
+li { margin: 2px 0; }
+code {
+  background: #F0EBE3;
+  color: #D6394A;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre {
+  background: #1A1A1A;
+  color: #9ECE6A;
+  padding: 12px;
+  border: 2px solid #1A1A1A;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9pt;
+}
+pre code { background: none; color: inherit; padding: 0; }
+a { color: #2563EB; text-decoration: underline; }
+a:hover { color: #7C3AED; }
+table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+th, td { border: 1px solid #1A1A1A; padding: 6px 10px; text-align: left; }
+th { background: #F0EBE3; font-weight: bold; }
+</style>
+
+</head>
+<body>
+<h1>Modulo 05 - Troyano (Trojan)</h1>
+<h2>📖 1. Definicion Teorica y Contexto Historico</h2>
+<p>Un <strong>troyano informatico</strong> (trojan) es un tipo de malware que se disfraza de software legitimo o util para engañar al usuario y persuadirlo de ejecutarlo. A diferencia de un virus o gusano, un troyano no se replica a si mismo: depende completamente de la ingenieria social para su propagacion.</p>
+<h3>Diferencia fundamental con otros malware</h3>
+<table>
+<thead>
+<tr>
+<th>Caracteristica</th>
+<th>Virus</th>
+<th>Gusano</th>
+<th>Troyano</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Se replica</td>
+<td>Si (requiere hospedero)</td>
+<td>Si (autonomo)</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Necesita accion del usuario</td>
+<td>Si (abrir archivo)</td>
+<td>No</td>
+<td><strong>Si (ejecutar)</strong></td>
+</tr>
+<tr>
+<td>Propagacion automatica</td>
+<td>No</td>
+<td>Si</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Se disfraza</td>
+<td>No necesariamente</td>
+<td>No</td>
+<td><strong>Si (siempre)</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>Nombres de origen</h3>
+<p>El nombre proviene del <strong>Caballo de Troya</strong> de la mitologia griega: los aqueos dejaron un caballo de madera enorme frente a las puertas de Troya como supuesta ofrenda a los dioses. Los troyanos lo aceptaron sin sospechar y lo arrastraron dentro de sus murallas. Durante la noche, soldados griegos ocultos dentro del caballo salieron y abrieron las puertas, permitiendo el ejercito griego conquerir la ciudad.</p>
+<p>En informatica, el troyano funciona de manera similar: el usuario cree estar ejecutando algo util (una imagen, una factura, una actualizacion) pero en realidad esta ejecutando codigo malicioso.</p>
+<h3>Ejemplos historicos relevantes</h3>
+<table>
+<thead>
+<tr>
+<th>Ano</th>
+<th>Nombre</th>
+<th>Vector de entrega</th>
+<th>Payload oculto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2007</td>
+<td>Zeus (Zbot)</td>
+<td>Email phishing con adjunto</td>
+<td>Robo de credenciales bancarias via keylogging</td>
+</tr>
+<tr>
+<td>2013</td>
+<td>Emotet</td>
+<td>Email con enlace o adjunto</td>
+<td>Descargador de otros malware (modular)</td>
+</tr>
+<tr>
+<td>2018</td>
+<td>Emotet v3</td>
+<td>Documentos Word con macros</td>
+<td>Robo de credenciales + propagacion lateral</td>
+</tr>
+<tr>
+<td>2019</td>
+<td>Agent Tesla</td>
+<td>Email con adjunto DOC/DOCX</td>
+<td>Keylogger + stealer + captura de pantalla</td>
+</tr>
+<tr>
+<td>2020</td>
+<td>SolarWinds Sunburst</td>
+<td>Compromiso de actualizacion</td>
+<td>Backdoor + acceso persistente a la red</td>
+</tr>
+</tbody>
+</table>
+<h3>Troyanos modernos: Emotet</h3>
+<p>Emotet, activo entre 2014 y 2021, es uno de los ejemplos mas sofisticados de troyano modular. Su ciclo de vida tipico:</p>
+<ol>
+<li><strong>Entrega</strong>: Email de phishing que parece un documento bancario o factura.</li>
+<li><strong>Ejecucion</strong>: El usuario habilita macros en Word, ejecutando el payload inicial.</li>
+<li><strong>Descarga</strong>: Emotet descarga modulos adicionales desde servidores C2.</li>
+<li><strong>Robo</strong>: Modulo de keylogger y stealer roba credenciales bancarias.</li>
+<li><strong>Propagacion</strong>: Emotet se usa como plataforma para entregar Ryuk (ransomware).</li>
+<li><strong>Actualizacion</strong>: Se auto-actualiza para evadir antivirus.</li>
+</ol>
+<h2>⚙️ 2. Mecanismo de Funcionamiento Tecnologico (Flujo Logico)</h2>
+<p>El flujo tipico de un ataque con troyano se describe en los siguientes pasos:</p>
+<ol>
+<li>
+<p><strong>Preparacion</strong>: El atacante crea un archivo que parece legitimo (ejecutable con icono de documento, nombre sugestivo).</p>
+</li>
+<li>
+<p><strong>Entrega</strong>: El archivo se distribuye por email, descarga web, redes sociales o medios removibles.</p>
+</li>
+<li>
+<p><strong>Ingenieria social</strong>: El nombre y apariencia del archivo generan confianza o urgencia:</p>
+</li>
+<li>"factura_pendiente_2026.pdf.exe" (urgencia financiera)</li>
+<li>"imagen_familia.jpg.exe" (curiosidad personal)</li>
+<li>
+<p>"update_flash_player.exe" (necesidad tecnica)</p>
+</li>
+<li>
+<p><strong>Ejecucion</strong>: El usuario ejecuta el archivo, creyendo que es legitimo.</p>
+</li>
+<li>
+<p><strong>Payload visible</strong>: Se muestra una "factura" o "imagen" falsa para despistar.</p>
+</li>
+<li>
+<p><strong>Payload oculto</strong>: En segundo plano, el malware:</p>
+</li>
+<li>Instala persistencia (claves de registro, tareas programadas)</li>
+<li>Establece conexion C2 con el servidor del atacante</li>
+<li>Comienza a robar datos o descargar modulos adicionales</li>
+</ol>
+<div class="codehilite"><pre><span></span><code><span class="n">sequenceDiagram</span>
+<span class="w">    </span><span class="n">participant</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="n">Atacante</span>
+<span class="w">    </span><span class="n">participant</span><span class="w"> </span><span class="n">E</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="n">Email</span><span class="o">/</span><span class="n">Web</span>
+<span class="w">    </span><span class="n">participant</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="n">Victima</span>
+<span class="w">    </span><span class="n">participant</span><span class="w"> </span><span class="n">M</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="n">Malware</span>
+<span class="w">    </span><span class="n">participant</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="n">Servidor</span><span class="w"> </span><span class="n">C2</span>
+
+<span class="w">    </span><span class="n">A</span><span class="o">-&gt;&gt;</span><span class="n">E</span><span class="o">:</span><span class="w"> </span><span class="n">Prepara</span><span class="w"> </span><span class="n">troyano</span><span class="w"> </span><span class="n">disfrazado</span>
+<span class="w">    </span><span class="n">A</span><span class="o">-&gt;&gt;</span><span class="n">E</span><span class="o">:</span><span class="w"> </span><span class="n">Envia</span><span class="w"> </span><span class="n">email</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="n">adjunto</span>
+<span class="w">    </span><span class="n">E</span><span class="o">-&gt;&gt;</span><span class="n">V</span><span class="o">:</span><span class="w"> </span><span class="n">Email</span><span class="w"> </span><span class="n">llega</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">victima</span>
+<span class="w">    </span><span class="n">V</span><span class="o">-&gt;&gt;</span><span class="n">V</span><span class="o">:</span><span class="w"> </span><span class="n">Ve</span><span class="w"> </span><span class="s">&quot;factura pendiente&quot;</span>
+<span class="w">    </span><span class="n">V</span><span class="o">-&gt;&gt;</span><span class="n">M</span><span class="o">:</span><span class="w"> </span><span class="n">Ejecuta</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="n">archivo</span>
+<span class="w">    </span><span class="n">M</span><span class="o">-&gt;&gt;</span><span class="n">V</span><span class="o">:</span><span class="w"> </span><span class="n">Muestra</span><span class="w"> </span><span class="n">factura</span><span class="w"> </span><span class="n">falsa</span>
+<span class="w">    </span><span class="n">Note</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="n">M</span><span class="o">:</span><span class="w"> </span><span class="n">En</span><span class="w"> </span><span class="n">segundo</span><span class="w"> </span><span class="n">plano</span><span class="p">...</span>
+<span class="w">    </span><span class="n">M</span><span class="o">-&gt;&gt;</span><span class="n">C</span><span class="o">:</span><span class="w"> </span><span class="n">Establece</span><span class="w"> </span><span class="n">conexion</span><span class="w"> </span><span class="n">C2</span>
+<span class="w">    </span><span class="n">C</span><span class="o">-&gt;&gt;</span><span class="n">M</span><span class="o">:</span><span class="w"> </span><span class="n">Descarga</span><span class="w"> </span><span class="n">modulos</span><span class="w"> </span><span class="n">adicionales</span>
+<span class="w">    </span><span class="n">M</span><span class="o">-&gt;&gt;</span><span class="n">C</span><span class="o">:</span><span class="w"> </span><span class="n">Exfiltra</span><span class="w"> </span><span class="n">credenciales</span>
+<span class="w">    </span><span class="n">A</span><span class="o">-&gt;&gt;</span><span class="n">C</span><span class="o">:</span><span class="w"> </span><span class="n">Accede</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">datos</span><span class="w"> </span><span class="n">robados</span>
+</code></pre></div>
+
+<h2>🔺 3. Alineacion con la Triada CIA</h2>
+<ul>
+<li><strong>Pilar Afectado: Integridad (Integrity)</strong></li>
+<li><strong>Justificacion Tecnica:</strong> El troyano compromete la integridad de multiples maneras:</li>
+<li><strong>Codigo no autorizado</strong>: El troyano introduce codigo malicioso en el sistema que el usuario no autorizo, modificando el comportamiento esperado del equipo.</li>
+<li><strong>Archivos modificados</strong>: Puede alterar archivos del sistema, configuraciones y datos del usuario sin su conocimiento.</li>
+<li><strong>Credenciales comprometidas</strong>: Al robar contrasenas, el atacante puede modificar cuentas, cambiar configuraciones y alterar datos en sistemas legítimos.</li>
+<li><strong>Falsa confianza</strong>: La naturaleza engañosa del troyano crea un entorno donde el usuario cree que su sistema esta limpio cuando en realidad esta comprometido, lo que invalida toda verificacion manual de integridad.</li>
+<li><strong>Cadena de suministro</strong>: Como visto en SolarWinds, los troyanos pueden comprometer actualizaciones de software legitimo, afectando la integridad de la cadena de distribucion.</li>
+</ul>
+<h2>🛡️ 4. Mitigacion bajo la Norma de Controles CIS</h2>
+<ul>
+<li><strong>CIS Control 7: Continuidad del Suministro (Email and Web Browser Protections)</strong></li>
+<li><strong>Concepto:</strong> Este control establece que las organizaciones deben proteger los sistemas de correo electronico y navegadores web, que son los vectores de entrega principales para troyanos. Incluye proteccion contra phishing, inspeccion de adjuntos, y verificacion de la legitimidad de archivos descargados.</li>
+<li><strong>Implementacion Practica en Laboratorio:</strong> El script <code>inspeccion_de_contenido.py</code> implementa este control de las siguientes formas:</li>
+<li><strong>Deteccion de extensiones duales</strong>: Identifica archivos con doble extension (ej: <code>.pdf.exe</code>, <code>.jpg.exe</code>) que son el sello clasico de un troyano.</li>
+<li><strong>Analisis de marcadores de payload</strong>: Escanea el contenido de archivos buscando indicadores de compromiso (marcadores de payload, direcciones C2).</li>
+<li><strong>Verificacion de nombres sospechosos</strong>: Detecta nombres tipicos de troyanos (update.exe, setup.exe, invoice.pdf.exe).</li>
+<li><strong>Limpieza automatizada</strong>: Elimina todos los artefactos detectados y genera un informe.</li>
+</ul>
+<h2>🚀 5. Detalles de la Simulacion Educativa (Python)</h2>
+<ul>
+<li><strong>Que hace <code>trojan.py</code>:</strong></li>
+<li>Crea 5 archivos troyano simulados dentro de <code>directorio_pruebas/</code>:<ul>
+<li><code>update.exe</code> — disfraz de actualizacion del sistema</li>
+<li><code>imagen.jpg.exe</code> — ejecutable disfrazado de imagen (extension dual)</li>
+<li><code>factura_2026.pdf.exe</code> — documento falso con payload</li>
+<li><code>README.txt</code> — archivo de texto con payload de descarga embebido</li>
+<li><code>config.ini</code> — configuracion con marcadores C2 simulados</li>
+</ul>
+</li>
+<li>Muestra un analisis de deteccion explicando que senales indicarian un troyano real.</li>
+<li>Incluye marcadores (<code>TROJAN_PAYLOAD_SIMULATION</code>, <code>C2_SERVER_ENDPOINT</code>) para que la defensa los detecte.</li>
+<li>
+<p>Cada archivo contiene comentarios didacticos que explican la tecnica de disfraz utilizada.</p>
+</li>
+<li>
+<p><strong>Que hace <code>inspeccion_de_contenido.py</code>:</strong></p>
+</li>
+<li>Escanea archivos buscando marcadores de payload (<code>TROJAN_PAYLOAD_SIMULATION</code>, <code>C2_SERVER_ENDPOINT</code>).</li>
+<li>Detecta nombres sospechosos y extensiones ejecutables.</li>
+<li>Identifica extensiones multiples (disfraz de troyano).</li>
+<li>Muestra hallazgos con hash SHA-256 de cada archivo.</li>
+<li>Elimina todos los artefactos detectados.</li>
+<li>Muestra recomendaciones de defensa: mostrar extensiones reales, verificar firmas, no abrir adjuntos no solicitados.</li>
+</ul>
+<h3>Cuándo aplicar esta defensa</h3>
+<ul>
+<li><strong>Archivos con doble extension</strong>: Cuando el sistema de archivos o un antivirus reporta archivos con extensiones duales como <code>.pdf.exe</code>, <code>.jpg.exe</code>, <code>.doc.exe</code> — este es el sello clasico de un troyano que intenta disfrazarse de documento inofensivo</li>
+<li><strong>Marcadores de payload en contenido</strong>: Cuando herramientas de DLP o analisis de contenido detectan patrones como <code>TROJAN_PAYLOAD_SIMULATION</code>, <code>C2_SERVER_ENDPOINT</code> o URLs de servidores C2 embebidas en archivos que supuestamente son documentos normales</li>
+<li><strong>Nombres de archivos tipicos de troyano</strong>: Alertas sobre archivos con nombres como <code>update.exe</code>, <code>setup.exe</code>, <code>invoice.exe</code>, <code>flash_player.exe</code> descargados desde fuentes no verificadas</li>
+<li><strong>Actividad sospechosa post-ejecucion</strong>: Cuando un archivo descargado ejecuta procesos adicionales, establece conexiones de red o modifica configuraciones del sistema despues de ser abierto</li>
+<li><strong>Escenario real</strong>: Un usuario recibe un email con un adjunto "factura_2026.pdf" que en realidad es un ejecutable. El sistema de correo no lo detecta, pero la politica de extensiones del Endpoint lo bloquea al intentar ejecutarse</li>
+</ul>
+<h3>Por qué funciona esta defensa</h3>
+<ul>
+<li><strong>Inspeccion de contenido revela la verdad</strong>: Mientras el nombre y la extension del archivo intentan engañar al usuario, el analisis del contenido real (firmas binarias, marcadores de payload, estructura del archivo) revela si es un documento legitimo o un ejecutable malicioso</li>
+<li><strong>Verificacion de extensiones expone el disfraz</strong>: Los sistemas operativos pueden configurarse para mostrar las extensiones reales de los archivos, eliminando la capacidad del troyano de ocultar su naturaleza ejecutable detras de una extension falsa</li>
+<li><strong>Deteccion de marcadores de IOC</strong>: Los patrones de indicadores de compromiso (C2 endpoints, payloads conocidos) permiten identificar troyanos incluso cuando no existen firmas de antivirus conocidas para ellos</li>
+<li><strong>Limpieza automatizada reduce el riesgo humano</strong>: La eliminacion automatica de artefactos detectados evita que un usuario menos informado intente abrir o ejecutar el archivo sospechoso</li>
+</ul>
+<h3>Ejercicios practicos de defensa</h3>
+<ol>
+<li><strong>Analisis de archivos troyano</strong>: Ejecuta <code>python trojan.py</code> para crear los archivos simulados. Luego ejecuta <code>python inspeccion_de_contenido.py</code> y analiza cada hallazgo: que extension real tiene cada archivo, que marcadores de payload contiene, y que tipo de troyano simula (actualizacion, imagen, factura)</li>
+<li><strong>Comparacion de extensiones</strong>: Antes de ejecutar la limpieza, lista los archivos en <code>directorio_pruebas/</code> con <code>ls -la</code> y observa las extensiones reales. Despues de la limpieza, verifica que todos los artefactos fueron eliminados. Documenta que archivos pasarian desapercibidos para un usuario no tecnico</li>
+<li><strong>Diseno de politica de extensiones</strong>: Basandote en los tipos de troyanos detectados, diseña una politica de seguridad para el correo electronico de una empresa que incluya: filtros de extensiones permitidas, inspeccion de adjuntos, y entrenamiento para usuarios sobre como identificar archivos sospechosos</li>
+</ol>
+<hr />
+<blockquote>
+<p><strong>Disclaimer:</strong> Este modulo es estrictamente educativo. Los archivos generados son texto plano inofensivo que no contiene codigo malicioso ejecutable. Los marcadores simulan indicadores de compromiso para fines de demostracion.</p>
+</blockquote>
+</body>
+</html>
