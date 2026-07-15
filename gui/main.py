@@ -1,6 +1,5 @@
 import os
 import sys
-import webbrowser
 import tkinter as tk
 from tkinter import ttk, messagebox
 
@@ -11,7 +10,7 @@ from app.config import MODULOS, NOMBRES_DEFENSA
 from app.laboratorio import DESAFIOS_POR_MODULO
 from app.runner import ScriptRunner
 from gui.styles import *
-from gui.views import build_dashboard, build_tutorial, build_modulo_info
+from gui.views import build_dashboard, build_tutorial, build_modulo_info, build_guia, leer_guia
 from gui.desafio import DesafioWindow
 
 try:
@@ -132,7 +131,7 @@ class LaboratorioGUI(tk.Tk):
             (" Simular ", ROJO,     self._action_simular),
             (" Defensa ", AZUL,     self._action_defensa),
             ("  Clean  ", VERDE,    self._action_clean),
-            (" Readme  ", MORADO,   self._action_readme),
+            ("  Guía   ", MORADO,   self._action_readme),
             ("  Juego  ", NARANJA,  self._action_juego),
         ]:
             btn = tk.Button(bacc, text=texto, command=cmd,
@@ -187,20 +186,6 @@ class LaboratorioGUI(tk.Tk):
         self._limpiar_contenido()
         builder_fn(self.content_frame, *args)
 
-    def _mostrar_html(self, html: str):
-        self._limpiar_contenido()
-        if self.html_readme:
-            self.html_readme.set_html(html)
-            self.html_readme.pack(fill=tk.BOTH, expand=True)
-            self.viendo_readme = True
-        elif self.fallback_text:
-            self.fallback_text.configure(state=tk.NORMAL)
-            self.fallback_text.delete("1.0", tk.END)
-            self.fallback_text.insert("1.0", html.replace("<br>", "\n").replace("</p>", "\n\n"))
-            self.fallback_text.configure(state=tk.DISABLED)
-            self.fallback_text.pack(fill=tk.BOTH, expand=True)
-            self.viendo_readme = True
-
     # ── Logs / Consola ─────────────────────────────────────────────────────
 
     def _log(self, msg: str):
@@ -241,14 +226,13 @@ class LaboratorioGUI(tk.Tk):
         self._mostrar_widgets(build_modulo_info, index)
 
     def _mostrar_readme(self, index: int):
-        num, nombre = MODULOS[index][0], MODULOS[index][1]
-        html_path = os.path.join(_DIR_RAIZ, 'modulos', nombre, "guia.html")
-        if not os.path.exists(html_path):
+        html = leer_guia(index)
+        if html is None:
             self._mostrar_widgets(lambda p: tk.Label(p, text="Este modulo no tiene guia disponible.",
                                      bg=BG, fg=TEXTO_DIM, font=FUENTE).pack(anchor="w"))
             return
-        webbrowser.open(f"file://{html_path}")
-        self._log(f"[GUIA] Abriendo {nombre}/guia.html en el navegador")
+        self._mostrar_widgets(build_guia, html)
+        self.viendo_readme = True
 
     def _restaurar(self):
         sel = self.lista.selection()

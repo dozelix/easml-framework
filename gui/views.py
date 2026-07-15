@@ -3,6 +3,7 @@ import re
 import tkinter as tk
 import webbrowser
 from collections import Counter
+from tkhtmlview import HTMLLabel
 from app.config import MODULOS, NOMBRES_DEFENSA
 from gui.styles import *
 
@@ -11,7 +12,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def _card(parent, **kwargs):
-    card = tk.Frame(parent, bg=BG_PANEL, highlightbackground=BORDE,
+    card = tk.Frame(parent, bg=BG_CARD, highlightbackground=BORDE_CARD,
                     highlightthickness=1, **kwargs)
     return card
 
@@ -56,9 +57,9 @@ def build_dashboard(parent):
         stats_row.grid_columnconfigure(i, weight=1, uniform="stats")
         c = _card(stats_row, padx=18, pady=14)
         c.grid(row=0, column=i, sticky="nsew", padx=(0 if i == 0 else 4, 0 if i == 2 else 4))
-        tk.Label(c, text=tit, bg=BG_PANEL, fg=TEXTO_DIM,
+        tk.Label(c, text=tit, bg=BG_CARD, fg=TEXTO_DIM,
                  font=FUENTE_SM).pack(anchor="w")
-        tk.Label(c, text=val, bg=BG_PANEL, fg=color,
+        tk.Label(c, text=val, bg=BG_CARD, fg=color,
                  font=FUENTE_STAT).pack(anchor="w", pady=(4, 0))
 
     _separador(parent)
@@ -77,10 +78,10 @@ def build_dashboard(parent):
         cia_row.grid_columnconfigure(i, weight=1, uniform="cia")
         c = _card(cia_row, padx=16, pady=14)
         c.grid(row=0, column=i, sticky="nsew", padx=(0 if i == 0 else 4, 0 if i == 2 else 4))
-        tk.Label(c, text=cia_name, bg=BG_PANEL, fg=TEXTO_DIM,
+        tk.Label(c, text=cia_name, bg=BG_CARD, fg=TEXTO_DIM,
                  font=FUENTE_SM).pack(anchor="w")
         tk.Label(c, text=str(cia_counter.get(cia_name, 0)),
-                 bg=BG_PANEL, fg=TEXTO, font=FUENTE_STAT).pack(anchor="w", pady=(4, 0))
+                 bg=BG_CARD, fg=TEXTO, font=FUENTE_STAT).pack(anchor="w", pady=(4, 0))
 
 
 def build_tutorial(parent):
@@ -91,7 +92,7 @@ def build_tutorial(parent):
     intro = _card(parent, padx=18, pady=14)
     intro.pack(fill=tk.X, pady=(0, 20))
     tk.Label(intro, text="Bienvenido! Este laboratorio te permite ejecutar 14 tipos\nde amenazas de forma segura en un entorno aislado.",
-             bg=BG_PANEL, fg=TEXTO, font=FUENTE, justify="left").pack(anchor="w")
+             bg=BG_CARD, fg=TEXTO, font=FUENTE, justify="left").pack(anchor="w")
 
     _separador(parent)
     tk.Label(parent, text="FLUJO DE TRABAJO", bg=BG, fg=TEXTO,
@@ -105,7 +106,7 @@ def build_tutorial(parent):
     ]:
         c = _card(parent, padx=16, pady=10)
         c.pack(fill=tk.X, pady=3)
-        tk.Label(c, text=paso, bg=BG_PANEL, fg=color,
+        tk.Label(c, text=paso, bg=BG_CARD, fg=color,
                  font=FUENTE_BOLD).pack(anchor="w")
 
     _separador(parent)
@@ -136,9 +137,9 @@ def build_modulo_info(parent, index: int):
     cia_card.pack(fill=tk.X, pady=(0, 16))
 
     color_cia = {"Confidencialidad": CYAN, "Integridad": MORADO, "Disponibilidad": NARANJA}.get(cia, TEXTO)
-    tk.Label(cia_card, text="PILAR CIA", bg=BG_PANEL, fg=TEXTO_DIM,
+    tk.Label(cia_card, text="PILAR CIA", bg=BG_CARD, fg=TEXTO_DIM,
              font=FUENTE_SM).pack(anchor="w")
-    tk.Label(cia_card, text=cia, bg=BG_PANEL, fg=color_cia,
+    tk.Label(cia_card, text=cia, bg=BG_CARD, fg=color_cia,
              font=FUENTE_H2).pack(anchor="w", pady=(4, 0))
 
     _separador(parent)
@@ -154,7 +155,7 @@ def build_modulo_info(parent, index: int):
         c.pack(fill=tk.X, pady=2)
         fg_color = VERDE if existe else ROJO
         status = "[OK]" if existe else "[--]"
-        lbl = tk.Label(c, text=f"{status}  {label}", bg=BG_PANEL, fg=fg_color,
+        lbl = tk.Label(c, text=f"{status}  {label}", bg=BG_CARD, fg=fg_color,
                        font=FUENTE_BOLD, anchor="w")
         lbl.pack(fill=tk.X)
 
@@ -170,28 +171,30 @@ def build_modulo_info(parent, index: int):
         link.bind("<Leave>", lambda e: link.configure(fg=ACCENT))
 
 
-def leer_readme(index: int) -> str | None:
+def leer_guia(index: int) -> str | None:
     if index < 0 or index >= len(MODULOS):
         return None
     num, nombre = MODULOS[index][0], MODULOS[index][1]
-    readme_path = os.path.join(ROOT, 'modulos', nombre, "README.md")
-    if os.path.exists(readme_path):
-        with open(readme_path, "r", encoding="utf-8") as f:
+    path = os.path.join(ROOT, 'modulos', nombre, "guia.html")
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
             return f.read()
     return None
 
 
-def md_to_html(md_text: str) -> str:
-    try:
-        import markdown
-        html = markdown.markdown(md_text, extensions=['fenced_code', 'codehilite'])
-    except ImportError:
-        html = f"<pre>{md_text}</pre>"
-    html = re.sub(r'<h(\d)>', rf'<h\1 style="color:{ACCENT};font-family:JetBrains Mono;">', html)
-    html = re.sub(r'<h(\d) ', rf'<h\1 style="color:{ACCENT};font-family:JetBrains Mono;" ', html)
-    html = html.replace('<pre>', '<pre style="background:#F5F0EB;color:#1A1A1A;padding:10px;border-radius:4px;border:2px solid #1A1A1A;">')
-    html = html.replace('<code>', f'<code style="background:#F5F0EB;color:{ROJO};padding:2px 4px;border-radius:2px;">')
-    html = html.replace('<a ', f'<a style="color:{ACCENT};" ')
-    html = f"""<body style="background:{BG_PANEL};color:{TEXTO};font-family:JetBrains Mono;font-size:10pt;
-padding:14px;">{html}</body>"""
-    return html
+def _extraer_body(html: str) -> str:
+    m = re.search(r'<body[^>]*>(.*?)</body>', html, re.DOTALL)
+    return m.group(1) if m else html
+
+
+def build_guia(parent, html_content: str):
+    _limpiar(parent)
+    body = _extraer_body(html_content)
+
+    frame = tk.Frame(parent, bg=BG, highlightbackground=BORDE_CARD,
+                     highlightthickness=1)
+    frame.pack(fill=tk.BOTH, expand=True)
+
+    lbl = HTMLLabel(frame, html=body, background=BG_CARD,
+                    font=FUENTE, padx=10, pady=10)
+    lbl.pack(fill=tk.BOTH, expand=True)

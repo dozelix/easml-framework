@@ -63,13 +63,13 @@ class DesafioWindow(tk.Toplevel):
         self.resultado.configure(text="Selecciona la dificultad:")
 
         for clave, cfg in CONFIG_DIFICULTADES.items():
-            card = tk.Frame(self.area, bg=BG_PANEL, highlightbackground=BORDE,
+            card = tk.Frame(self.area, bg=BG_CARD, highlightbackground=BORDE_CARD,
                             highlightthickness=2, padx=12, pady=8)
             card.pack(fill=tk.X, pady=3)
             rb = tk.Radiobutton(
                 card, text=f"  {cfg['nombre']}  —  {cfg['descripcion']}",
                 variable=self.var_dificultad, value=clave,
-                bg=BG_PANEL, fg=TEXTO, selectcolor=BG_PANEL,
+                bg=BG_CARD, fg=TEXTO, selectcolor=BG_PANEL,
                 font=FUENTE, activebackground=BG_HOVER, activeforeground=ACCENT,
                 cursor="hand2"
             )
@@ -78,7 +78,7 @@ class DesafioWindow(tk.Toplevel):
         btn = tk.Button(self.area, text="Comenzar", command=self._iniciar,
                         bg=ACCENT, fg="#FFFFFF", font=FUENTE_BOLD, relief="solid",
                         padx=20, pady=6, cursor="hand2",
-                        highlightbackground=BORDE, highlightthickness=2)
+                        highlightbackground=BORDE_CARD, highlightthickness=1)
         btn.pack(pady=20)
 
     def _iniciar(self):
@@ -100,34 +100,34 @@ class DesafioWindow(tk.Toplevel):
         cfg = self.motor.obtener_config()
         self.info.configure(text=f"Dificultad: {cfg['nombre']}  |  Pregunta {self.indice+1}/{len(self.desafios)}")
 
-        card_preg = tk.Frame(self.area, bg=BG_PANEL, highlightbackground=BORDE,
+        card_preg = tk.Frame(self.area, bg=BG_CARD, highlightbackground=BORDE_CARD,
                              highlightthickness=2, padx=14, pady=12)
         card_preg.pack(fill=tk.X, pady=(0, 10))
-        tk.Label(card_preg, text=d.pregunta, bg=BG_PANEL, fg=TEXTO,
+        tk.Label(card_preg, text=d.pregunta, bg=BG_CARD, fg=TEXTO,
                  font=FUENTE_BOLD, wraplength=580, justify="left").pack(anchor="w")
 
         for i, opcion in enumerate(d.opciones):
-            card_opt = tk.Frame(self.area, bg=BG_PANEL, highlightbackground=BORDE,
+            card_opt = tk.Frame(self.area, bg=BG_CARD, highlightbackground=BORDE_CARD,
                                 highlightthickness=2, padx=12, pady=6)
             card_opt.pack(fill=tk.X, pady=2)
             btn = tk.Button(card_opt, text=f"  {i+1}. {opcion}",
                             command=lambda idx=i: self._responder(idx),
-                            bg=BG_PANEL, fg=TEXTO, font=FUENTE,
+                            bg=BG_CARD, fg=TEXTO, font=FUENTE,
                             activebackground=BG_HOVER, activeforeground=ACCENT,
                             relief="flat", anchor="w", cursor="hand2")
             btn.pack(fill=tk.X)
 
-        card_pista = tk.Frame(self.area, bg=BG_PANEL, highlightbackground=BORDE,
+        card_pista = tk.Frame(self.area, bg=BG_CARD, highlightbackground=BORDE_CARD,
                               highlightthickness=2, padx=12, pady=6)
         card_pista.pack(fill=tk.X, pady=(8, 0))
         if self.pistas >= cfg["max_pistas"]:
             tk.Label(card_pista, text="[PISTA] Agotada",
-                     bg=BG_PANEL, fg=TEXTO_DIM, font=FUENTE_SM).pack(anchor="w")
+                     bg=BG_CARD, fg=TEXTO_DIM, font=FUENTE_SM).pack(anchor="w")
         else:
             btn_pista = tk.Button(card_pista,
                                   text=f"[PISTA] Pedir pista ({cfg['max_pistas'] - self.pistas} restantes)",
                                   command=self._pedir_pista,
-                                  bg=BG_PANEL, fg=AMARILLO, font=FUENTE_SM,
+                                  bg=BG_CARD, fg=AMARILLO, font=FUENTE_SM,
                                   activebackground=BG_HOVER, cursor="hand2",
                                   relief="flat")
             btn_pista.pack(anchor="w")
@@ -177,11 +177,11 @@ class DesafioWindow(tk.Toplevel):
         self.motor.guardar_resultado(self.modulo_key, self.pistas, self.fallos,
                                      tiempo, puntos, aprobado)
 
-        card_res = tk.Frame(self.area, bg=BG_PANEL, highlightbackground=BORDE,
+        card_res = tk.Frame(self.area, bg=BG_CARD, highlightbackground=BORDE_CARD,
                             highlightthickness=2, padx=18, pady=14)
         card_res.pack(fill=tk.X, pady=(0, 16))
 
-        tk.Label(card_res, text="RESULTADO", bg=BG_PANEL, fg=ACCENT,
+        tk.Label(card_res, text="RESULTADO", bg=BG_CARD, fg=ACCENT,
                  font=FUENTE_H2).pack(anchor="w", pady=(0, 8))
 
         for lbl, val in [
@@ -190,23 +190,23 @@ class DesafioWindow(tk.Toplevel):
             ("Tiempo", f"{tiempo:.1f}s"),
             ("Estado", estado),
         ]:
-            row = tk.Frame(card_res, bg=BG_PANEL)
+            row = tk.Frame(card_res, bg=BG_CARD)
             row.pack(fill=tk.X, pady=1)
-            tk.Label(row, text=lbl, bg=BG_PANEL, fg=TEXTO_DIM,
+            tk.Label(row, text=lbl, bg=BG_CARD, fg=TEXTO_DIM,
                      font=FUENTE, width=12, anchor="w").pack(side=tk.LEFT)
-            tk.Label(row, text=val, bg=BG_PANEL, fg=TEXTO,
+            tk.Label(row, text=val, bg=BG_CARD, fg=TEXTO,
                      font=FUENTE_BOLD).pack(side=tk.LEFT)
 
         resumen = self.motor.resumen_general()
         if "RESUMEN" in resumen:
-            tk.Label(card_res, text="", bg=BG_PANEL).pack()
-            tk.Label(card_res, text=resumen, bg=BG_PANEL, fg=TEXTO_DIM,
+            tk.Label(card_res, text="", bg=BG_CARD).pack()
+            tk.Label(card_res, text=resumen, bg=BG_CARD, fg=TEXTO_DIM,
                      font=FUENTE_SM, justify="left").pack(anchor="w")
 
         cerrar = tk.Button(self.area, text="Cerrar", command=self.destroy,
                            bg=ACCENT, fg="#FFFFFF", font=FUENTE_BOLD,
                            relief="solid", padx=20, pady=6, cursor="hand2",
-                           highlightbackground=BORDE, highlightthickness=2)
+                           highlightbackground=BORDE_CARD, highlightthickness=1)
         cerrar.pack(pady=10)
 
         self.barra["value"] = len(self.desafios)
