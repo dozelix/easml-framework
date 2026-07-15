@@ -55,7 +55,7 @@ graph TB
 ## Requisitos
 
 * Python 3.10+
-* pillow, tkhtmlview, markdown: `pip install pillow tkhtmlview markdown`
+* pillow, markdown: `pip install pillow markdown`
 
 ## Inicio rápido
 

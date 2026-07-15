@@ -181,17 +181,84 @@ def leer_readme(index: int) -> str | None:
     return None
 
 
-def md_to_html(md_text: str) -> str:
-    try:
-        import markdown
-        html = markdown.markdown(md_text, extensions=['fenced_code', 'codehilite'])
-    except ImportError:
-        html = f"<pre>{md_text}</pre>"
-    html = re.sub(r'<h(\d)>', rf'<h\1 style="color:{ACCENT};font-family:JetBrains Mono;">', html)
-    html = re.sub(r'<h(\d) ', rf'<h\1 style="color:{ACCENT};font-family:JetBrains Mono;" ', html)
-    html = html.replace('<pre>', '<pre style="background:#F5F0EB;color:#1A1A1A;padding:10px;border-radius:4px;border:2px solid #1A1A1A;">')
-    html = html.replace('<code>', f'<code style="background:#F5F0EB;color:{ROJO};padding:2px 4px;border-radius:2px;">')
-    html = html.replace('<a ', f'<a style="color:{ACCENT};" ')
-    html = f"""<body style="background:{BG_PANEL};color:{TEXTO};font-family:JetBrains Mono;font-size:10pt;
-padding:14px;">{html}</body>"""
-    return html
+def _insert_md_text(text: tk.Text, md: str):
+    text.tag_configure("h1", font=FUENTE_H1, foreground=ACCENT, spacing1=10, spacing3=6)
+    text.tag_configure("h2", font=FUENTE_H2, foreground=ACCENT, spacing1=8, spacing3=4)
+    text.tag_configure("h3", font=("JetBrains Mono", 11, "bold"), foreground=ACCENT, spacing1=6, spacing3=3)
+    text.tag_configure("bold", font=FUENTE_BOLD)
+    text.tag_configure("code", background=BG_HOVER, foreground=ROJO, font=FUENTE)
+    text.tag_configure("code_block", background="#1A1A1A", foreground="#9ECE6A",
+                       font=("JetBrains Mono", 9), spacing1=4, spacing3=4,
+                       lmargin1=14, lmargin2=14, rmargin=14)
+    text.tag_configure("bullet", lmargin1=14, lmargin2=28)
+    text.tag_configure("link", foreground=ACCENT, underline=True)
+
+    lines = md.split("\n")
+    in_code = False
+    code_buffer = []
+
+    for line in lines:
+        if line.startswith("```"):
+            if in_code:
+                code_buffer.append(line)
+                text.insert(tk.END, "\n".join(code_buffer) + "\n", "code_block")
+                code_buffer.clear()
+                in_code = False
+            else:
+                in_code = True
+                code_buffer = []
+            continue
+
+        if in_code:
+            code_buffer.append(line)
+            continue
+
+        if line.startswith("# "):
+            text.insert(tk.END, line[2:].strip() + "\n", "h1")
+        elif line.startswith("## "):
+            text.insert(tk.END, line[3:].strip() + "\n", "h2")
+        elif line.startswith("### "):
+            text.insert(tk.END, line[4:].strip() + "\n", "h3")
+        elif line.startswith("- ") or line.startswith("* "):
+            text.insert(tk.END, line[2:].strip() + "\n", "bullet")
+        elif "**" in line:
+            parts = re.split(r"(\*\*.*?\*\*)", line)
+            for p in parts:
+                if p.startswith("**") and p.endswith("**"):
+                    text.insert(tk.END, p[2:-2], "bold")
+                else:
+                    text.insert(tk.END, p)
+            text.insert(tk.END, "\n")
+        elif "`" in line:
+            parts = re.split(r"(`[^`]+`)", line)
+            for p in parts:
+                if p.startswith("`") and p.endswith("`"):
+                    text.insert(tk.END, p[1:-1], "code")
+                else:
+                    text.insert(tk.END, p)
+            text.insert(tk.END, "\n")
+        elif line.strip():
+            text.insert(tk.END, line + "\n")
+        else:
+            text.insert(tk.END, "\n")
+
+    text.configure(state=tk.DISABLED)
+
+
+def build_readme(parent, md_text: str):
+    _limpiar(parent)
+
+    frame = tk.Frame(parent, bg=BG, highlightbackground=BORDE, highlightthickness=1)
+    frame.pack(fill=tk.BOTH, expand=True)
+
+    text = tk.Text(frame, bg="#FAF7F2", fg=TEXTO, font=FUENTE,
+                   wrap=tk.WORD, relief="flat", padx=14, pady=10,
+                   highlightthickness=0, borderwidth=0)
+    text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+    scroll = tk.Scrollbar(frame, command=text.yview, bg=BG_HOVER,
+                          troughcolor=BG, relief="flat", borderwidth=0)
+    scroll.pack(side=tk.RIGHT, fill=tk.Y)
+    text.configure(yscrollcommand=scroll.set)
+
+    _insert_md_text(text, md_text)
