@@ -1,5 +1,3 @@
-"""Aplicación principal de la GUI del laboratorio."""
-
 import os
 import sys
 import tkinter as tk
@@ -11,7 +9,7 @@ sys.path.insert(0, _DIR_RAIZ)
 from gui.config import MODULOS, NOMBRES_DEFENSA
 from gui.laboratorio import DESAFIOS_POR_MODULO
 from gui.styles import *
-from gui.views import dashboard, tutorial, modulo_info, leer_readme, md_to_html
+from gui.views import build_dashboard, build_tutorial, build_modulo_info, leer_readme, md_to_html
 
 try:
     from tkhtmlview import HTMLLabel
@@ -27,8 +25,8 @@ try:
 except ImportError:
     HAS_PIL = False
 
-ASSETS_DIR = os.path.join(_DIR_RAIZ, 'assets', 'modulos')
-ICONOS_CIA = {"Confidencialidad": "🔒", "Integridad": "🛡️", "Disponibilidad": "⚡"}
+ASSETS_MODULOS = os.path.join(_DIR_RAIZ, 'assets', 'modulos')
+ASSETS_DIR = os.path.join(_DIR_RAIZ, 'assets')
 
 
 class LaboratorioGUI(tk.Tk):
@@ -49,8 +47,8 @@ class LaboratorioGUI(tk.Tk):
 
     # ── Layout ──────────────────────────────────────────────────────────────
 
-    def _cargar_icono(self, nombre, size=28):
-        ruta = os.path.join(ASSETS_DIR, f"{nombre}.png")
+    def _cargar_icono(self, nombre, size=28, directorio=ASSETS_MODULOS):
+        ruta = os.path.join(directorio, f"{nombre}.png")
         if not os.path.exists(ruta):
             return None
         if nombre in self._iconos:
@@ -75,21 +73,15 @@ class LaboratorioGUI(tk.Tk):
         self.pw.pack(fill=tk.BOTH, expand=True, padx=4, pady=4)
 
         # ─── Sidebar ────────────────────────────────────────────────────────
-        izq = tk.Frame(self.pw, bg=BG_PANEL, width=200)
+        izq = tk.Frame(self.pw, bg=BG_PANEL, width=200, highlightbackground=BORDE,
+                       highlightthickness=2)
         self.pw.add(izq, minsize=160)
 
-        dash_btn = tk.Button(izq, text="📊  Panel", command=self._mostrar_dashboard,
-                             bg=BG_PANEL, fg=CYAN, font=FUENTE_BOLD,
-                             activebackground=BG_HOVER, activeforeground=CYAN,
-                             relief="flat", anchor="w", padx=14, pady=8,
-                             cursor="hand2")
-        dash_btn.pack(fill=tk.X)
-        dash_btn.bind("<Enter>", lambda e: dash_btn.configure(bg=BG_HOVER))
-        dash_btn.bind("<Leave>", lambda e: dash_btn.configure(bg=BG_PANEL))
+        self._btn_sidebar(izq, "PANEL", CYAN, self._mostrar_dashboard).pack(fill=tk.X)
 
         ttk.Separator(izq, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=10, pady=4)
 
-        tk.Label(izq, text="MÓDULOS", bg=BG_PANEL, fg=TEXTO_DIM,
+        tk.Label(izq, text="MODULOS", bg=BG_PANEL, fg=TEXTO_DIM,
                  font=FUENTE_SM, anchor="w").pack(fill=tk.X, padx=14, pady=(2, 4))
 
         self.lista = ttk.Treeview(izq, columns=(), show="tree",
@@ -98,55 +90,53 @@ class LaboratorioGUI(tk.Tk):
 
         for i, m in enumerate(MODULOS):
             _, nombre, _, _, _, _ = m
-            img = self._cargar_icono(nombre)
+            img = self._cargar_icono(nombre, directorio=ASSETS_MODULOS)
             self.lista.insert("", tk.END, iid=str(i),
                               text=f"  {nombre}", image=img or "")
 
         self.lista.pack(fill=tk.BOTH, expand=True, padx=4, pady=2)
         self.lista.bind("<<TreeviewSelect>>", self._on_seleccion)
 
-        tuto_btn = tk.Button(izq, text="📖  Tutorial", command=self._mostrar_tutorial,
-                             bg=BG_PANEL, fg=MORADO, font=FUENTE_BOLD,
-                             activebackground=BG_HOVER, activeforeground=MORADO,
-                             relief="flat", anchor="w", padx=14, pady=8,
-                             cursor="hand2")
-        tuto_btn.pack(fill=tk.X, side=tk.BOTTOM)
-        tuto_btn.bind("<Enter>", lambda e: tuto_btn.configure(bg=BG_HOVER))
-        tuto_btn.bind("<Leave>", lambda e: tuto_btn.configure(bg=BG_PANEL))
+        self._btn_sidebar(izq, "TUTORIAL", MORADO, self._mostrar_tutorial).pack(fill=tk.X, side=tk.BOTTOM)
 
         # ─── Panel derecho ──────────────────────────────────────────────────
         der = tk.Frame(self.pw, bg=BG)
         self.pw.add(der, minsize=500)
 
-        # Header del módulo
-        hdr = tk.Frame(der, bg=BG_PANEL, height=40)
+        # Header
+        hdr = tk.Frame(der, bg=BG_PANEL, height=40, highlightbackground=BORDE,
+                       highlightthickness=2)
         hdr.pack(fill=tk.X)
         hdr.pack_propagate(False)
 
+        self.lbl_icono_cia = tk.Label(hdr, bg=BG_PANEL)
+        self.lbl_icono_cia.pack(side=tk.LEFT, padx=(14, 4))
+
         self.lbl_nombre = tk.Label(hdr, text="", bg=BG_PANEL, fg=ACCENT,
                                    font=FUENTE_LG, anchor="w")
-        self.lbl_nombre.pack(side=tk.LEFT, padx=14)
+        self.lbl_nombre.pack(side=tk.LEFT, padx=(0, 14))
 
         self.lbl_cis = tk.Label(hdr, text="", bg=BG_PANEL, fg=TEXTO_DIM,
                                 font=("JetBrains Mono", 9), padx=10, pady=2)
         self.lbl_cis.pack(side=tk.RIGHT, padx=10)
 
-        # Área de contenido
+        # Content area
         self.content_frame = tk.Frame(der, bg=BG)
-        self.content_frame.pack(fill=tk.BOTH, expand=True)
+        self.content_frame.pack(fill=tk.BOTH, expand=True, padx=14, pady=10)
 
-        self.contenido = tk.Text(self.content_frame, bg=BG_PANEL, fg=TEXTO, font=FUENTE,
-                                 wrap=tk.WORD, relief="flat", padx=14, pady=10,
-                                 insertbackground=ACCENT, state=tk.DISABLED)
-        self.contenido.pack(fill=tk.BOTH, expand=True)
-
+        # HTML reader for README (shared)
         self.html_readme = None
+        self.fallback_text = None
         if HAS_HTML:
             self.html_readme = HTMLLabel(self.content_frame, html="",
                                          background=BG_PANEL, font=FUENTE)
             self.html_readme.fit_height = True
+        else:
+            self.fallback_text = tk.Text(self.content_frame, bg=BG_PANEL, fg=TEXTO,
+                                         font=FUENTE, wrap=tk.WORD, relief="flat",
+                                         padx=10, pady=8, state=tk.DISABLED)
 
-        # Barra de acciones
+        # Action buttons
         bacc = tk.Frame(der, bg=BG, height=48)
         bacc.pack(fill=tk.X)
         bacc.pack_propagate(False)
@@ -161,49 +151,70 @@ class LaboratorioGUI(tk.Tk):
         ]:
             btn = tk.Button(bacc, text=texto, command=cmd,
                             bg=BG_PANEL, fg=color, font=FUENTE_BOLD,
-                            activebackground=color, activeforeground=BG,
-                            relief="flat", padx=12, pady=6, cursor="hand2")
+                            activebackground=color, activeforeground="#FFFFFF",
+                            relief="solid", padx=12, pady=6, cursor="hand2",
+                            highlightbackground=BORDE, highlightthickness=2)
             btn.pack(side=tk.LEFT, padx=3)
-            btn.bind("<Enter>", lambda e, b=btn, c=color: b.configure(bg=c, fg=BG))
+            btn.bind("<Enter>", lambda e, b=btn, c=color: b.configure(bg=c, fg="#FFFFFF"))
             btn.bind("<Leave>", lambda e, b=btn, c=color: b.configure(bg=BG_PANEL, fg=c))
 
-        # Consola
+        # Console
         cf = tk.Frame(der, bg=BG, height=150)
         cf.pack(fill=tk.X, pady=(4, 0))
         cf.pack_propagate(False)
 
         enc = tk.Frame(cf, bg=BG)
         enc.pack(fill=tk.X)
-        tk.Label(enc, text="› Consola", bg=BG, fg=TEXTO_DIM,
+        tk.Label(enc, text="CONSOLA", bg=BG, fg=TEXTO_DIM,
                  font=FUENTE_SM, anchor="w").pack(side=tk.LEFT)
-        tk.Button(enc, text="×", command=self._log_clear,
+        tk.Button(enc, text="X", command=self._log_clear,
                   bg=BG, fg=TEXTO_DIM, font=("JetBrains Mono", 10, "bold"),
                   relief="flat", padx=8, cursor="hand2").pack(side=tk.RIGHT)
 
-        self.consola = tk.Text(cf, bg="#0a0c10", fg=VERDE, font=("JetBrains Mono", 9),
-                               wrap=tk.WORD, relief="flat", padx=10, pady=6,
-                               insertbackground=VERDE, state=tk.DISABLED, height=5)
+        self.consola = tk.Text(cf, bg="#1A1A1A", fg="#9ECE6A",
+                               font=("JetBrains Mono", 9), wrap=tk.WORD,
+                               relief="solid", padx=10, pady=6,
+                               insertbackground="#9ECE6A", state=tk.DISABLED,
+                               height=5, highlightbackground=BORDE, highlightthickness=2)
         self.consola.pack(fill=tk.BOTH, expand=True)
 
-    # ── Métodos de contenido ────────────────────────────────────────────────
+    def _btn_sidebar(self, parent, texto, color, comando):
+        btn = tk.Button(parent, text=texto, command=comando,
+                        bg=BG_PANEL, fg=color, font=FUENTE_BOLD,
+                        activebackground=BG_HOVER, activeforeground=color,
+                        relief="flat", anchor="w", padx=14, pady=8,
+                        cursor="hand2")
+        btn.bind("<Enter>", lambda e: btn.configure(bg=BG_HOVER))
+        btn.bind("<Leave>", lambda e: btn.configure(bg=BG_PANEL))
+        return btn
 
-    def _mostrar_texto(self):
-        if self.html_readme:
-            self.html_readme.pack_forget()
-        self.contenido.pack(fill=tk.BOTH, expand=True)
+    # ── Gestión de contenido ───────────────────────────────────────────────
+
+    def _limpiar_contenido(self):
+        for w in self.content_frame.winfo_children():
+            w.pack_forget()
+            w.destroy()
+        self.viendo_readme = False
+
+    def _mostrar_widgets(self, builder_fn, *args):
+        self._limpiar_contenido()
+        builder_fn(self.content_frame, *args)
 
     def _mostrar_html(self, html: str):
-        self.contenido.pack_forget()
+        self._limpiar_contenido()
         if self.html_readme:
             self.html_readme.set_html(html)
             self.html_readme.pack(fill=tk.BOTH, expand=True)
+            self.viendo_readme = True
+        elif self.fallback_text:
+            self.fallback_text.configure(state=tk.NORMAL)
+            self.fallback_text.delete("1.0", tk.END)
+            self.fallback_text.insert("1.0", html.replace("<br>", "\n").replace("</p>", "\n\n"))
+            self.fallback_text.configure(state=tk.DISABLED)
+            self.fallback_text.pack(fill=tk.BOTH, expand=True)
+            self.viendo_readme = True
 
-    def _set_contenido(self, texto: str):
-        self._mostrar_texto()
-        self.contenido.configure(state=tk.NORMAL)
-        self.contenido.delete("1.0", tk.END)
-        self.contenido.insert("1.0", texto)
-        self.contenido.configure(state=tk.DISABLED)
+    # ── Logs / Consola ─────────────────────────────────────────────────────
 
     def _log(self, msg: str):
         self.consola.configure(state=tk.NORMAL)
@@ -219,51 +230,49 @@ class LaboratorioGUI(tk.Tk):
     def _runner_done(self, salida: str, etiqueta: str):
         self.runner.procesar_salida(salida, etiqueta)
 
-    # ── Vistas ──────────────────────────────────────────────────────────────
+    # ── Vistas ─────────────────────────────────────────────────────────────
 
     def _mostrar_dashboard(self):
-        self.viendo_readme = False
-        self.lbl_nombre.configure(text="📊  Panel")
+        self.lbl_icono_cia.configure(image="")
+        self.lbl_nombre.configure(text="PANEL")
         self.lbl_cis.configure(text="")
-        self._set_contenido(dashboard())
+        self._mostrar_widgets(build_dashboard)
 
     def _mostrar_tutorial(self):
-        self.viendo_readme = False
-        self.lbl_nombre.configure(text="📖  Tutorial")
+        self.lbl_icono_cia.configure(image="")
+        self.lbl_nombre.configure(text="TUTORIAL")
         self.lbl_cis.configure(text="")
-        self._set_contenido(tutorial())
+        self._mostrar_widgets(build_tutorial)
 
     def _mostrar_modulo(self, index: int):
-        self.viendo_readme = False
         num, nombre, _, cia, cis, _ = MODULOS[index]
-        self.lbl_nombre.configure(text=f"{ICONOS_CIA.get(cia, '?')}  {nombre}")
+        icono_nombre = f"cia_{cia.lower()}"
+        img = self._cargar_icono(icono_nombre, size=22, directorio=ASSETS_DIR)
+        self.lbl_icono_cia.configure(image=img)
+        self.lbl_nombre.configure(text=f"  {nombre}")
         self.lbl_cis.configure(text=cis)
-        self._set_contenido(modulo_info(index))
+        self._mostrar_widgets(build_modulo_info, index)
 
     def _mostrar_readme(self, index: int):
         md = leer_readme(index)
         if md is None:
-            self._set_contenido("⚠️ Este módulo no tiene documentación aún.")
+            self._mostrar_widgets(lambda p: tk.Label(p, text="Este modulo no tiene documentacion aun.",
+                                    bg=BG, fg=TEXTO_DIM, font=FUENTE).pack(anchor="w"))
             return
-        self.viendo_readme = True
-        if self.html_readme:
-            self._mostrar_html(md_to_html(md))
-        else:
-            self._set_contenido(md)
+        self._mostrar_html(md_to_html(md))
 
     def _restaurar(self):
-        self.viendo_readme = False
         sel = self.lista.selection()
         if sel:
             self._mostrar_modulo(int(sel[0]))
         else:
             self._mostrar_dashboard()
 
-    # ── Acciones ────────────────────────────────────────────────────────────
+    # ── Acciones ───────────────────────────────────────────────────────────
 
     def _action_setup(self):
         self._log_clear()
-        self._log("⚙️ Preparando entorno de pruebas...")
+        self._log("[SETUP] Preparando entorno de pruebas...")
         self.runner.ejecutar(os.path.join(_DIR_RAIZ, "core", "lab_setup.py"), "Setup")
 
     def _action_simular(self):
@@ -274,7 +283,7 @@ class LaboratorioGUI(tk.Tk):
         _, nombre, script, _, _, _ = MODULOS[idx]
         sp = os.path.join(_DIR_RAIZ, 'modulos', nombre, f"{script}.py")
         self._log_clear()
-        self._log(f"🦠 Simulando {nombre}...")
+        self._log(f"[SIMULAR] Ejecutando {nombre}...")
         self.runner.ejecutar(sp, f"{nombre}/simulacion")
 
     def _action_defensa(self):
@@ -286,7 +295,7 @@ class LaboratorioGUI(tk.Tk):
         nd = NOMBRES_DEFENSA.get(num, "defensa")
         sp = os.path.join(_DIR_RAIZ, 'modulos', nombre, f"{nd.lower().replace(' ', '_')}.py")
         self._log_clear()
-        self._log(f"🛡️ Defendiendo {nombre}...")
+        self._log(f"[DEFENSA] Ejecutando mitigacion para {nombre}...")
         self.runner.ejecutar(sp, f"{nombre}/defensa")
 
     def _action_readme(self):
@@ -301,7 +310,7 @@ class LaboratorioGUI(tk.Tk):
 
     def _action_clean(self):
         self._log_clear()
-        self._log("🧹 Consola limpiada.")
+        self._log("[CLEAN] Consola limpiada.")
         self._restaurar()
 
     def _action_juego(self):
@@ -311,7 +320,7 @@ class LaboratorioGUI(tk.Tk):
         idx = int(sel[0])
         _, nombre = MODULOS[idx][0], MODULOS[idx][1]
         if nombre not in DESAFIOS_POR_MODULO:
-            self._log(f"⚠️ {nombre} no tiene desafíos disponibles.")
+            self._log(f"[JUEGO] {nombre} no tiene desafios disponibles.")
             return
         DesafioWindow(self, nombre)
 
