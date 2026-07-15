@@ -68,14 +68,14 @@ class LaboratorioGUI(tk.Tk):
     def _construir(self):
         self.configure(bg=BG)
 
-        self.pw = tk.PanedWindow(self, orient=tk.HORIZONTAL, bg=BG,
-                                 sashwidth=2, sashrelief=tk.FLAT)
-        self.pw.pack(fill=tk.BOTH, expand=True, padx=4, pady=4)
+        main_frame = tk.Frame(self, bg=BG)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=4, pady=4)
 
         # ─── Sidebar ────────────────────────────────────────────────────────
-        izq = tk.Frame(self.pw, bg=BG_PANEL, width=200, highlightbackground=BORDE,
+        izq = tk.Frame(main_frame, bg=BG_PANEL, width=200, highlightbackground=BORDE,
                        highlightthickness=2)
-        self.pw.add(izq, minsize=160)
+        izq.pack(side=tk.LEFT, fill=tk.Y)
+        izq.pack_propagate(False)
 
         self._btn_sidebar(izq, "PANEL", CYAN, self._mostrar_dashboard).pack(fill=tk.X)
 
@@ -85,7 +85,7 @@ class LaboratorioGUI(tk.Tk):
                  font=FUENTE_SM, anchor="w").pack(fill=tk.X, padx=14, pady=(2, 4))
 
         self.lista = ttk.Treeview(izq, columns=(), show="tree",
-                                  selectmode="browse", height=22)
+                                  selectmode="browse")
         self.lista.column("#0", width=180)
 
         for i, m in enumerate(MODULOS):
@@ -97,11 +97,14 @@ class LaboratorioGUI(tk.Tk):
         self.lista.pack(fill=tk.BOTH, expand=True, padx=4, pady=2)
         self.lista.bind("<<TreeviewSelect>>", self._on_seleccion)
 
-        self._btn_sidebar(izq, "TUTORIAL", MORADO, self._mostrar_tutorial).pack(fill=tk.X, side=tk.BOTTOM)
+        pie = tk.Frame(izq, bg=BG_PANEL)
+        pie.pack(fill=tk.X, side=tk.BOTTOM)
+        ttk.Separator(pie, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=6, pady=2)
+        self._btn_sidebar(pie, "TUTORIAL", MORADO, self._mostrar_tutorial).pack(fill=tk.X, padx=4, pady=(0, 4))
 
         # ─── Panel derecho ──────────────────────────────────────────────────
-        der = tk.Frame(self.pw, bg=BG)
-        self.pw.add(der, minsize=500)
+        der = tk.Frame(main_frame, bg=BG)
+        der.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(4, 0))
 
         # Header
         hdr = tk.Frame(der, bg=BG_PANEL, height=40, highlightbackground=BORDE,
