@@ -1,31 +1,31 @@
-"""Colores, fuentes y configuración de estilos ttk para la GUI."""
-
 import tkinter as tk
 from tkinter import ttk
 
-# ── Paleta Zen+Brutalista ──────────────────────────────────────────────────
-BG = "#0d0f14"
-BG_PANEL = "#1a1d27"
-BG_HOVER = "#2a2e3e"
-BG_ACTIVO = "#7aa2f7"
-TEXTO = "#c0caf5"
-TEXTO_DIM = "#565f89"
-TEXTO_MUTED = "#3b4261"
-ACCENT = "#7aa2f7"
+BG = "#FFF8F0"
+BG_PANEL = "#FFFFFF"
+BG_HOVER = "#F0EBE3"
+BG_ACTIVO = "#2563EB"
+TEXTO = "#1A1A1A"
+TEXTO_DIM = "#5C5C5C"
+TEXTO_MUTED = "#9C9C9C"
+ACCENT = "#2563EB"
+BORDE = "#1A1A1A"
 
-# Colores semánticos para acciones
-ROJO = "#f7768e"      # Simular / amenaza
-AZUL = "#7aa2f7"      # Defensa
-VERDE = "#9ece6a"     # Clean
-AMARILLO = "#e0af68"  # Setup
-CYAN = "#7dcfff"
-MORADO = "#bb9af7"
-NARANJA = "#ff9e64"
+ROJO = "#D6394A"
+AZUL = "#2563EB"
+VERDE = "#16A34A"
+AMARILLO = "#D97706"
+CYAN = "#0891B2"
+MORADO = "#7C3AED"
+NARANJA = "#EA580C"
 
 FUENTE = ("JetBrains Mono", 10)
 FUENTE_BOLD = ("JetBrains Mono", 10, "bold")
 FUENTE_SM = ("JetBrains Mono", 9)
 FUENTE_LG = ("JetBrains Mono", 12, "bold")
+FUENTE_H1 = ("JetBrains Mono", 16, "bold")
+FUENTE_H2 = ("JetBrains Mono", 13, "bold")
+FUENTE_STAT = ("JetBrains Mono", 28, "bold")
 
 
 def configurar_estilos():
@@ -33,7 +33,7 @@ def configurar_estilos():
     estilo.theme_use("clam")
 
     estilo.configure("TFrame", background=BG)
-    estilo.configure("Panel.TFrame", background=BG_PANEL)
+    estilo.configure("Panel.TFrame", background=BG_PANEL, relief="solid", borderwidth=2)
     estilo.configure("TLabel", background=BG, foreground=TEXTO, font=FUENTE)
     estilo.configure("Titulo.TLabel", background=BG_PANEL, foreground=ACCENT,
                      font=FUENTE_BOLD)
@@ -44,10 +44,10 @@ def configurar_estilos():
     estilo.configure("Treeview.Heading", background=BG_HOVER, foreground=ACCENT,
                      font=FUENTE_BOLD)
     estilo.map("Treeview", background=[("selected", BG_ACTIVO)],
-               foreground=[("selected", "#0d0f14")])
+               foreground=[("selected", "#FFFFFF")])
 
-    estilo.configure("Accion.TButton", background=BG_HOVER, foreground=TEXTO,
-                     font=FUENTE_BOLD, padding=(14, 10), relief="flat", borderwidth=0)
+    estilo.configure("Accion.TButton", background=BG_PANEL, foreground=TEXTO,
+                     font=FUENTE_BOLD, padding=(14, 10), relief="solid", borderwidth=2)
     estilo.map("Accion.TButton",
                background=[("active", ACCENT), ("disabled", BG_HOVER)],
-               foreground=[("active", BG), ("disabled", TEXTO_MUTED)])
+               foreground=[("active", "#FFFFFF"), ("disabled", TEXTO_MUTED)])
