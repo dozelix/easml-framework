@@ -2,15 +2,17 @@
 
 ## Qué es este repo
 
-Laboratorio educativo de malware en Python. 14 módulos independientes en `modulos/` (cada uno con simulación + defensa + README), una GUI con tkinter. Los módulos están ordenados por control CIS (2→15) en `gui/config.py`.
+Laboratorio educativo de malware en Python con 14 módulos independientes, cada uno con simulación + defensa + README. GUI funcional con tkinter. Entry point: `gui.py`.
 
 ## Comandos
 
 ```bash
 python core/lab_setup.py              # Genera 12 archivos de prueba en directorio_pruebas/
-python core/lab_setup.py --clean      # Limpia todos los artefactos generados
-python gui.py                         # Lanza la GUI (tkinter, entrypoint: gui.main.main())
-python -m unittest discover tests     # Tests (38 tests, unittest, no hay pytest)
+python core/lab_setup.py --clean      # Limpia artefactos (lab_data/logs, output, samples, temp + directorio_pruebas)
+python gui.py                         # GUI funcional (requiere tkinter, pillow, tkhtmlview, markdown)
+python -m unittest discover tests     # 38 tests (unittest, no pytest)
+python -m unittest tests.test_common  # Solo test_common (paths)
+python -m unittest tests.test_smoke   # Smoke tests: --help en cada script
 ```
 
 ## Arquitectura
@@ -23,7 +25,7 @@ python -m unittest discover tests     # Tests (38 tests, unittest, no hay pytest
 - **Cada módulo hace `sys.path.insert(0, _DIR_RAIZ)`** al inicio — los scripts suben desde `modulos/{nombre}` (3 niveles) o `gui/` (2 niveles) para resolver rutas absolutas.
 - **Módulo = 3 archivos**: `{nombre}.py` (threat), `{defensa}.py` (defense), `README.md`. Nombres de defensa en `gui/config.py` → `NOMBRES_DEFENSA`.
 - **Los directorios NO tienen prefijo numérico**: `modulos/ransomware/`, no `01_ransomware/`.
-- **gui.py es el único entrypoint**. No existe `tui.py`. El README describe una interfaz TUI/Textual aspiracional que no coincide con el código actual.
+- **gui.py es el único entrypoint**. No existe `tui.py`.
 
 ## `lab_data/` — Estructura persistente
 
@@ -43,7 +45,12 @@ python -m unittest discover tests     # Tests (38 tests, unittest, no hay pytest
 - `core/lab_setup.py` es el único generador de archivos de prueba (DRY)
 - Cada módulo es autocontenido; no depender de otros módulos
 - Scripts de defensa tienen nombre personalizado por módulo (NO `defensa.py`)
-- **Branches**: `main` → `develop` → features/fixes. Cada fix/feature en rama propia, merge `--no-ff`, tag `-a`
+- **Branches**: `main` → `develop` → features/fixes. Merge con `--no-ff`, tag con `-a vX.X.X easmlix`
+- **Flujo de bugs**:
+  1. **Bug en develop**: rama `fix/<descripcion>` desde `develop`. Ejecutar tests y PR → `develop`.
+  2. **Bug en main** (producción): rama `hotfix/<descripcion>` desde `main`. PR → `main`, luego merge `main` → `develop` para sincronizar.
+  3. **Formato commits**: `fix: descripción corta del bug`
+  4. **QA previo al PR**: ejecutar `python -m unittest discover tests`. Usar `@bluehat` para revisión funcional y `@debugfix` para corrección automatizada. `@redhat` solo si el bug tiene implicaciones de seguridad.
 
 ## Tests
 
@@ -55,16 +62,10 @@ python -m unittest tests.test_smoke   # Smoke tests: --help en cada script + lab
 
 Smoke tests solo verifican que `--help` funcione. No hay tests de integración ni de la GUI.
 
-## Dependencias
+## Requisitos
 
-- **Python 3.10+**
-- Sin dependencias obligatorias (tkinter viene con CPython)
-- Opcionales: `Pillow` (iconos PNG), `tkhtmlview` + `markdown` (renderizar READMEs como HTML)
-- `requirements.txt` lista `textual>=8.0` pero no se usa — legacy aspiracional
-
-## Assets
-
-`assets/modulos/*.png` — 14 iconos (100×100). Regenerar con `python assets/generate_icons.py` (ignorado por git).
+- **Python 3.10+**, **tkinter** (incluido en python.org installer Windows/macOS, `apt install python3-tk` en Linux)
+- `pip install pillow tkhtmlview markdown`
 
 ## Seguridad
 
@@ -72,3 +73,8 @@ Smoke tests solo verifican que `--help` funcione. No hay tests de integración n
 - NUNCA crear payloads o archivos dañinos reales
 - NUNCA conexiones de red reales al exterior (solo simulados/localhost)
 - TODA acción destructiva debe ser reversible con `--clean`
+
+## Assets
+
+- `assets/modulos/*.png` — 14 iconos PNG 100×100 para la GUI
+- Para regenerar: `python assets/generate_icons.py`

@@ -1,5 +1,5 @@
-# Dependencias opcionales del Laboratorio de Malware Educativo
-# Los modulos de simulacion no requieren dependencias externas.
-# Solo se necesita textual para la interfaz TUI interactiva.
+# Dependencias necesarias para la GUI del Laboratorio de Malware Educativo
 
-textual>=8.0
+pillow
+tkhtmlview
+markdown
