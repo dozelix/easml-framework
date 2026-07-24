@@ -6,7 +6,7 @@ from tkinter import ttk, messagebox
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _DIR_RAIZ)
 
-from app.config import MODULOS, NOMBRES_DEFENSA
+from app.config import MODULOS, NOMBRES_DEFENSA_INTERACTIVO
 from app.laboratorio import DESAFIOS_POR_MODULO
 from app.runner import ScriptRunner
 from gui.styles import *
@@ -265,7 +265,7 @@ class LaboratorioGUI(tk.Tk):
             return
         idx = int(sel[0])
         num, nombre = MODULOS[idx][0], MODULOS[idx][1]
-        nd = NOMBRES_DEFENSA.get(num, "defensa")
+        nd = NOMBRES_DEFENSA_INTERACTIVO.get(num, "defensa")
         sp = os.path.join(_DIR_RAIZ, 'modulos', nombre, f"{nd.lower().replace(' ', '_')}.py")
         self._log_clear()
         self._log(f"[DEFENSA] Ejecutando mitigacion para {nombre}...")

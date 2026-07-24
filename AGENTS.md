@@ -23,7 +23,7 @@ python -m unittest tests.test_smoke   # Smoke tests: --help en cada script
 - **No existe `core/common.py`** — los imports van desde `modulos.common.*`
 - **`modulos/` NO es un paquete** (no tiene `__init__.py`). Solo `modulos/common/` lo es.
 - **Cada módulo hace `sys.path.insert(0, _DIR_RAIZ)`** al inicio — los scripts suben desde `modulos/{nombre}` (3 niveles) o `gui/` (2 niveles) para resolver rutas absolutas.
-- **Módulo = 3 archivos**: `{nombre}.py` (threat), `{defensa}.py` (defense), `README.md`. Nombres de defensa en `gui/config.py` → `NOMBRES_DEFENSA`.
+- **Módulo = 3 archivos**: `{nombre}.py` (threat), `{defensa}.py` (defense), `README.md`. Nombres de defensa en `gui/config.py` → `NOMBRES_DEFENSA_INTERACTIVO`.
 - **Los directorios NO tienen prefijo numérico**: `modulos/ransomware/`, no `01_ransomware/`.
 - **gui.py es el único entrypoint**. No existe `tui.py`.
 

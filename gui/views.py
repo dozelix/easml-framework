@@ -1,10 +1,11 @@
+from app.config import NOMBRES_DEFENSA_INTERACTIVO
 import os
 import re
 import tkinter as tk
 import webbrowser
 from collections import Counter
 from tkhtmlview import HTMLLabel
-from app.config import MODULOS, NOMBRES_DEFENSA
+from app.config import MODULOS, NOMBRES_DEFENSA_INTERACTIVO
 from gui.styles import *
 
 
@@ -123,7 +124,7 @@ def build_modulo_info(parent, index: int):
         return
 
     num, nombre, script, cia, cis, url_ref = MODULOS[index]
-    nombre_defensa = NOMBRES_DEFENSA.get(num, "defensa")
+    nombre_defensa = NOMBRES_DEFENSA_INTERACTIVO.get(num, "defensa")
     dir_modulo = os.path.join(ROOT, 'modulos', nombre)
     arch_defensa = nombre_defensa.lower().replace(' ', '_')
 

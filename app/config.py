@@ -46,8 +46,8 @@ MODULOS = [
     ("13", "supply_chain",    "supply_chain", "Integridad", "CIS 15 — Seguridad de Servidores", 
      "https://owasp.org/www-project-top-10-ci-cd-security-risks/CICD-SEC-02-Insecure-Software-Supply-Chain"),
 ]
-
-NOMBRES_DEFENSA = {
+#
+NOMBRES_DEFENSA_INTERACTIVO: dict[str, str] = {
     "01": "Respuesta a Incidentes",
     "02": "Auditoria de Integridad",
     "03": "Cazador de Amenazas",
