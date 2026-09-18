@@ -29,7 +29,7 @@ jobs:
       # Los 14 módulos de simulación se excluyen a propósito: son malware
       # simulado con fines educativos, no código productivo.
       - name: Escaneo SAST
-        run: bandit -r app core modulos/common gui gui_flet scripts tests flet_main.py -ll
+        run: bandit -r app core modulos/common gui_flet scripts tests flet_main.py -ll
 
   pip-audit:
     name: pip-audit (deps)
@@ -43,7 +43,9 @@ jobs:
           cache: pip
 
       - name: Instalar dependencias + pip-audit
-        run: pip install -r requirements.txt pip-audit
+        # Se parchea el entorno (pip/setuptools del runner) antes de auditar:
+        # pip-audit audita todo lo instalado, no solo requirements.txt.
+        run: pip install -U pip setuptools -r requirements.txt pip-audit
 
       - name: Auditar vulnerabilidades conocidas
         run: pip-audit

@@ -15,6 +15,10 @@
 - 10 URLs de referencia muertas reemplazadas (Wikipedia EN + MITRE ATT&CK)
 - guia Flet con scroll propio; icono CIA oculto sin módulo; `page.update()` 1.0
 
+### Removed
+- GUI tkinter (`gui/`, `gui.py`), generador HTML (`core/convertir_guias.py`,
+  14 `guia.html`) y deps `pillow/tkhtmlview/markdown`: solo queda Flet
+
 ## [3.2.0] - 2026-07-14
 
 ### Added
