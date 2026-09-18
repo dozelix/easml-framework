@@ -2,14 +2,13 @@
 
 ## Qué es este repo
 
-Laboratorio educativo de malware en Python con 14 módulos independientes, cada uno con simulación + defensa + README. GUI Flet (`gui_flet/`, entry point `flet_main.py`); tkinter (`gui.py`) en transición. Wiki/docs en `web/` (Astro Starlight).
+Laboratorio educativo de malware en Python con 14 módulos independientes, cada uno con simulación + defensa + README. GUI Flet (`gui_flet/`, entry point `flet_main.py`). Wiki/docs en `web/` (Astro Starlight).
 
 ## Comandos
 
 ```bash
 python core/lab_setup.py              # Genera 12 archivos de prueba en directorio_pruebas/
 python core/lab_setup.py --clean      # Limpia artefactos (lab_data/logs, output, samples, temp + directorio_pruebas)
-python gui.py                         # GUI tkinter legacy (requiere tkinter)
 python flet_main.py                   # GUI Flet (requiere flet==1.0.0)
 python flet_main.py --web             # Flet en navegador local (puerto 8550)
 python scripts/generar_indice.py --check       # Sincronía config ↔ READMEs (CI)
@@ -32,7 +31,7 @@ python -m unittest tests.test_flet    # GUI Flet (omite lo que requiere flet si 
 - **Cada módulo hace `sys.path.insert(0, _DIR_RAIZ)`** al inicio — los scripts suben desde `modulos/{nombre}` (3 niveles) o `gui/` (2 niveles) para resolver rutas absolutas.
 - **Módulo = 3 archivos**: `{nombre}.py` (threat), `{defensa}.py` (defense), `README.md`. Nombres de defensa en `gui/config.py` → `NOMBRES_DEFENSA`.
 - **Los directorios NO tienen prefijo numérico**: `modulos/ransomware/`, no `01_ransomware/`.
-- **gui.py es el único entrypoint**. No existe `tui.py`.
+- **flet_main.py es el único entrypoint**. No existe `tui.py` ni `gui.py`.
 
 ## `lab_data/` — Estructura persistente
 
@@ -73,8 +72,8 @@ en `docs/REQUISITOS.md` (trazabilidad test ↔ requisito).
 
 ## Requisitos
 
-- **Python 3.10+**, **tkinter** solo para `gui.py` legacy (`apt install python3-tk` en Linux)
-- `pip install -r requirements.txt` (pillow, tkhtmlview, markdown, flet==1.0.0)
+- **Python 3.10+**, sin dependencias de sistema (Flet trae su runtime)
+- `pip install -r requirements.txt` (solo `flet==1.0.0`)
 
 ## Seguridad
 

@@ -1,8 +1,4 @@
-# Dependencias necesarias para la GUI del Laboratorio de Malware Educativo
-
-pillow
-tkhtmlview
-markdown
-# GUI Flet (reemplazo de tkinter): fijado a la versión verificada 1.0.0.
-# pillow se conserva (Flet la usa para los iconos PNG de assets/).
+# Dependencia del Laboratorio de Malware Educativo (GUI Flet).
+# Solo flet: tkinter/pillow/tkhtmlview/markdown se eliminaron con gui/.
+# Fijado a la versión verificada 1.0.0.
 flet==1.0.0

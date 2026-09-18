@@ -10,7 +10,7 @@ Repositorio académico para el estudio de amenazas de seguridad informática.
 ```mermaid
 graph TB
     subgraph "Punto de entrada"
-        GUI["python gui.py<br/>Interfaz visual interactiva (tkinter)"]
+        GUI["python flet_main.py<br/>Interfaz visual interactiva (Flet)"]
     end
 
     subgraph "core/"
@@ -22,8 +22,8 @@ graph TB
         COMMON["paths.py, utils.py<br/>cleanup.py, generators.py"]
     end
 
-    subgraph "gui/"
-        GUIMOD["main.py, views.py<br/>config.py"]
+    subgraph "gui_flet/"
+        GUIMOD["main.py, views.py<br/>desafio.py, theme.py"]
     end
 
     subgraph "modulos/ — 14 amenazas"
@@ -69,7 +69,7 @@ Ver `web/src/content/docs/descargas.md` y `docs/REQUISITOS.md`.
 # 1. Generar archivos de prueba
 python core/lab_setup.py
 
-# 2. Abrir la interfaz visual (Flet; tkinter en gui.py queda en transición)
+# 2. Abrir la interfaz visual (Flet)
 python flet_main.py
 # o en el navegador: python flet_main.py --web
 
@@ -104,11 +104,11 @@ Cada módulo es autocontenido e incluye el script de emulación (`{nombre}.py`),
 ```mermaid
 sequenceDiagram
     participant E as Estudiante
-    participant G as gui.py (tkinter)
+    participant G as flet_main.py (Flet)
     participant S as core/lab_setup.py
     participant M as modulos/XX/
 
-    E->>G: python gui.py
+    E->>G: python flet_main.py
     G->>E: Renderiza interfaz visual (Paneles + Datos CIA/CIS)
     E->>G: Selecciona módulo y presiona [Enter]
     G->>S: Verifica que existan archivos de prueba
@@ -160,7 +160,7 @@ flowchart LR
 
 1. Clonar el repositorio.
 2. Ejecutar `python core/lab_setup.py` para generar el entorno seguro con archivos de prueba.
-3. Navegar el laboratorio visual interactivo mediante `python gui.py`.
+3. Navegar el laboratorio visual interactivo mediante `python flet_main.py`.
 4. Cada módulo cuenta con documentación que profundiza en la teoría del malware, su impacto de gobernanza y bibliografía.
 5. Al finalizar la práctica, limpiar el entorno con: `python core/lab_setup.py --clean`.
 
