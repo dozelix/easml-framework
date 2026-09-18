@@ -29,7 +29,7 @@ jobs:
       # Los 14 módulos de simulación se excluyen a propósito: son malware
       # simulado con fines educativos, no código productivo.
       - name: Escaneo SAST
-        run: bandit -r app core modulos/common gui scripts tests -ll
+        run: bandit -r app core modulos/common gui gui_flet scripts tests flet_main.py -ll
 
   pip-audit:
     name: pip-audit (deps)
