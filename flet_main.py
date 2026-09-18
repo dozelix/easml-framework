@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Punto de entrada para la GUI Flet del laboratorio (reemplazo de gui.py).
+"""Punto de entrada para la GUI del laboratorio (Flet).
 
 Uso:
     python flet_main.py                 # abre la ventana Flet (desktop)

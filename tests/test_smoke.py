@@ -41,7 +41,7 @@ class TestArchivosExistentes(unittest.TestCase):
         self.assertTrue(os.path.isfile(path), f"No existe: {path}")
 
     def test_gui_entry_exists(self):
-        path = os.path.join(_REPO_ROOT, "gui.py")
+        path = os.path.join(_REPO_ROOT, "flet_main.py")
         self.assertTrue(os.path.isfile(path), f"No existe: {path}")
 
     def test_gui_config_exists(self):
@@ -49,7 +49,7 @@ class TestArchivosExistentes(unittest.TestCase):
         self.assertTrue(os.path.isfile(path), f"No existe: {path}")
 
     def test_gui_styles_exists(self):
-        path = os.path.join(_REPO_ROOT, "gui", "styles.py")
+        path = os.path.join(_REPO_ROOT, "gui_flet", "theme.py")
         self.assertTrue(os.path.isfile(path), f"No existe: {path}")
 
     def test_common_utils_exists(self):
