@@ -1,0 +1,9 @@
+# Configuración mínima de herramientas. Fase 1: gate de lint reducido
+# (E9 = errores de sintaxis, F821/F822 = nombres no definidos).
+# Se ampliará a más reglas tras limpiar los 64 hallazgos preexistentes (follow-up).
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E9", "F821", "F822"]

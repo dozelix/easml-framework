@@ -1,0 +1,4 @@
+# Postinstall permitidos en installs limpios (CI --frozen-lockfile, Vercel).
+# esbuild es obligatorio: sin su postinstall, Astro no compila.
+allowBuilds:
+  esbuild: true

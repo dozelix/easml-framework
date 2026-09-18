@@ -2,17 +2,24 @@
 
 ## Qué es este repo
 
-Laboratorio educativo de malware en Python con 14 módulos independientes, cada uno con simulación + defensa + README. GUI funcional con tkinter. Entry point: `gui.py`.
+Laboratorio educativo de malware en Python con 14 módulos independientes, cada uno con simulación + defensa + README. GUI Flet (`gui_flet/`, entry point `flet_main.py`); tkinter (`gui.py`) en transición. Wiki/docs en `web/` (Astro Starlight).
 
 ## Comandos
 
 ```bash
 python core/lab_setup.py              # Genera 12 archivos de prueba en directorio_pruebas/
 python core/lab_setup.py --clean      # Limpia artefactos (lab_data/logs, output, samples, temp + directorio_pruebas)
-python gui.py                         # GUI funcional (requiere tkinter, pillow, tkhtmlview, markdown)
-python -m unittest discover tests     # 38 tests (unittest, no pytest)
+python gui.py                         # GUI tkinter legacy (requiere tkinter)
+python flet_main.py                   # GUI Flet (requiere flet==1.0.0)
+python flet_main.py --web             # Flet en navegador local (puerto 8550)
+python scripts/generar_indice.py --check       # Sincronía config ↔ READMEs (CI)
+python scripts/generar_indice.py --check-links # Refs HTTP vivas (manual, con red)
+python scripts/auditar_flet.py        # API Flet válida contra instalado (CI)
+bash scripts/build.sh                 # Empaquetado local (canónico: release.yml en CI)
+python -m unittest discover tests     # 51 tests (unittest, no pytest)
 python -m unittest tests.test_common  # Solo test_common (paths)
 python -m unittest tests.test_smoke   # Smoke tests: --help en cada script
+python -m unittest tests.test_flet    # GUI Flet (omite lo que requiere flet si falta)
 ```
 
 ## Arquitectura
@@ -55,17 +62,19 @@ python -m unittest tests.test_smoke   # Smoke tests: --help en cada script
 ## Tests
 
 ```bash
-python -m unittest discover tests     # 38 tests
+python -m unittest discover tests     # 51 tests
 python -m unittest tests.test_common  # Solo paths
 python -m unittest tests.test_smoke   # Smoke tests: --help en cada script + lab_setup --clean
 ```
 
-Smoke tests solo verifican que `--help` funcione. No hay tests de integración ni de la GUI.
+Smoke tests solo verifican que `--help` funcione. `tests/test_flet.py` cubre la GUI
+Flet headless (runner, quiz, vistas, layout, modo frozen). Requisitos funcionales
+en `docs/REQUISITOS.md` (trazabilidad test ↔ requisito).
 
 ## Requisitos
 
-- **Python 3.10+**, **tkinter** (incluido en python.org installer Windows/macOS, `apt install python3-tk` en Linux)
-- `pip install pillow tkhtmlview markdown`
+- **Python 3.10+**, **tkinter** solo para `gui.py` legacy (`apt install python3-tk` en Linux)
+- `pip install -r requirements.txt` (pillow, tkhtmlview, markdown, flet==1.0.0)
 
 ## Seguridad
 

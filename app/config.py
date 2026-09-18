@@ -5,19 +5,19 @@
 
 MODULOS = [
     ("10", "fileless",        "fileless", "Integridad", "CIS 2 — Inventario de Activos", 
-     "https://es.wikipedia.org/wiki/Malware_sin_ficheros"),
+     "https://en.wikipedia.org/wiki/Fileless_malware"),
 
     ("03", "keylogger",       "keylogger", "Confidencialidad", "CIS 3 — Proteccion de Datos", 
-     "https://es.wikipedia.org/wiki/Capturador_de_teclado"),
+     "https://attack.mitre.org/techniques/T1056/001/"),
 
     ("09", "steganography",   "steganography", "Confidencialidad", "CIS 3 — Proteccion de Datos", 
-     "https://owasp.org/www-community/attacks/Steganography"),
+     "https://en.wikipedia.org/wiki/Steganography"),
 
     ("06", "backdoor",        "backdoor", "Confidencialidad", "CIS 4 — Seguridad de Dispositivos", 
-     "https://owasp.org/www-community/attacks/Backdoor"),
+     "https://en.wikipedia.org/wiki/Backdoor_(computing)"),
 
     ("05", "trojan",          "trojan", "Integridad", "CIS 7 — Proteccion Email/Web", 
-     "https://www.redhat.com/es/topics/security/what-is-a-trojan-horse"),
+     "https://en.wikipedia.org/wiki/Trojan_horse_(computing)"),
 
     ("11", "logic_bomb",      "logic_bomb", "Disponibilidad", "CIS 7 — Proteccion Email/Web", 
      "https://es.wikipedia.org/wiki/Bomba_l%C3%B3gica"),
@@ -26,10 +26,10 @@ MODULOS = [
      "https://es.wikipedia.org/wiki/Rootkit"),
 
     ("12", "cryptominer",     "cryptominer", "Disponibilidad", "CIS 8 — Auditoria de Cuentas", 
-     "https://es.wikipedia.org/wiki/Criptominer%C3%ADa_maliciosa"),
+     "https://en.wikipedia.org/wiki/Cryptojacking"),
 
     ("02", "wiper",           "wiper", "Disponibilidad", "CIS 10 — Copias de Seguridad", 
-     "https://www.redhat.com/es/topics/security/claves-para-protegerse-del-malware-wiper"),
+     "https://attack.mitre.org/techniques/T1485/"),
 
     ("01", "ransomware",      "ransomware", "Disponibilidad", "CIS 11 — Recuperacion de Datos", 
      "https://es.wikipedia.org/wiki/Ransomware"),
@@ -38,13 +38,13 @@ MODULOS = [
      "https://es.wikipedia.org/wiki/Gusano_inform%C3%A1tico"),
 
     ("08", "botnet",          "botnet", "Disponibilidad", "CIS 13 — Monitoreo y Defensa de Red", 
-     "https://www.redhat.com/es/topics/security/what-is-a-botnet"),
+     "https://en.wikipedia.org/wiki/Botnet"),
 
     ("14", "dns_tunneling",   "dns_tunneling", "Confidencialidad", "CIS 13 — Monitoreo y Defensa de Red", 
-     "https://infosecwriteups.com/dns-tunneling-exfiltration-owasp-46f5296839f2"),
+     "https://attack.mitre.org/techniques/T1071/004/"),
 
     ("13", "supply_chain",    "supply_chain", "Integridad", "CIS 15 — Seguridad de Servidores", 
-     "https://owasp.org/www-project-top-10-ci-cd-security-risks/CICD-SEC-02-Insecure-Software-Supply-Chain"),
+     "https://en.wikipedia.org/wiki/Supply_chain_attack"),
 ]
 #
 NOMBRES_DEFENSA_INTERACTIVO: dict[str, str] = {

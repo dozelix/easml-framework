@@ -1,0 +1,84 @@
+name: release
+
+# Se dispara al pushear un tag v* en main (ej: v5.0.0).
+# Empaqueta la GUI Flet con `flet pack` en los 3 OS y publica los binarios
+# en GitHub Releases. El primer tag es la prueba de fuego del empaquetado.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artefacto: easml-linux.tar.gz
+          - os: windows-latest
+            artefacto: EASML.exe
+          - os: macos-latest
+            artefacto: easml-macos.zip
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Instalar dependencias (incluye flet + flet pack)
+        run: pip install -r requirements.txt
+
+      - name: Empaquetar con flet pack
+        run: >
+          flet pack flet_main.py -n EASML
+          --product-name EASML
+          --product-version "${GITHUB_REF_NAME#v}"
+          --add-data "assets:assets"
+          --add-data "modulos:modulos"
+          --add-data "core:core"
+          --distpath dist
+        shell: bash
+
+      - name: Empaquetar artefacto (Linux)
+        if: runner.os == 'Linux'
+        run: tar -czf "${{ matrix.artefacto }}" -C dist .
+        shell: bash
+
+      - name: Empaquetar artefacto (macOS)
+        if: runner.os == 'macOS'
+        run: ditto -c -k dist "${{ matrix.artefacto }}"
+        shell: bash
+
+      - name: Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: easml-${{ runner.os }}
+          path: |
+            dist/EASML.exe
+            easml-linux.tar.gz
+            easml-macos.zip
+          if-no-files-found: error
+
+  publish:
+    name: publicar release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: binarios
+          merge-multiple: true
+
+      - name: Publicar en GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          files: binarios/**
+          generate_release_notes: true

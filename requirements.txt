@@ -3,3 +3,6 @@
 pillow
 tkhtmlview
 markdown
+# GUI Flet (reemplazo de tkinter): fijado a la versión verificada 1.0.0.
+# pillow se conserva (Flet la usa para los iconos PNG de assets/).
+flet==1.0.0
