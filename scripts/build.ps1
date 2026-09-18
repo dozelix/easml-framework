@@ -4,7 +4,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 
-pip install -r requirements.txt
+pip install -r requirements.txt pyinstaller
 flet pack flet_main.py -n EASML `
   --product-name EASML `
   --add-data "assets:assets" `
