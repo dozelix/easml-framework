@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- GUI Flet (`gui_flet/` + `flet_main.py --web`) con paridad tkinter
+- `scripts/auditar_flet.py`: valida API contra Flet instalado (CI)
+- `docs/REQUISITOS.md`: RF/RNF con trazabilidad a tests
+- wiki `web/` (Astro Starlight) generada desde READMEs + `modulos.json`
+- empaquetado `flet pack` + `release.yml` (exe/tar.gz/zip por tag `v*`)
+- `scripts/generar_indice.py --check-links` (14/14 refs vivas)
+- CI: tests 3 OS x Python, ruff, bandit, pip-audit, build docs
+
+### Fixed
+- 10 URLs de referencia muertas reemplazadas (Wikipedia EN + MITRE ATT&CK)
+- guia Flet con scroll propio; icono CIA oculto sin módulo; `page.update()` 1.0
+
 ## [3.2.0] - 2026-07-14
 
 ### Added

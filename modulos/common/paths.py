@@ -1,6 +1,36 @@
 import os
+import sys
 from dataclasses import dataclass
 from typing import Dict, Optional
+
+
+def es_ejecutable_congelado() -> bool:
+    """True bajo flet pack / PyInstaller (sys.frozen)."""
+    return getattr(sys, "frozen", False)
+
+
+def base_recursos() -> str:
+    """Recursos de solo lectura (.py de módulos, assets, READMEs).
+
+    En ejecutable congelado viven en sys._MEIPASS; en desarrollo, en la raíz
+    del repo (3 niveles sobre modulos/common/paths.py).
+    """
+    if es_ejecutable_congelado():
+        base = getattr(sys, "_MEIPASS", None)
+        if base:
+            return base
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+def base_trabajo() -> str:
+    """Directorios escribibles (directorio_pruebas, lab_data).
+
+    En ejecutable congelado van junto al .exe (el bundle es efímero y no debe
+    ensuciarse); en desarrollo, en la raíz del repo.
+    """
+    if es_ejecutable_congelado():
+        return os.path.dirname(os.path.abspath(sys.executable))
+    return base_recursos()
 
 
 @dataclass(frozen=True)
@@ -19,7 +49,23 @@ def resolve_lab_paths(start: Optional[str] = None) -> Dict[str, str]:
     """
     Resuelve de manera dinámica todas las rutas necesarias del laboratorio
     buscando la carpeta 'directorio_pruebas' hacia arriba.
+
+    En ejecutable congelado (flet pack): los recursos se leen de _MEIPASS y
+    lo escribible (directorio_pruebas, lab_data) va junto al .exe.
     """
+    if es_ejecutable_congelado():
+        trabajo = base_trabajo()
+        lab_data_dir = os.path.join(trabajo, 'lab_data')
+        return {
+            'repo_root': base_recursos(),
+            'lab_dir': os.path.join(trabajo, 'directorio_pruebas'),
+            'lab_data_dir': lab_data_dir,
+            'logs_dir': os.path.join(lab_data_dir, 'logs'),
+            'output_dir': os.path.join(lab_data_dir, 'output'),
+            'samples_dir': os.path.join(lab_data_dir, 'samples'),
+            'temp_dir': os.path.join(lab_data_dir, 'temp'),
+        }
+
     base = start or os.getcwd()
     if os.path.isfile(base):
         base = os.path.dirname(base)

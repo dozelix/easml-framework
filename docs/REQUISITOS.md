@@ -28,6 +28,9 @@ Alcance: GUI Flet (`gui_flet/` + `flet_main.py`), CLI de laboratorio
 | RF-14 | `flet_main.py --help` y `--clean` funcionan sin abrir ventana ni requerir flet | `TestFletMain` |
 | RF-15 | `flet_main.py --web [--port]` sirve la app en navegador local | smoke `--web` |
 | RF-16 | Ejecuciones concurrentes se ignoran (una a la vez, flag `ejecutando`) | manual |
+| RF-17 | Binario portable: recursos de `_MEIPASS`, `directorio_pruebas/`+`lab_data/` junto al exe | `test_paths_frozen` |
+| RF-18 | En congelado los scripts corren en-proceso (runpy); `sys.exit()` no mata la GUI | `test_frozen_*` (3 tests) |
+| RF-19 | Tag `v*` en main genera `.exe`/tar.gz/zip y los publica en Releases | primer tag (CI) |
 
 ## Requisitos no funcionales
 
@@ -51,7 +54,7 @@ Alcance: GUI Flet (`gui_flet/` + `flet_main.py`), CLI de laboratorio
 | `Page.update_async() missing` | API 0.x asumida, eliminada en Flet 1.0 | `page.update()` sync | auditor caso 3 + stub sin `update_async` |
 | Cartel rojo "valid src" en header | `Image(src="")` inválido en 1.0 | `visible=False` + src real | auditor caso 2b |
 | Guía sin scroll, botonera pisando texto | `Markdown(expand)` sin ancestro scrollable | `Column(scroll=AUTO)` | assert scroll en `TestVistas` |
-| Links de referencia muertos (10/14: OWASP migró, RedHat cambió slugs, wiki ES inexistente) | URLs sin verificación desde su alta | 10 reemplazos verificados (Wikipedia EN + MITRE ATT&CK) + `url_target=BLANK` | `--check-links` manual |
+| Links de referencia muertos (10/14: OWASP migró, RedHat cambió slugs, wiki ES inexistente) | URLs sin verificación desde su alta | 10 reemplazos verificados (Wikipedia EN + MITRE ATT&CK) + `ft.Url(target=BLANK)` | `--check-links` manual |
 
 ## Checklist manual (5 min, obligatorio antes de cerrar PR3)
 
@@ -63,4 +66,5 @@ Alcance: GUI Flet (`gui_flet/` + `flet_main.py`), CLI de laboratorio
 
 ## Fuera de alcance (ver roadmap)
 
-- `.exe`/tar.gz y Releases (PR4). Producción Vercel (pausado). Firma de binarios macOS.
+- Verificación del primer tag con binarios reales (CI). Producción Vercel
+  (pausado). Firma de binarios macOS. Icono propio del `.exe`.
