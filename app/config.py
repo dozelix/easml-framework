@@ -46,8 +46,8 @@ MODULOS = [
     ("13", "supply_chain",    "supply_chain", "Integridad", "CIS 15 — Seguridad de Servidores", 
      "https://en.wikipedia.org/wiki/Supply_chain_attack"),
 ]
-#
-NOMBRES_DEFENSA_INTERACTIVO: dict[str, str] = {
+
+NOMBRES_DEFENSA = {
     "01": "Respuesta a Incidentes",
     "02": "Auditoria de Integridad",
     "03": "Cazador de Amenazas",
