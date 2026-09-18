@@ -60,6 +60,70 @@ class TestRunnerSinFlet(unittest.TestCase):
             capture_output=True, timeout=60, cwd=_REPO_ROOT,
         )
 
+    def _script_temporal(self, contenido: str) -> str:
+        import tempfile
+        fd, ruta = tempfile.mkstemp(suffix=".py")
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(contenido)
+        self.addCleanup(os.remove, ruta)
+        return ruta
+
+    def _congelado(self, meipass: str, ejecutable: str):
+        """Simula entorno flet pack: sys.frozen + _MEIPASS + executable."""
+        import contextlib
+
+        @contextlib.contextmanager
+        def _ctx():
+            viejo = (getattr(sys, "frozen", None),
+                     getattr(sys, "_MEIPASS", None))
+            sys.frozen = True  # type: ignore[attr-defined]
+            sys._MEIPASS = meipass  # type: ignore[attr-defined]
+            viejo_exe = sys.executable
+            sys.executable = ejecutable
+            try:
+                yield
+            finally:
+                if viejo[0] is None:
+                    del sys.frozen  # type: ignore[attr-defined]
+                if viejo[1] is None:
+                    del sys._MEIPASS  # type: ignore[attr-defined]
+                sys.executable = viejo_exe
+        return _ctx()
+
+    def test_frozen_exit_ok(self):
+        from gui_flet.runner_flet import ejecutar_script
+        ruta = self._script_temporal('print("hola frozen")\n')
+        msgs = []
+        with self._congelado("/fake/MEIxxx", "/fake/EASML"):
+            asyncio.run(ejecutar_script(ruta, "T", msgs.append))
+        self.assertIn("hola frozen", msgs)
+        self.assertTrue(msgs[-1].endswith("completado."), msgs[-1])
+
+    def test_frozen_exit_codigo_no_cero(self):
+        from gui_flet.runner_flet import ejecutar_script
+        ruta = self._script_temporal('import sys\nprint("antes")\nsys.exit(2)\n')
+        msgs = []
+        with self._congelado("/fake/MEIxxx", "/fake/EASML"):
+            asyncio.run(ejecutar_script(ruta, "T", msgs.append))
+        self.assertIn("antes", msgs)
+        self.assertIn("código 1", msgs[-1])
+
+    def test_frozen_excepcion_no_mata(self):
+        from gui_flet.runner_flet import ejecutar_script
+        ruta = self._script_temporal('raise RuntimeError("boom")\n')
+        msgs = []
+        with self._congelado("/fake/MEIxxx", "/fake/EASML"):
+            asyncio.run(ejecutar_script(ruta, "T", msgs.append))
+        self.assertTrue(any("boom" in m for m in msgs), msgs)
+
+    def test_paths_frozen(self):
+        from modulos.common.paths import resolve_lab_paths
+        with self._congelado("/fake/MEIxxx", "/fake/bundle/EASML"):
+            rutas = resolve_lab_paths()
+        self.assertEqual(rutas["repo_root"], "/fake/MEIxxx")
+        self.assertEqual(rutas["lab_dir"], "/fake/bundle/directorio_pruebas")
+        self.assertEqual(rutas["logs_dir"], "/fake/bundle/lab_data/logs")
+
 
 @unittest.skipIf(REQUIERE_FLET, "flet no instalado")
 class TestTema(unittest.TestCase):

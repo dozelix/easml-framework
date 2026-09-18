@@ -21,6 +21,7 @@ export default defineConfig({
         },
       ],
       sidebar: [
+        { label: 'Descargas', slug: 'descargas' },
         {
           label: 'Módulos',
           items: [{ autogenerate: { directory: 'modulos' } }],

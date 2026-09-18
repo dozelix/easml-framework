@@ -44,11 +44,14 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Instalar ruff
-        run: pip install ruff
+      - name: Instalar ruff + flet (el auditor lo necesita)
+        run: pip install ruff -r requirements.txt
 
       - name: "Ruff check (gate fase 1: sintaxis + nombres no definidos)"
         run: ruff check app core modulos/common gui gui_flet scripts tests flet_main.py
+
+      - name: Auditoría API Flet
+        run: python scripts/auditar_flet.py
 
   docs:
     name: docs (sync + astro build)

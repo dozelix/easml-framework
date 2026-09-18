@@ -36,3 +36,6 @@ web/.astro/
 web/src/content/docs/modulos/
 web/src/content/docs/index.md
 web/src/data/modulos.json
+# salidas de empaquetado (flet pack / PyInstaller)
+dist/
+build/

@@ -52,10 +52,16 @@ graph TB
 
 ```
 
+## Descargas (sin instalar Python)
+
+Binarios listos por release en [GitHub Releases](https://github.com/dozelix/easml-framework/releases):
+`EASML.exe` (Windows), `easml-linux.tar.gz` (Linux), `easml-macos.zip` (macOS).
+Ver `web/src/content/docs/descargas.md` y `docs/REQUISITOS.md`.
+
 ## Requisitos
 
 * Python 3.10+
-* pillow, tkhtmlview, markdown: `pip install pillow tkhtmlview markdown`
+* `pip install -r requirements.txt` (pillow, tkhtmlview, markdown, flet==1.0.0)
 
 ## Inicio rápido
 
@@ -63,8 +69,9 @@ graph TB
 # 1. Generar archivos de prueba
 python core/lab_setup.py
 
-# 2. Abrir la interfaz visual interactiva
-python gui.py
+# 2. Abrir la interfaz visual (Flet; tkinter en gui.py queda en transición)
+python flet_main.py
+# o en el navegador: python flet_main.py --web
 
 # 3. Limpiar todo el entorno al finalizar
 python core/lab_setup.py --clean
