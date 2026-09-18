@@ -22,7 +22,6 @@ persistence.reg
 startup.bat
 process_list.txt
 sbom_report.json
-package.json
 package-lock.json
 keylog.log
 dns_tunnel_log.txt
