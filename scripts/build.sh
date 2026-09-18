@@ -5,7 +5,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-pip install -r requirements.txt
+pip install -r requirements.txt pyinstaller
 flet pack flet_main.py -n EASML \
   --product-name EASML \
   --add-data "assets:assets" \
