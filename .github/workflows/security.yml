@@ -1,0 +1,49 @@
+name: security
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+  schedule:
+    # Lunes 06:00 UTC: audita dependencias aunque no haya cambios
+    - cron: "0 6 * * 1"
+
+jobs:
+  bandit:
+    name: bandit (SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar bandit
+        run: pip install bandit
+
+      # -ll = solo severidad media o superior. Los 10 hallazgos low actuales
+      # (subprocess en app/runner.py y try/except/pass en limpieza) son
+      # patrones intencionales del laboratorio, no vulnerabilidades.
+      # Los 14 módulos de simulación se excluyen a propósito: son malware
+      # simulado con fines educativos, no código productivo.
+      - name: Escaneo SAST
+        run: bandit -r app core modulos/common gui scripts tests -ll
+
+  pip-audit:
+    name: pip-audit (deps)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Instalar dependencias + pip-audit
+        run: pip install -r requirements.txt pip-audit
+
+      - name: Auditar vulnerabilidades conocidas
+        run: pip-audit

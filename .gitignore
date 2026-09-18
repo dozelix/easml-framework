@@ -28,3 +28,11 @@ keylog.log
 dns_tunnel_log.txt
 directorio_pruebas/
 assets/generate_icons.py
+# web/ (Astro Starlight, monorepo: Root Directory = web/)
+web/node_modules/
+web/dist/
+web/.astro/
+# artefactos de scripts/generar_indice.py (regenerables, no editar)
+web/src/content/docs/modulos/
+web/src/content/docs/index.md
+web/src/data/modulos.json
