@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [5.0.0] - 2026-09-18
 
 ### Added
 - GUI Flet (`gui_flet/` + `flet_main.py --web`) con paridad tkinter
