@@ -1,0 +1,23 @@
+{
+  "name": "easml-docs",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Wiki y documentación del laboratorio EASML (Astro Starlight). Contenido generado desde modulos/*/README.md vía scripts/generar_indice.py",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.26.0",
+  "scripts": {
+    "docs:sync": "python3 ../scripts/generar_indice.py",
+    "predev": "pnpm run docs:sync",
+    "dev": "astro dev",
+    "prebuild": "pnpm run docs:sync",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "*",
+    "@astrojs/starlight": "*"
+  }
+}
