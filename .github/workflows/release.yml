@@ -33,8 +33,9 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      - name: Instalar dependencias (incluye flet + flet pack)
-        run: pip install -r requirements.txt
+      - name: Instalar dependencias (flet + flet pack + PyInstaller)
+        # flet pack NO trae PyInstaller: lo exige instalado aparte.
+        run: pip install -r requirements.txt pyinstaller
 
       - name: Empaquetar con flet pack
         run: >
