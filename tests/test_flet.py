@@ -117,12 +117,18 @@ class TestRunnerSinFlet(unittest.TestCase):
         self.assertTrue(any("boom" in m for m in msgs), msgs)
 
     def test_paths_frozen(self):
+        # Rutas esperadas calculadas con os.path: en Windows los joins usan
+        # letra de unidad y backslashes (antes fallaba solo en ese OS).
         from modulos.common.paths import resolve_lab_paths
-        with self._congelado("/fake/MEIxxx", "/fake/bundle/EASML"):
+        meipass = os.path.join("fake", "MEIxxx")
+        exe = os.path.join("fake", "bundle", "EASML")
+        with self._congelado(meipass, exe):
             rutas = resolve_lab_paths()
-        self.assertEqual(rutas["repo_root"], "/fake/MEIxxx")
-        self.assertEqual(rutas["lab_dir"], "/fake/bundle/directorio_pruebas")
-        self.assertEqual(rutas["logs_dir"], "/fake/bundle/lab_data/logs")
+        base = os.path.dirname(os.path.abspath(exe))
+        self.assertEqual(rutas["repo_root"], meipass)
+        self.assertEqual(rutas["lab_dir"], os.path.join(base, "directorio_pruebas"))
+        self.assertEqual(rutas["logs_dir"],
+                         os.path.join(base, "lab_data", "logs"))
 
 
 @unittest.skipIf(REQUIERE_FLET, "flet no instalado")
