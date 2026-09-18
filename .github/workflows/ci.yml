@@ -48,7 +48,7 @@ jobs:
         run: pip install ruff
 
       - name: "Ruff check (gate fase 1: sintaxis + nombres no definidos)"
-        run: ruff check app core modulos/common gui scripts tests
+        run: ruff check app core modulos/common gui gui_flet scripts tests flet_main.py
 
   docs:
     name: docs (sync + astro build)

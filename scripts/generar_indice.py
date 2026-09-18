@@ -6,10 +6,11 @@ Fuente única: app/config.py (MODULOS, NOMBRES_DEFENSA) + modulos/*/README.md
 web/src/data/modulos.json es un artefacto regenerable: no se edita a mano.
 
 Uso:
-    python scripts/generar_indice.py          # genera artefactos
-    python scripts/generar_indice.py --check  # valida consistencia (para CI)
-    python scripts/generar_indice.py --clean  # elimina artefactos generados
-    python scripts/generar_indice.py --help   # ayuda
+    python scripts/generar_indice.py                # genera artefactos
+    python scripts/generar_indice.py --check        # valida consistencia (para CI)
+    python scripts/generar_indice.py --check-links  # verifica refs HTTP (manual)
+    python scripts/generar_indice.py --clean        # elimina artefactos generados
+    python scripts/generar_indice.py --help         # ayuda
 """
 
 import json
@@ -130,6 +131,42 @@ def generar(entradas: list[dict]) -> None:
     print("  [+] data/modulos.json")
 
 
+def verificar_links(entradas: list[dict], timeout: int = 15) -> list[str]:
+    """Comprueba que cada URL de referencia responde 2xx/3xx.
+
+    Solo stdlib (urllib). No corre en CI push (falsos rojos por muros
+    anti-bots): es verificación manual documentada, ver docs/REQUISITOS.md.
+    """
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+
+    fallos = []
+    for e in entradas:
+        url = e["ref"]
+        # B310: solo se permiten esquemas http/https (nada de file:/custom).
+        esquema = urllib.parse.urlsplit(url).scheme.lower()
+        if esquema not in ("http", "https"):
+            fallos.append(f"{e['nombre']}: esquema no permitido en {url}")
+            continue
+        try:
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "EASML-check/1.0"})
+            # Esquema restringido a http/https arriba: el B310 no aplica.
+            with urllib.request.urlopen(  # nosec B310
+                    req, timeout=timeout) as resp:
+                codigo = resp.status
+        except urllib.error.HTTPError as err:
+            codigo = err.code
+        except Exception as err:  # noqa: BLE001 - cualquier fallo de red cuenta
+            fallos.append(f"{e['nombre']}: {url} -> {err}")
+            continue
+        print(f"  [{codigo}] {e['nombre']}: {url}")
+        if codigo >= 400:
+            fallos.append(f"{e['nombre']}: {url} -> HTTP {codigo}")
+    return fallos
+
+
 def limpiar() -> None:
     for path in (DIR_DOCS, PATH_JSON, PATH_INDEX):
         if os.path.isdir(path):
@@ -153,6 +190,15 @@ def main(argv: list[str]) -> int:
         return 0
     entradas = construir_entradas()
     errores = validar(entradas)
+    if "--check-links" in argv:
+        fallos = verificar_links(entradas)
+        if fallos:
+            print("[CHECK-LINKS] links rotos:")
+            for f in fallos:
+                print(f"  [!] {f}")
+            return 1
+        print(f"[CHECK-LINKS] OK: {len(entradas)} referencias vivas.")
+        return 0
     if "--check" in argv:
         if errores:
             print("[CHECK] inconsistencias detectadas:")
