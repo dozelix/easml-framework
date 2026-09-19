@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Genera el índice JSON y las páginas Markdown del sitio docs (web/).
 
-Fuente única: app/config.py (MODULOS, NOMBRES_DEFENSA) + modulos/*/README.md
-+ README.md raíz. Todo lo que vive en web/src/content/docs/ y
-web/src/data/modulos.json es un artefacto regenerable: no se edita a mano.
+Fuente única: app/config.py (MODULOS, NOMBRES_DEFENSA) + modulos/*/README.md.
+Lo generado (web/.../docs/modulos/ y web/src/data/modulos.json) es un
+artefacto regenerable: no se edita a mano. La portada (index.mdx) y las
+guías (instalacion, interfaz, gobernanza, nuevo-modulo, descargas) son
+curadas y viven en el repo.
 
 Uso:
     python scripts/generar_indice.py                # genera artefactos
@@ -15,7 +17,6 @@ Uso:
 
 import json
 import os
-import re
 import shutil
 import sys
 
@@ -30,12 +31,11 @@ DIR_WEB = os.path.join(RAIZ, "web")
 DIR_DOCS = os.path.join(DIR_WEB, "src", "content", "docs", "modulos")
 DIR_DATA = os.path.join(DIR_WEB, "src", "data")
 PATH_JSON = os.path.join(DIR_DATA, "modulos.json")
-PATH_INDEX = os.path.join(DIR_WEB, "src", "content", "docs", "index.md")
 PATH_README_RAIZ = os.path.join(RAIZ, "README.md")
 
 
 def nombre_archivo_defensa(num: str) -> str:
-    """Replica la convención de gui/main.py para resolver el script de defensa."""
+    """Replica la convención de gui_flet (NOMBRES_DEFENSA en minúsculas)."""
     return NOMBRES_DEFENSA.get(num, "defensa").lower().replace(" ", "_") + ".py"
 
 
@@ -115,15 +115,6 @@ def generar(entradas: list[dict]) -> None:
             f.write(frontmatter_modulo(e) + cuerpo)
         print(f"  [+] modulos/{e['nombre']}.md")
 
-    with open(PATH_README_RAIZ, "r", encoding="utf-8") as f:
-        raiz = f.read()
-    # El H1 del README raíz choca con el title de Starlight: se degrada a H2.
-    raiz = re.sub(r"^# (.+)$", r"## \1", raiz, count=1, flags=re.MULTILINE)
-    with open(PATH_INDEX, "w", encoding="utf-8") as f:
-        f.write("---\ntitle: 'EASML — Laboratorio Educativo de Malware'\n"
-                "description: 'Wiki y documentación del laboratorio'\n---\n\n" + raiz)
-    print("  [+] index.md")
-
     publicas = [{k: v for k, v in e.items() if k != "tiene_readme"} for e in entradas]
     with open(PATH_JSON, "w", encoding="utf-8") as f:
         json.dump(publicas, f, ensure_ascii=False, indent=2)
@@ -168,7 +159,7 @@ def verificar_links(entradas: list[dict], timeout: int = 15) -> list[str]:
 
 
 def limpiar() -> None:
-    for path in (DIR_DOCS, PATH_JSON, PATH_INDEX):
+    for path in (DIR_DOCS, PATH_JSON):
         if os.path.isdir(path):
             shutil.rmtree(path)
             print(f"  [-] {os.path.relpath(path, RAIZ)}/")

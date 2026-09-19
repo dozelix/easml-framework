@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- wiki estructurada: portada, instalación, interfaz, gobernanza, nuevo módulo
+  (migración actualizada de la wiki antigua de GitHub)
+- diagramas mermaid renderizados en la wiki (cliente, mermaid@11)
+
+### Changed
+- `generar_indice.py` ya no genera la portada (curada como `index.mdx`)
+
 ## [5.0.0] - 2026-09-18
 
 ### Added
