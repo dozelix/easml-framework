@@ -1,0 +1,35 @@
+---
+title: 'EASML — Laboratorio Educativo de Malware'
+description: 'Wiki y documentación del laboratorio'
+template: splash
+hero:
+  tagline: 14 amenazas, simulación + defensa, en un entorno controlado y seguro.
+  actions:
+    - text: Guía de instalación
+      link: /instalacion/
+      icon: rocket
+    - text: Ver módulos
+      link: /modulos/ransomware/
+      icon: open-book
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+**Educational Advanced Simulation Malware Laboratory (E.A.S.M.L)** es un framework académico interactivo para estudiar el comportamiento de amenazas informáticas y sus mecanismos de mitigación. Documentación para estudiantes, profesores e investigadores: no solo el código de un ataque, sino su impacto en gobernanza y cumplimiento.
+
+<CardGrid>
+  <Card title="Instalación" icon="rocket">
+    Entorno en 3 pasos o binario portable sin Python. [Empezar](/instalacion/).
+  </Card>
+  <Card title="Interfaz Flet" icon="laptop">
+    Panel, consola en tiempo real y juego de desafíos. [Manual](/interfaz/).
+  </Card>
+  <Card title="Gobernanza CIA/CIS" icon="shield">
+    Qué pilar rompe cada amenaza y qué control la mitiga. [Ver matriz](/gobernanza/).
+  </Card>
+  <Card title="Nuevo módulo" icon="puzzle">
+    Cómo extender el laboratorio con otra amenaza. [Guía](/nuevo-modulo/).
+  </Card>
+</CardGrid>
+
+> **Solo para uso educativo en entorno controlado.** Todas las emulaciones corren confinadas en `directorio_pruebas/`; ningún módulo tiene propagación real ni altera el sistema anfitrión.

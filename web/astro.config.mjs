@@ -44,6 +44,10 @@ export default defineConfig({
         },
       ],
       sidebar: [
+        { label: 'Instalación', slug: 'instalacion' },
+        { label: 'Interfaz Flet', slug: 'interfaz' },
+        { label: 'Gobernanza CIA/CIS', slug: 'gobernanza' },
+        { label: 'Nuevo módulo', slug: 'nuevo-modulo' },
         { label: 'Descargas', slug: 'descargas' },
         {
           label: 'Módulos',
