@@ -331,7 +331,7 @@ async def main(page: ft.Page):
         icono_cia.src = T.icono_cia(cia)
         icono_cia.visible = True
         lbl_nombre.value = f"  {meta(nombre)['alias']} ({nombre})"
-        lbl_cis.value = f"{cia} · {meta(nombre)['era']} · {meta(nombre)['salon']}"
+        lbl_cis.value = cia
         mostrar(vista_modulo(idx))
         for tile in lista_modulos.controls:
             if isinstance(tile, ft.ListTile):
