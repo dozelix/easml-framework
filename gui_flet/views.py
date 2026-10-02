@@ -399,7 +399,7 @@ def vista_portada(siguiente: str, progreso: dict | None = None,
                 ft.Text(f"continúa en {siguiente}", color=T.TEXTO_DIM,
                         size=T.TAM_MINIMO, font_family=T.FUENTE),
             ], spacing=4, expand=True),
-        ], spacing=16),
+        ], spacing=16, alignment=ft.MainAxisAlignment.CENTER),
         ft.Container(height=8),
         ft.Row([
             _btn("HISTORIAS", T.ACCENT, T.BG_PANEL, on_historias, expand=True),
@@ -416,13 +416,12 @@ def vista_portada(siguiente: str, progreso: dict | None = None,
         ft.Text("v1.0.0.0-alpha — alpha cerrada, todo puede romperse",
                 color=T.TEXTO_DIM, size=T.TAM_MINIMO, font_family=T.FUENTE,
                 text_align=ft.TextAlign.CENTER),
-    ], spacing=6, expand=True)
+    ], spacing=6, expand=True,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER)
 
     return ft.Container(
         expand=True,
-        content=ft.Stack([
-            ft.Image(src=T.fondo_portada(), fit=ft.BoxFit.COVER, expand=True,
-                     error_content=ft.Container(bgcolor=T.BG, expand=True)),
-            ft.Container(content=menu, padding=24, expand=True),
-        ], expand=True),
+        image=ft.DecorationImage(src=T.fondo_portada(),
+                                 fit=ft.BoxFit.COVER),
+        content=ft.Container(content=menu, padding=24, expand=True),
     )
