@@ -5,9 +5,16 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+VER="${1:-1.0.0.0}"
+
 pip install -r requirements.txt pyinstaller
 flet pack flet_main.py -n EASML \
   --product-name EASML \
+  --product-version "$VER" \
+  --file-version "$VER" \
+  --company-name EASML \
+  --file-description "EASML: laboratorio-juego educativo de ciberseguridad (simulaciones contenidas)" \
+  --copyright "EASML contributors" \
   --add-data "assets:assets" \
   --add-data "modulos:modulos" \
   --add-data "core:core" \
