@@ -1,0 +1,39 @@
+EASML v1.0.0.0-alpha — laboratorio-juego educativo de ciberseguridad
+======================================================================
+ALPHA CERRADA: busca romperlo todo y contarme dónde. Nada aquí es final.
+
+INSTALAR (Windows)
+------------------
+1. Descarga EASML-windows.zip del Release y descomprímelo donde quieras.
+2. Windows SmartScreen dirá "aplicación no reconocida": click
+   "Más información" > "Ejecutar de todas formas".
+   (Sin firma de pago no hay forma de evitarlo; el exe trae metadatos
+   EASML + versión para que el aviso sea el leve, no el grave.)
+3. Si Defender reclama, permite SOLO la carpeta descomprimida o agrega
+   una exclusión para ella. El juego solo escribe dentro de su carpeta
+   (directorio_pruebas/ + lab_data/). Nada sale de ahí.
+4. Ejecuta EASML.exe. Si parte en modo historia con EISENHORSE, ganaste.
+
+VERIFICAR INTEGRIDAD
+--------------------
+Compara el hash del zip con el .sha256 publicado:
+  certutil -hashfile EASML-windows.zip SHA256
+
+QUÉ PROBAR (10 min)
+--------------------
+1. CÓMO JUGAR: ¿se entiende que no puedes romper nada?
+2. Tutorial EISENHORSE: Setup > Simular > Defensa > Luchar > Juego.
+3. ¿Terminaste el capítulo? ¿Dónde te trabaste?
+4. Ajustes: activa DLC, resetea arena y progreso por separado.
+5. Tu PC (CPU/RAM/Windows): ¿fluido o pegado?
+
+QUÉ REPORTAR
+------------
+Abre un Issue "alpha-feedback" con: dónde te trabaste, captura si puedes,
+tu Windows y el log de lab_data/logs/ si algo explotó.
+
+REGLAS
+------
+- Todo es simulado e inofensivo (texto y copias, sin red real).
+- No ejecutes nada fuera de la carpeta del juego.
+- Bórralo todo cuando quieras: elimina la carpeta y listo.

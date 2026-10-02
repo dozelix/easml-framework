@@ -204,8 +204,23 @@ class TestLayout(unittest.TestCase):
         self.assertEqual(len(fila.controls), 3)  # sidebar | div | central
         central = fila.controls[2]
         self.assertEqual(len(central.controls), 5)  # header+contenido+etc.
-        tiles = fila.controls[0].content.controls[3].controls
+        import flet as ft
+        lista = fila.controls[0].content.controls[5]
+        tiles = [c for c in lista.controls if isinstance(c, ft.ListTile)]
         self.assertEqual(len(tiles), 14)
+        # Arranque en menú historia, no en dashboard plano.
+        import gui_flet.views as V
+        self.assertIsNotNone(V.vista_menu(
+            {"minijefe": {}, "sombra": [], "dlc": False},
+            {"Confidencialidad": ["keylogger"]}, "keylogger"))
+        self.assertIsNotNone(V.vista_mapa(
+            "Confidencialidad", ["keylogger"],
+            {"minijefe": {}, "sombra": [], "dlc": False}))
+        self.assertIsNotNone(V.vista_jefes(
+            {"minijefe": {}, "megajefe": {}, "sombra": [], "panteon": {}},
+            {"Confidencialidad": ["keylogger"]}))
+        self.assertIsNotNone(V.vista_ajustes(
+            {"dlc": False, "anim": True}, {"lab_dir": "x", "logs_dir": "y"}))
 
 
 @unittest.skipIf(REQUIERE_FLET, "flet no instalado")

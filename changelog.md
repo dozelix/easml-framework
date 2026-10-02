@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0.0-alpha] - 2026-10-03 (pre-release, reboot juego)
+
+Reboot: la era laboratorio 5.x queda congelada abajo; el juego parte en 1.x
+con versionado de 4 números (`Mayor.Menor.Parche.Build`, calza con
+`--file-version n.n.n.n` de Windows).
+
+### Added
+- modo historia por turnos: héroe vs 14 bichos (todas las amenazas con alias
+  punk por era: EISENHORSE, GHOSTTAPE, RUSTLOCK...) y captura de sombras
+- menú JUGAR/CONTINUAR + mapas por historia CIA + JEFES/Panteón + AJUSTES
+  (DLC, resets separados arena/progreso, rutas activas)
+- combate ATACAR/ANALIZAR/PARCHEAR/CAPTURAR con daño verificado en arena
+  (sin verificación no hay daño) y HP = integridad real
+- tema único red_neon oscuro, set chibi 128px (14 + sombras), sin modo claro
+- progreso en `lab_data/progreso.json` (separado de la arena)
+- `lab_setup.py --status`, rutas deterministas (fin del duplicado),
+  logs únicos en `lab_data/logs/`
+- release: metadatos exe (empresa/versión/descripción), SHA256, zip con
+  arena pre-creada en Windows, LEEME-alpha.txt, flag pre-release auto
+
+### Changed
+- `app/config.py`: capa juego por slug (core 6 + DLC 8, orden campaña,
+  alias/era/salón); `MODULOS`/`NOMBRES_DEFENSA` intactos por compat
+- header muestra alias + mundo/era/salón (adiós números CIS en UI)
+
 ## [Unreleased]
 
 ### Added

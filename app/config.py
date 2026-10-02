@@ -63,3 +63,83 @@ NOMBRES_DEFENSA = {
     "13": "Verificacion de Dependencias SCA",
     "14": "Deteccion de Anomalias DNS",
 }
+
+# ── Capa juego (v1.0.0.0-alpha): metadatos por slug ──────────────────────────
+# MODULOS y NOMBRES_DEFENSA se conservan intactos (compat con GUI, wiki y
+# scripts). Todo lo nuevo vive aquí, llaveado por slug.
+
+# Núcleo activo por defecto (efecto visible en <1 min) vs DLC bloqueado
+# (técnicas de red/memoria/kernel, más abstractas).
+CORE_SLUGS = frozenset({
+    "trojan", "keylogger", "ransomware", "wiper", "worm", "cryptominer",
+})
+
+# Alias con aura por era punk + salón de combate. Subtítulo ES en README.
+META_POR_SLUG = {
+    "trojan": {"alias": "EISENHORSE", "era": "oxido", "dificultad": 1,
+               "orden": 0, "salon": "Garaje"},
+    "keylogger": {"alias": "GHOSTTAPE", "era": "cinta", "dificultad": 1,
+                  "orden": 1, "salon": "Cabina VHS"},
+    "steganography": {"alias": "HAGAKURE", "era": "neon", "dificultad": 2,
+                      "orden": 2, "salon": "Callejón Tinta"},
+    "backdoor": {"alias": "ROSTTOR", "era": "oxido", "dificultad": 2,
+                 "orden": 3, "salon": "Sótano de Calderas"},
+    "dns_tunneling": {"alias": "SUBDOMINUS", "era": "nube", "dificultad": 3,
+                      "orden": 4, "salon": "Alcantarilla de Fibra"},
+    "fileless": {"alias": "INANIS", "era": "nube", "dificultad": 3,
+                 "orden": 5, "salon": "Cámara de Niebla"},
+    "rootkit": {"alias": "RING_ZERO", "era": "cinta", "dificultad": 3,
+                "orden": 6, "salon": "Sótano CRT"},
+    "supply_chain": {"alias": "VENENUM CHAIN", "era": "nube", "dificultad": 3,
+                     "orden": 7, "salon": "Almacén Fantasma"},
+    "ransomware": {"alias": "RUSTLOCK", "era": "neon", "dificultad": 2,
+                   "orden": 8, "salon": "Casa de Empeño"},
+    "wiper": {"alias": "HEADCRASH", "era": "cinta", "dificultad": 1,
+              "orden": 9, "salon": "Sala Magnética"},
+    "worm": {"alias": "GRAUWURM", "era": "oxido", "dificultad": 2,
+             "orden": 10, "salon": "Túnel Remachado"},
+    "cryptominer": {"alias": "FUMUS FORGE", "era": "nube", "dificultad": 2,
+                    "orden": 11, "salon": "Fundición Solar Rota"},
+    "logic_bomb": {"alias": "ZEITZUNDER", "era": "oxido", "dificultad": 2,
+                   "orden": 12, "salon": "Relojería"},
+    "botnet": {"alias": "KAGE ARMY", "era": "neon", "dificultad": 3,
+               "orden": 13, "salon": "Azotea Antenas"},
+}
+
+_NUM_POR_SLUG = {nombre: num for num, nombre, _s, _cia, _cis, _url in MODULOS}
+
+
+def slug_de(indice: int) -> str:
+    """Slug del módulo en la posición `indice` de MODULOS."""
+    return MODULOS[indice][1]
+
+
+def es_core(slug: str) -> bool:
+    """True si el módulo viene activo por defecto (no DLC)."""
+    return slug in CORE_SLUGS
+
+
+def defensa_arch(slug: str) -> str:
+    """Nombre de archivo de defensa (ej: respuesta_a_incidentes.py)."""
+    num = _NUM_POR_SLUG[slug]
+    return NOMBRES_DEFENSA[num].lower().replace(" ", "_") + ".py"
+
+
+def meta(slug: str) -> dict:
+    """Metadatos de juego (alias, era, dificultad, orden, salón)."""
+    return META_POR_SLUG[slug]
+
+
+def orden_campana() -> list[str]:
+    """Slugs en orden pedagógico (tutorial trojan primero)."""
+    return sorted(META_POR_SLUG, key=lambda s: META_POR_SLUG[s]["orden"])
+
+
+def modulos_por_mundo() -> dict[str, list[str]]:
+    """Slugs agrupados por pilar CIA, en orden de campaña."""
+    mundos: dict[str, list[str]] = {}
+    for _num, nombre, _s, cia, _cis, _url in MODULOS:
+        mundos.setdefault(cia, []).append(nombre)
+    for lista in mundos.values():
+        lista.sort(key=lambda s: META_POR_SLUG[s]["orden"])
+    return mundos

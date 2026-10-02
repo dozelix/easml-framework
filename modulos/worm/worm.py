@@ -24,7 +24,7 @@ sys.path.insert(0, ROOT)
 from modulos.common.utils import (
     banner, color, safe_print, log, LOG_LINES,
     write_log, cleanup, hash_file as _hash_file,
-    find_lab_dir,
+    find_lab_dir, find_logs_dir,
 )
 
 # ── Ruta del directorio de pruebas ──
@@ -309,7 +309,7 @@ def limpiar():
             removed += 1
 
     # Eliminar log de la simulacion en lab_data/logs/
-    log_path = os.path.join(find_lab_dir(ROOT), '..', 'logs', "04_worm.log")
+    log_path = os.path.join(find_logs_dir(ROOT), "04_worm.log")
     if os.path.exists(log_path):
         os.remove(log_path)
         safe_print(color("  [+] Eliminado: 04_worm.log", 'green'))
