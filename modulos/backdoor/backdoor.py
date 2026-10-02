@@ -21,9 +21,9 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from modulos.common.utils import (
+from modulos.common.utils import (  # noqa: E402 (sys.path primero: patrón del repo)
     banner, color, safe_print, log, LOG_LINES,
-    write_log, cleanup, hash_file as _hash_file, find_lab_dir, find_logs_dir,
+    write_log, hash_file as _hash_file, find_lab_dir, find_logs_dir,
 )
 
 # ── Ruta del directorio de pruebas ──
@@ -120,7 +120,7 @@ def crear_config_c2():
     with open(config_path, 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
 
-    safe_print(color(f"    Archivo: directorio_pruebas/c2_config.json", 'yellow'))
+    safe_print(color("    Archivo: directorio_pruebas/c2_config.json", 'yellow'))
     safe_print(color(f"    Tamano: {os.path.getsize(config_path)} bytes", 'yellow'))
     safe_print(color(f"    Hash SHA-256: {_short_hash(config_path)}", 'yellow'))
     safe_print(color(
@@ -184,10 +184,10 @@ FIN DEL REGISTRO - SIMULACION EDUCATIVA
     with open(log_path, 'w', encoding='utf-8') as f:
         f.write(contenido)
 
-    safe_print(color(f"    Archivo: directorio_pruebas/shell_log.txt", 'yellow'))
+    safe_print(color("    Archivo: directorio_pruebas/shell_log.txt", 'yellow'))
     safe_print(color(f"    Tamano: {os.path.getsize(log_path)} bytes", 'yellow'))
     safe_print(color(f"    Hash SHA-256: {_short_hash(log_path)}", 'yellow'))
-    safe_print(color(f"    Comandos simulados en log: 7", 'cyan'))
+    safe_print(color("    Comandos simulados en log: 7", 'cyan'))
     log("Registro de reverse shell creado: directorio_pruebas/shell_log.txt")
     return log_path
 
@@ -221,10 +221,10 @@ def crear_persistencia_reg():
     with open(reg_path, 'w', encoding='utf-8') as f:
         f.write(contenido)
 
-    safe_print(color(f"    Archivo: directorio_pruebas/persistence.reg", 'yellow'))
+    safe_print(color("    Archivo: directorio_pruebas/persistence.reg", 'yellow'))
     safe_print(color(f"    Tamano: {os.path.getsize(reg_path)} bytes", 'yellow'))
     safe_print(color(f"    Hash SHA-256: {_short_hash(reg_path)}", 'yellow'))
-    safe_print(color(f"    Claves simuladas: Run + RunOnce", 'cyan'))
+    safe_print(color("    Claves simuladas: Run + RunOnce", 'cyan'))
     log("Clave de persistencia creada: directorio_pruebas/persistence.reg")
     return reg_path
 
@@ -262,7 +262,7 @@ echo [SIMULACION] Script completado - No se ejecuto nada real
     with open(bat_path, 'w', encoding='utf-8') as f:
         f.write(contenido)
 
-    safe_print(color(f"    Archivo: directorio_pruebas/startup.bat", 'yellow'))
+    safe_print(color("    Archivo: directorio_pruebas/startup.bat", 'yellow'))
     safe_print(color(f"    Tamano: {os.path.getsize(bat_path)} bytes", 'yellow'))
     safe_print(color(f"    Hash SHA-256: {_short_hash(bat_path)}", 'yellow'))
     log("Script de inicio creado: directorio_pruebas/startup.bat")

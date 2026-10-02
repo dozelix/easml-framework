@@ -15,9 +15,9 @@ import argparse
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DIR_RAIZ)
 
-from core.base_module import BaseDefense
-from modulos.common.utils import (
-    log, safe_print, color, banner, hash_file, cleanup, write_log, find_lab_dir,
+from core.base_module import BaseDefense  # noqa: E402 (sys.path primero: patrón del repo)
+from modulos.common.utils import (  # noqa: E402 (sys.path primero: patrón del repo)
+    log, safe_print, color, banner, hash_file, write_log, find_lab_dir,
     find_logs_dir,
 )
 
@@ -36,7 +36,9 @@ class RansomwareDefense(BaseDefense):
         )
 
         if not os.path.isdir(self.dir_simulacion):
-            safe_print(color("  [!] El directorio de simulación no existe. ¿Ya atacaste?.\n", 'red'))
+            safe_print(color(
+                "  [!] El directorio de simulación "
+                "no existe. ¿Ya atacaste?.\n", 'red'))
             return
 
         # FASE 1: Análisis del entorno afectado
@@ -66,7 +68,9 @@ class RansomwareDefense(BaseDefense):
             f"Nota de rescate eliminada: {nota_encontrada}"
         ]
         write_log(os.path.join(self.dir_logs, "ransomware_defensa"), lineas_log)
-        safe_print(color(f"  [+] Log de auditoría guardado en: {self.dir_logs}/ransomware_defensa.log", 'green'))
+        safe_print(color(
+            f"  [+] Log de auditoría guardado en: {self.dir_logs}/ransomware_defensa.log",
+            'green'))
 
     def limpiar_entorno(self) -> None:
         banner("DEFENSA RANSOMWARE — LIMPIEZA TOTAL", "Eliminando laboratorio de ransomware")
@@ -98,7 +102,9 @@ class RansomwareDefense(BaseDefense):
             ruta_completa = os.path.join(self.dir_simulacion, f)
             if f == self.nota_rescate:
                 nota_encontrada = True
-                safe_print(color(f"    [!] Amenaza Activa: Nota de rescate detectada -> {f}", 'red'))
+                safe_print(color(
+                    f"    [!] Amenaza Activa: Nota de rescate detectada -> {f}",
+                    'red'))
             elif f.endswith(self.extension_locked):
                 archivos_locked.append(ruta_completa)
                 safe_print(color(f"    [!] Archivo Cifrado: Detectado -> {f}", 'yellow'))
@@ -141,7 +147,9 @@ class RansomwareDefense(BaseDefense):
         try:
             if os.path.exists(ruta_nota):
                 os.remove(ruta_nota)
-                safe_print(color(f"    [+] {self.nota_rescate} eliminada de forma segura.", 'green'))
+                safe_print(color(
+                    f"    [+] {self.nota_rescate} eliminada de forma segura.",
+                    'green'))
                 log("Nota de rescate destruida por el sistema de defensa.")
         except Exception as e:
             safe_print(color(f"    [!] No se pudo eliminar la nota: {e}", 'red'))

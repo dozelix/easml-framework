@@ -21,9 +21,9 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from modulos.common.utils import (
+from modulos.common.utils import (  # noqa: E402 (sys.path primero: patrón del repo)
     banner, color, safe_print, log, LOG_LINES,
-    write_log, cleanup, hash_file as _hash_file,
+    write_log, hash_file as _hash_file,
     find_lab_dir, find_logs_dir,
 )
 
@@ -80,8 +80,8 @@ def crear_nodos():
         meta_path = os.path.join(share_path, ".share_info")
         with open(meta_path, 'w', encoding='utf-8') as f:
             f.write(f"Nodo: {node}\n")
-            f.write(f"Tipo: Compartida SMB simulada\n")
-            f.write(f"Estado: ACTIVA\n")
+            f.write("Tipo: Compartida SMB simulada\n")
+            f.write("Estado: ACTIVA\n")
         safe_print(color(f"  [+] Nodo creado: directorio_pruebas/{node}/", 'green'))
         log(f"Nodo creado: {node}")
 
@@ -183,7 +183,6 @@ def simular_propagacion():
                 if nodo_objetivo in nodos_infectados:
                     continue
 
-                dir_fuente = os.path.join(LAB_DIR, nodo_fuente)
                 dir_objetivo = os.path.join(LAB_DIR, nodo_objetivo)
 
                 if not os.path.isdir(dir_objetivo):
@@ -315,7 +314,9 @@ def limpiar():
         safe_print(color("  [+] Eliminado: 04_worm.log", 'green'))
         removed += 1
 
-    safe_print(color(f"\n  Limpieza completada: {removed} directorios/archivos eliminados.\n", 'green'))
+    safe_print(color(
+        f"\n  Limpieza completada: {removed} "
+        f"directorios/archivos eliminados.\n", 'green'))
 
 
 # ══════════════════════════════════════════════════════════════

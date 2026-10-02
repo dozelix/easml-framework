@@ -27,8 +27,8 @@ import glob
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from modulos.common.utils import log, safe_print, color, banner, traverse_lab_files
-from modulos.common.utils import hash_file, read_file, cleanup, write_log, is_lab_ready, find_lab_dir
+from modulos.common.utils import log, safe_print, color, banner
+from modulos.common.utils import find_lab_dir
 
 MODULO_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.join(MODULO_DIR, '..', '..')
@@ -67,7 +67,10 @@ def detectar_directorio_pruebas():
     """Verifica si existe el directorio de prueba con artefactos."""
     if not os.path.isdir(DIR_SIMULACION):
         return False, []
-    archivos = [f for f in os.listdir(DIR_SIMULACION) if os.path.isfile(os.path.join(DIR_SIMULACION, f))]
+    archivos = [
+        f for f in os.listdir(DIR_SIMULACION)
+        if os.path.isfile(os.path.join(DIR_SIMULACION, f))
+    ]
     return True, archivos
 
 
@@ -207,7 +210,8 @@ def ejecutar_deteccion():
     safe_print(color("--- Verificacion 0: Directorio de prueba ---", 'cyan'))
     existe, archivos = detectar_directorio_pruebas()
     if existe:
-        safe_print(f"  {color('!', 'yellow')} directorio_pruebas/ encontrado: {len(archivos)} archivos")
+        safe_print((f"  {color('!', 'yellow')} directorio_pruebas/ "
+            f"encontrado: {len(archivos)} archivos"))
         log(f"directorio_pruebas/ encontrado: {len(archivos)} archivos")
     else:
         safe_print(f"  {color('[OK]', 'green')} directorio_pruebas/ no existe")
@@ -228,13 +232,15 @@ def ejecutar_deteccion():
     safe_print(color("\n--- Verificacion 2: Archivos de configuracion ---", 'cyan'))
     archivos_minero = detectar_archivos_config()
     if archivos_minero:
-        safe_print(f"  {color('!', 'red')} {len(archivos_minero)} archivo(s) de minero encontrado(s):")
+        safe_print((f"  {color('!', 'red')} {len(archivos_minero)} "
+            f"archivo(s) de minero encontrado(s):"))
         for ruta in archivos_minero:
             safe_print(f"    - {ruta}")
             log(f"Archivo de minero encontrado: {ruta}")
         hallazgos.extend(archivos_minero)
     else:
-        safe_print(f"  {color('[OK]', 'green')} No se encontraron archivos de configuracion de minero")
+        safe_print((f"  {color('[OK]', 'green')} No se encontraron "
+            f"archivos de configuracion de minero"))
 
     # 3. Codigo inyectado
     safe_print(color("\n--- Verificacion 3: Codigo inyectado ---", 'cyan'))

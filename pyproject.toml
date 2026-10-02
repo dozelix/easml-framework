@@ -7,3 +7,7 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E9", "F821", "F822"]
+
+[tool.ruff.lint.per-file-ignores]
+# Plantillas byte-estables de archivos de prueba: no reenvolver.
+"modulos/common/generators.py" = ["E501"]

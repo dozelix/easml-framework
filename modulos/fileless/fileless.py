@@ -223,10 +223,10 @@ def ejecutar():
 
     # ── FASE 7: Guardar log ──
     log_entries = [
-        f"Ejecución fileless simulada",
+        "Ejecución fileless simulada",
         f"Timestamp: {datetime.datetime.now().isoformat()}",
         f"Script temporal: {os.path.basename(temp_script)}",
-        f"Estado: eliminado exitosamente",
+        "Estado: eliminado exitosamente",
         f"Técnicas mostradas: {len(TECNICAS_FILELESS)}",
     ]
     write_log("FILELESS", log_entries)
@@ -236,8 +236,8 @@ def ejecutar():
     safe_print(color("  RESUMEN DE LA SIMULACIÓN FILELESS", 'bold'))
     safe_print(color("=" * 60, 'cyan'))
     safe_print(color(f"  Código creado en:     {os.path.basename(temp_script)}", 'white'))
-    safe_print(color(f"  Estado:               ELIMINADO (sin persistencia)", 'green'))
-    safe_print(color(f"  Artefactos en disco:  0", 'green'))
+    safe_print(color("  Estado:               ELIMINADO (sin persistencia)", 'green'))
+    safe_print(color("  Artefactos en disco:  0", 'green'))
     safe_print(color(f"  Técnicas mostradas:   {len(TECNICAS_FILELESS)}", 'white'))
     safe_print(color("=" * 60, 'cyan'))
     safe_print(color(

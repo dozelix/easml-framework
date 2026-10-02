@@ -148,7 +148,9 @@ def ejecutar():
     # contraseñas débiles en dispositivos IoT. Aquí simulamos la lista resultante.
     num_bots = random.randint(15, 40)
     bots = generar_bots(num_bots)
-    safe_print(color(f"  Se generaron {num_bots} bots ficticios (simula dispositivos comprometidos).\n", 'green'))
+    safe_print(color(
+        f"  Se generaron {num_bots} bots ficticios "
+        f"(simula dispositivos comprometidos).\n", 'green'))
     log(f"Fase 1: {num_bots} bots generados")
 
     # ── FASE 2: Mostrar topología de la botnet ──
@@ -208,7 +210,9 @@ def ejecutar():
     }
     with open(BOTNET_CONFIG, 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
-    safe_print(color(f"  → {BOTNET_CONFIG} guardado ({os.path.getsize(BOTNET_CONFIG)} bytes)", 'green'))
+    safe_print(color(
+        f"  → {BOTNET_CONFIG} guardado ({os.path.getsize(BOTNET_CONFIG)} bytes)",
+        'green'))
 
     # ── FASE 6: Guardar log C2 como artifacto de laboratorio ──
     with open(BOTNET_LOG, 'w', encoding='utf-8') as f:
@@ -224,7 +228,7 @@ def ejecutar():
     safe_print(color(f"  Canales C2:         {len(C2_CHANNELS)}", 'white'))
     safe_print(color(f"  Comandos enviados:  {len(comandos_log)}", 'white'))
     safe_print(color(f"  Tipo de DDoS:       {ddos['tipo']}", 'red'))
-    safe_print(color(f"  Archivos generados: bot_config.json, botnet_c2.log", 'white'))
+    safe_print(color("  Archivos generados: bot_config.json, botnet_c2.log", 'white'))
     safe_print(color("=" * 60, 'cyan'))
     safe_print(color(
         "\n  NOTA: Todo es ficticio. No se contactan servidores reales.\n"

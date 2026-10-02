@@ -20,15 +20,13 @@ import sys
 import base64
 import time
 import random
-import hashlib
 import argparse
 import shutil
-import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from modulos.common.utils import log, safe_print, color, banner, traverse_lab_files
-from modulos.common.utils import hash_file, read_file, cleanup, write_log, is_lab_ready, find_lab_dir
+from modulos.common.utils import log, safe_print, color, banner
+from modulos.common.utils import find_lab_dir
 
 MODULO_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.join(MODULO_DIR, '..', '..')
@@ -108,7 +106,8 @@ def simular_consulta_dns(subdominio, dominio):
     query_len = len(query_completa)
 
     # IP aleatoria simulada como respuesta
-    respuesta_ip = f"{random.randint(1,254)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}"
+    respuesta_ip = (f"{random.randint(1, 254)}.{random.randint(0, 255)}."
+                    f"{random.randint(0, 255)}.{random.randint(1, 254)}")
     ttl = random.randint(30, 300)
 
     return {
@@ -134,19 +133,22 @@ def simular_exfiltracion(mensaje, dominio):
     safe_print(color("\n--- PASO 1: Codificacion del mensaje ---", 'cyan'))
 
     mensaje_bytes = mensaje.encode('utf-8')
-    safe_print(f"  Mensaje original: {color(mensaje[:50] + ('...' if len(mensaje) > 50 else ''), 'yellow')}")
+    safe_print((f"  Mensaje original: "
+        f"{color(mensaje[:50] + ('...' if len(mensaje) > 50 else ''), 'yellow')}"))
     safe_print(f"  Tamano: {color(f'{len(mensaje_bytes)} bytes', 'green')}")
     log(f"Mensaje a exfiltrar: {len(mensaje_bytes)} bytes")
 
     # Codificar en base32
     encoded = base32_encode(mensaje_bytes)
-    safe_print(f"  Codificado (base32): {color(encoded[:40] + ('...' if len(encoded) > 40 else ''), 'green')}")
+    safe_print((f"  Codificado (base32): "
+        f"{color(encoded[:40] + ('...' if len(encoded) > 40 else ''), 'green')}"))
     safe_print(f"  Tamano codificado: {color(f'{len(encoded)} caracteres', 'green')}")
     log(f"Base32: {len(encoded)} caracteres")
 
     # Dividir en chunks
     chunks = dividir_en_chunks(encoded, CHUNK_SIZE)
-    safe_print(f"  Chunks a enviar: {color(str(len(chunks)), 'green')} (max {CHUNK_SIZE} chars por label)")
+    safe_print((f"  Chunks a enviar: {color(str(len(chunks)), 'green')} "
+        f"(max {CHUNK_SIZE} chars por label)"))
     log(f"Chunks: {len(chunks)}")
 
     safe_print(color("\n--- PASO 2: Envio de consultas DNS ---", 'cyan'))
@@ -187,7 +189,7 @@ def simular_exfiltracion(mensaje, dominio):
     # Paso 3: Respuesta del servidor C2
     safe_print(color("\n--- PASO 3: Respuesta del servidor C2 ---", 'cyan'))
     safe_print(f"  El servidor C2 {color(dominio, 'red')} recibe las consultas:")
-    safe_print(f"    Extrae subdominios de cada query")
+    safe_print("    Extrae subdominios de cada query")
     safe_print(f"    Reconstruye el mensaje: {color(encoded, 'yellow')}")
     safe_print(f"    Decodifica base32: {color(mensaje[:50], 'green')}")
     log("Servidor C2 recibio y decodifico el mensaje")
@@ -229,7 +231,7 @@ def simular_c2_mensaje(dominio):
 
     # Respuesta simulada del sistema victima
     respuesta_cmd = "www-data\\nuid=33(www-data)\\nworkstation01"
-    safe_print(f"\n  Respuesta del servidor DNS:")
+    safe_print("\n  Respuesta del servidor DNS:")
     safe_print(f"    {color(respuesta_cmd, 'green')}")
 
     # Simular exfiltracion de la respuesta

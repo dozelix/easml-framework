@@ -19,9 +19,9 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from modulos.common.utils import (
+from modulos.common.utils import (  # noqa: E402 (sys.path primero: patrón del repo)
     banner, color, safe_print, log, LOG_LINES,
-    write_log, cleanup, hash_file, find_lab_dir, find_logs_dir,
+    write_log, hash_file, find_lab_dir, find_logs_dir,
 )
 
 # ── Ruta del directorio de pruebas ──
@@ -122,7 +122,7 @@ def ocultar_procesos():
         safe_print(color(f"  [+] {fname}", 'yellow'))
         safe_print(color(f"      Descripcion: {desc}", 'cyan'))
         safe_print(color(
-            f"      Visible con: ls -la (archivos ocultos)", 'cyan'
+            "      Visible con: ls -la (archivos ocultos)", 'cyan'
         ))
         log(f"Archivo oculto creado: directorio_pruebas/{fname}")
         time.sleep(0.1)
@@ -231,7 +231,7 @@ def guardar_lista_procesos(procesos_ocultos):
         )
         f.write(f"\n{ROOTKIT_MARKER}\n")
 
-    safe_print(color(f"    Archivo: directorio_pruebas/process_list.txt", 'yellow'))
+    safe_print(color("    Archivo: directorio_pruebas/process_list.txt", 'yellow'))
     safe_print(color(f"    Tamano: {os.path.getsize(process_file)} bytes", 'yellow'))
     h = hash_file(process_file)
     safe_print(color(

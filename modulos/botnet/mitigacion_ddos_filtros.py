@@ -20,7 +20,7 @@ import glob
 # ── Configurar path para importar core.common ──
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from modulos.common.utils import log, safe_print, color, banner, cleanup, write_log, find_lab_dir
+from modulos.common.utils import safe_print, color, banner, write_log, find_lab_dir
 
 # ── Directorio de trabajo de la simulación ──
 LAB_DIR = find_lab_dir(os.path.dirname(os.path.abspath(__file__)))
@@ -80,24 +80,34 @@ def detectar():
             with open(os.path.join(LAB_DIR, "bot_config.json"), 'r', encoding='utf-8') as f:
                 cfg = json.load(f)
             safe_print(color(f"    Red:          {cfg.get('nombre_red', '?')}", 'yellow'))
-            safe_print(color(f"    Servidor C2:  {cfg.get('servidor_c2', '?')}:{cfg.get('puerto_irc', '?')}", 'yellow'))
+            safe_print(color(
+                f"    Servidor C2:  {cfg.get('servidor_c2', '?')}:{cfg.get('puerto_irc', '?')}",
+                'yellow'))
             safe_print(color(f"    Canales:      {', '.join(cfg.get('canales', []))}", 'yellow'))
             safe_print(color(f"    Total bots:   {cfg.get('total_bots', '?')}", 'yellow'))
 
             # Analizar métricas del último ataque
             ataque = cfg.get('ultimo_ataque', {})
             if ataque:
-                safe_print(color(f"\n    Último ataque DDoS registrado:", 'red'))
+                safe_print(color("\n    Último ataque DDoS registrado:", 'red'))
                 safe_print(color(f"      Tipo:          {ataque.get('tipo', '?')}", 'red'))
-                safe_print(color(f"      Bots:          {ataque.get('bots_participantes', '?')}", 'red'))
-                safe_print(color(f"      Paq/seg:       {ataque.get('paquetes_por_segundo', '?')}", 'red'))
-                safe_print(color(f"      Ancho de banda: {ataque.get('ancho_banda_mbps', '?')} Mbps", 'red'))
+                safe_print(color(
+                    f"      Bots:          {ataque.get('bots_participantes', '?')}",
+                    'red'))
+                safe_print(color(
+                    f"      Paq/seg:       {ataque.get('paquetes_por_segundo', '?')}",
+                    'red'))
+                safe_print(color(
+                    f"      Ancho de banda: {ataque.get('ancho_banda_mbps', '?')} Mbps",
+                    'red'))
                 safe_print(color(f"      Objetivo:      {ataque.get('objetivo', '?')}", 'red'))
         except Exception as e:
             safe_print(color(f"  Error al analizar config: {e}", 'yellow'))
 
     if not hallazgos:
-        safe_print(color("\n  [OK] No se encontraron artefactos de botnet en el directorio.", 'green'))
+        safe_print(color(
+            "\n  [OK] No se encontraron artefactos de botnet en el directorio.",
+            'green'))
 
     return hallazgos
 
@@ -113,7 +123,9 @@ def ejecutar():
         safe_print(color(f"\n  Total de artefactos encontrados: {len(hallazgos)}", 'yellow'))
         safe_print(color("  Ejecuta con --clean para eliminarlos.\n", 'yellow'))
     else:
-        safe_print(color("\n  [OK] Sistema limpio — no se detectaron artefactos de botnet.\n", 'green'))
+        safe_print(color(
+            "\n  [OK] Sistema limpio — no se detectaron artefactos de botnet.\n",
+            'green'))
 
     safe_print(color("  RECOMENDACIONES PARA ENTORNO PRODUCTIVO:", 'bold'))
     safe_print(color("  - Monitorear tráfico IRC/HTTP para detectar patrones de beaconing", 'cyan'))
@@ -124,7 +136,7 @@ def ejecutar():
     safe_print(color("  - Usar EDR con detección de comportamiento C2\n", 'cyan'))
 
     write_log("defensa_botnet", [
-        f"Escaneo defensivo completado",
+        "Escaneo defensivo completado",
         f"Artefactos encontrados: {len(hallazgos)}",
     ])
 

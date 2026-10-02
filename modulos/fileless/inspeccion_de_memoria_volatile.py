@@ -19,7 +19,7 @@ import glob
 # ── Configurar path para importar core.common ──
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from modulos.common.utils import log, safe_print, color, banner, cleanup, write_log, find_lab_dir, find_logs_dir
+from modulos.common.utils import safe_print, color, banner, write_log, find_lab_dir, find_logs_dir
 
 # ── Directorio de trabajo de la simulación ──
 LAB_DIR = find_lab_dir(os.path.dirname(os.path.abspath(__file__)))
@@ -53,7 +53,9 @@ def buscar_archivos_temporales():
             encontrados.append(f)
             try:
                 tam = os.path.getsize(f)
-                safe_print(color(f"  [!] Temp residual: {os.path.basename(f)} ({tam} bytes)", 'red'))
+                safe_print(color(
+                    f"  [!] Temp residual: "
+                    f"{os.path.basename(f)} ({tam} bytes)", 'red'))
             except Exception:
                 safe_print(color(f"  [!] Temp residual: {os.path.basename(f)}", 'red'))
     return encontrados
@@ -95,9 +97,13 @@ def detectar():
     safe_print(color("    - Suscriptores WMI no autorizados (Sysmon Event ID 19-21)", 'white'))
     safe_print(color("    - Claves de registro Run/RunOnce modificadas recientemente", 'white'))
     safe_print(color("    - Procesos con memoria modificada (process hollowing)", 'white'))
-    safe_print(color("    - DLLs cargadas desde ubicaciones inusuales", 'white'))
+    safe_print(color(
+        "    - DLLs cargadas desde "
+        "ubicaciones inusuales", 'white'))
     safe_print(color("    - AMSI (Antimalware Scan Interface) para PowerShell", 'white'))
-    safe_print(color("    - ETW (Event Tracing for Windows) para monitoreo en tiempo real", 'white'))
+    safe_print(color(
+        "    - ETW (Event Tracing for Windows) para monitoreo en tiempo real",
+        'white'))
 
     return hallazgos
 
@@ -122,7 +128,7 @@ def ejecutar():
     safe_print(color("  - Monitorear procesos con ETW para detección en memoria\n", 'cyan'))
 
     write_log("defensa_fileless", [
-        f"Escaneo defensivo completado",
+        "Escaneo defensivo completado",
         f"Artefactos encontrados: {len(hallazgos)}",
     ])
 
