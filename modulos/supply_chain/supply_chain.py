@@ -17,18 +17,16 @@ Uso:
 """
 import os
 import sys
-import re
 import json
 import time
-import random
 import hashlib
 import argparse
 import shutil
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from modulos.common.utils import log, safe_print, color, banner, traverse_lab_files
-from modulos.common.utils import hash_file, read_file, cleanup, write_log, is_lab_ready, find_lab_dir
+from modulos.common.utils import log, safe_print, color, banner
+from modulos.common.utils import find_lab_dir
 
 MODULO_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.join(MODULO_DIR, '..', '..')
@@ -197,7 +195,9 @@ def generar_lockfile(deps_normales, deps_maliciosas):
 def simular_typosquatting():
     """Simula un ataque de typosquatting — paquetes con nombres similares."""
     safe_print(color("\n--- Ataque: Typosquatting ---", 'cyan'))
-    safe_print(color("  El atacante publica paquetes con nombres similares a los populares.", 'yellow'))
+    safe_print(color(
+        "  El atacante publica paquetes con "
+        "nombres similares a los populares.", 'yellow'))
     log("Simulando ataque de typosquatting")
 
     ejemplos = [
@@ -219,7 +219,9 @@ def simular_typosquatting():
 def simular_dependency_confusion():
     """Simula un ataque de dependency confusion — paquetes internos en registry publico."""
     safe_print(color("\n--- Ataque: Dependency Confusion ---", 'cyan'))
-    safe_print(color("  Paquete interno publicado en registry publico con version mas alta.", 'yellow'))
+    safe_print(color(
+        "  Paquete interno publicado en registry publico con version mas alta.",
+        'yellow'))
     log("Simulando ataque de dependency confusion")
 
     internos = [
@@ -233,7 +235,9 @@ def simular_dependency_confusion():
     for nombre, ver, desc in internos:
         safe_print(f"  {color(nombre, 'yellow'):<25} {ver:<10} {desc}")
 
-    safe_print(color("\n  El atacante publica versiones mas altas en el registry publico:", 'yellow'))
+    safe_print(color(
+        "\n  El atacante publica versiones mas altas en el registry publico:",
+        'yellow'))
     for nombre, ver, _ in internos:
         nueva_ver = int(ver.split('.')[0]) + 1
         safe_print(f"    {color(f'publica: {nombre}=={nueva_ver}.0.0', 'red')}")
@@ -245,7 +249,9 @@ def simular_dependency_confusion():
 def simular_account_takeover():
     """Simula un ataque de account takeover de maintainer."""
     safe_print(color("\n--- Ataque: Account Takeover ---", 'cyan'))
-    safe_print(color("  El atacante compromete la cuenta del maintainer de un paquete popular.", 'yellow'))
+    safe_print(color(
+        "  El atacante compromete la cuenta del maintainer de un paquete popular.",
+        'yellow'))
     log("Simulando ataque de account takeover")
 
     timeline = [
@@ -391,7 +397,10 @@ def simular_ataque(tipo=None):
             "type": "library",
             "name": nombre,
             "version": version,
-            "hashes": [{"algorithm": "SHA-256", "value": hashlib.sha256(f"{nombre}{version}".encode()).hexdigest()}]
+            "hashes": [{
+                "algorithm": "SHA-256",
+                "value": hashlib.sha256(f"{nombre}{version}".encode()).hexdigest(),
+            }]
         })
 
     for dep in DEPS_MALICIOSAS_PYTHON + DEPS_MALICIOSAS_NODE:
@@ -399,7 +408,10 @@ def simular_ataque(tipo=None):
             "type": "library",
             "name": dep['nombre'],
             "version": dep['version'],
-            "hashes": [{"algorithm": "SHA-256", "value": hashlib.sha256(dep['nombre'].encode()).hexdigest()}],
+            "hashes": [{
+                "algorithm": "SHA-256",
+                "value": hashlib.sha256(dep['nombre'].encode()).hexdigest(),
+            }],
             "properties": [
                 {"name": "attack_type", "value": dep['tipo']},
                 {"name": "simulates", "value": dep['simula']}

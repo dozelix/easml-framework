@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Módulo de limpieza y restauración para el entorno del laboratorio.
-Proporciona utilidades para eliminar de forma segura los archivos generados y restaurar el estado inicial.
+Proporciona utilidades para eliminar archivos generados
+de forma segura y restaurar el estado inicial.
 """
 
 import glob
@@ -13,7 +14,10 @@ from typing import Iterable, Optional
 from .paths import ensure_lab_data_dirs, resolve_lab_paths
 
 
-def cleanup_artifacts(files_to_remove: Optional[Iterable[str]] = None, patterns: Optional[Iterable[str]] = None) -> int:
+def cleanup_artifacts(
+    files_to_remove: Optional[Iterable[str]] = None,
+    patterns: Optional[Iterable[str]] = None,
+) -> int:
     """Elimina archivos y patrones dentro del laboratorio de forma segura."""
     removed = 0
     # ensure_lab_data_dirs() retorna un objeto de la dataclass LabPaths

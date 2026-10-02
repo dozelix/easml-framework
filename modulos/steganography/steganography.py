@@ -199,7 +199,7 @@ def limpiar():
     # Restaurar original desde backup
     if os.path.exists(IMAGEN_ORIG + BACKUP_EXT):
         shutil.copy2(IMAGEN_ORIG + BACKUP_EXT, IMAGEN_ORIG)
-        safe_print(color(f"  Restaurado: imagen.png desde backup", 'green'))
+        safe_print(color("  Restaurado: imagen.png desde backup", 'green'))
         os.remove(IMAGEN_ORIG + BACKUP_EXT)
     else:
         safe_print(color("  No se encontró backup para restaurar.", 'yellow'))
@@ -251,7 +251,7 @@ def ejecutar():
         return
 
     safe_print(color(f"  Dimensiones:   {width}×{height} píxeles", 'white'))
-    safe_print(color(f"  Canales:       RGB (3 por píxel)", 'white'))
+    safe_print(color("  Canales:       RGB (3 por píxel)", 'white'))
     capacidad = width * height * 3
     safe_print(color(f"  Capacidad LSB: {capacidad} bits ({capacidad // 8} bytes)", 'white'))
 
@@ -259,7 +259,9 @@ def ejecutar():
     paso_fase(3, "MENSAJE — Convirtiendo texto a bits")
     bits_mensaje = mensaje_a_bits(MENSAJE_SECRETO)
     safe_print(color(f"  Mensaje: \"{MENSAJE_SECRETO[:55]}...\"", 'magenta'))
-    safe_print(color(f"  Longitud: {len(MENSAJE_SECRETO)} caracteres = {len(bits_mensaje)} bits", 'white'))
+    safe_print(color(
+        f"  Longitud: {len(MENSAJE_SECRETO)} "
+        f"caracteres = {len(bits_mensaje)} bits", 'white'))
     porcentaje = (len(bits_mensaje) / capacidad) * 100
     safe_print(color(f"  Uso de capacidad: {porcentaje:.1f}%", 'yellow'))
 
@@ -270,13 +272,15 @@ def ejecutar():
     # ── FASE 4: Crear backup ──
     paso_fase(4, "RESPALDO — Guardando imagen original")
     shutil.copy2(IMAGEN_ORIG, IMAGEN_ORIG + BACKUP_EXT)
-    safe_print(color(f"  → Backup: imagen.png.bak_steg creado", 'green'))
+    safe_print(color("  → Backup: imagen.png.bak_steg creado", 'green'))
     time.sleep(0.2)
 
     # ── FASE 5: LSB Embedding ──
     paso_fase(5, "INSERCIÓN — Ocultando mensaje en LSB")
     safe_print(color("  Algoritmo: Least Significant Bit (LSB)", 'white'))
-    safe_print(color("  Técnica: Reemplazar el bit menos significativo de cada canal RGB\n", 'white'))
+    safe_print(color(
+        "  Técnica: Reemplazar el bit menos significativo de cada canal RGB\n",
+        'white'))
 
     # Mostrar los primeros 5 bits como ejemplo visual
     for i in range(min(5, len(bits_mensaje))):
@@ -299,7 +303,9 @@ def ejecutar():
 
     hash_steg = hash_file(IMAGEN_STEG) or "N/A"
     safe_print(color(f"  Hash SHA-256: {hash_steg[:40]}...", 'yellow'))
-    safe_print(color(f"  ¿Diferente del original? {'SÍ' if hash_original != hash_steg else 'NO (ERROR)'}", 'green'))
+    safe_print(color(
+        f"  ¿Diferente del original? {'SÍ' if hash_original != hash_steg else 'NO (ERROR)'}",
+        'green'))
 
     # ── FASE 7: Verificar extracción ──
     paso_fase(7, "VERIFICACIÓN — Extrayendo mensaje oculto")
@@ -317,10 +323,14 @@ def ejecutar():
     safe_print(color("\n" + "=" * 60, 'cyan'))
     safe_print(color("  RESUMEN DE LA SIMULACIÓN DE ESTEGANOGRAFÍA", 'bold'))
     safe_print(color("=" * 60, 'cyan'))
-    safe_print(color(f"  Imagen original:    imagen.png", 'white'))
-    safe_print(color(f"  Imagen modificada:  imagen_steg.png", 'white'))
+    safe_print(color("  Imagen original:    imagen.png", 'white'))
+    safe_print(color(
+        "  Imagen modificada: "
+        " imagen_steg.png", 'white'))
     safe_print(color(f"  Capacidad usada:   {porcentaje:.1f}%", 'white'))
-    safe_print(color(f"  Extracción:        {'OK' if mensaje_extraido == MENSAJE_SECRETO else 'FALLÓ'}", 'green'))
+    safe_print(color(
+        f"  Extracción:        {'OK' if mensaje_extraido == MENSAJE_SECRETO else 'FALLÓ'}",
+        'green'))
     safe_print(color("=" * 60, 'cyan'))
     safe_print(color(
         "\n  NOTA: La modificación de LSB es imperceptible al ojo humano.\n"

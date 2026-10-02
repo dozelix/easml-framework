@@ -15,8 +15,8 @@ import argparse
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DIR_RAIZ)
 
-from core.base_module import BaseThreat
-from modulos.common.utils import (
+from core.base_module import BaseThreat  # noqa: E402 (sys.path primero: patrón del repo)
+from modulos.common.utils import (  # noqa: E402 (sys.path primero: patrón del repo)
     log, safe_print, color, banner, traverse_lab_files,
     hash_file, cleanup, write_log, is_lab_ready, LOG_LINES, find_lab_dir,
     find_logs_dir,
@@ -28,7 +28,10 @@ class RansomwareThreat(BaseThreat):
         self.extension_locked = '.locked'
         self.nota_rescate = 'README_RESCATE.txt'
         self.extensiones_texto = {'.txt', '.py', '.html', '.csv', '.md'}
-        self.archivos_lab = {'documento.txt', 'notas.txt', 'script.py', 'index.html', 'datos.csv', 'leeme.md'}
+        self.archivos_lab = {
+            'documento.txt', 'notas.txt', 'script.py', 'index.html',
+            'datos.csv', 'leeme.md',
+        }
 
     def ejecutar(self) -> None:
         banner("RANSOMWARE — SIMULACION EDUCATIVA", "Inversión de texto")
@@ -52,7 +55,9 @@ class RansomwareThreat(BaseThreat):
         os.makedirs(dir_logs, exist_ok=True)
         
         write_log(os.path.join(dir_logs, "ransomware_sim"), list(LOG_LINES))
-        safe_print(color(f"\n  [+] Historial de ataque guardado en: {dir_logs}/ransomware_sim.log", 'green'))
+        safe_print(color(
+            f"\n  [+] Historial de ataque guardado "
+            f"en: {dir_logs}/ransomware_sim.log", 'green'))
 
     def limpiar(self) -> None:
         banner("RANSOMWARE — LIMPIEZA", "Eliminando artefactos de la simulación")
@@ -138,7 +143,9 @@ class RansomwareThreat(BaseThreat):
                 h_orig_disp = (hash_original[:32] + '...') if hash_original else 'N/A'
                 h_nuev_disp = (hash_nuevo[:32] + '...') if hash_nuevo else 'N/A'
 
-                safe_print(color(f"    [CIFRADO] {nombre_base} -> {nombre_base}{self.extension_locked}", 'red'))
+                safe_print(color(
+                    f"    [CIFRADO] {nombre_base} -> {nombre_base}{self.extension_locked}",
+                    'red'))
                 safe_print(color(f"      Hash Original: {h_orig_disp}", 'green'))
                 safe_print(color(f"      Hash Cifrado:  {h_nuev_disp}", 'red'))
                 log(f"Cifrado: {nombre_base} ({h_orig_disp} -> {h_nuev_disp})")
@@ -163,7 +170,9 @@ class RansomwareThreat(BaseThreat):
         try:
             with open(ruta_nota, 'w', encoding='utf-8') as f:
                 f.write(contenido_nota)
-            safe_print(color(f"  [+] Nota de rescate generada con éxito en:\n      {ruta_nota}", 'yellow'))
+            safe_print(color(
+                f"  [+] Nota de rescate generada con éxito en:\n      {ruta_nota}",
+                'yellow'))
             log("Nota de rescate creada")
         except Exception as e:
             safe_print(color(f"  [!] No se pudo crear la nota de rescate: {e}", 'red'))

@@ -19,9 +19,9 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from modulos.common.utils import (
+from modulos.common.utils import (  # noqa: E402 (sys.path primero: patrón del repo)
     banner, color, safe_print, log, LOG_LINES,
-    write_log, cleanup, hash_file as _hash_file,
+    write_log, hash_file as _hash_file,
     find_lab_dir, find_logs_dir,
 )
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         f.write(contenido)
     safe_print(color(f"    Tamano: {os.path.getsize(path)} bytes", 'yellow'))
     safe_print(color(f"    Hash SHA-256: {_short_hash(path)}", 'yellow'))
-    safe_print(color(f"    Tecnica: Nombre de actualizacion para generar confianza", 'cyan'))
+    safe_print(color("    Tecnica: Nombre de actualizacion para generar confianza", 'cyan'))
     log("Troyano creado: directorio_pruebas/update.exe")
     return path
 
@@ -145,7 +145,7 @@ def ejecutar_payload():
         f.write(contenido)
     safe_print(color(f"    Tamano: {os.path.getsize(path)} bytes", 'yellow'))
     safe_print(color(f"    Hash SHA-256: {_short_hash(path)}", 'yellow'))
-    safe_print(color(f"    Tecnica: Extension dual (.jpg.exe) para ocultar la ejecutable", 'cyan'))
+    safe_print(color("    Tecnica: Extension dual (.jpg.exe) para ocultar la ejecutable", 'cyan'))
     log("Troyano creado: directorio_pruebas/imagen.jpg.exe")
     return path
 
@@ -197,7 +197,7 @@ def stealth_payload():
         f.write(contenido)
     safe_print(color(f"    Tamano: {os.path.getsize(path)} bytes", 'yellow'))
     safe_print(color(f"    Hash SHA-256: {_short_hash(path)}", 'yellow'))
-    safe_print(color(f"    Tecnica: Urgencia financiera + extension dual", 'cyan'))
+    safe_print(color("    Tecnica: Urgencia financiera + extension dual", 'cyan'))
     log("Troyano creado: directorio_pruebas/factura_2026.pdf.exe")
     return path
 
@@ -240,7 +240,9 @@ Telefono: +54 11 5555-0000
         f.write(contenido)
     safe_print(color(f"    Tamano: {os.path.getsize(path)} bytes", 'yellow'))
     safe_print(color(f"    Hash SHA-256: {_short_hash(path)}", 'yellow'))
-    safe_print(color(f"    Tecnica: Texto inofensivo con instrucciones para ejecutar malware", 'cyan'))
+    safe_print(color(
+        "    Tecnica: Texto inofensivo con "
+        "instrucciones para ejecutar malware", 'cyan'))
     log("Troyano creado: directorio_pruebas/README.txt")
     return path
 
@@ -286,7 +288,7 @@ execute_after=true
         f.write(contenido)
     safe_print(color(f"    Tamano: {os.path.getsize(path)} bytes", 'yellow'))
     safe_print(color(f"    Hash SHA-256: {_short_hash(path)}", 'yellow'))
-    safe_print(color(f"    Tecnica: Configuracion aparente con configuracion C2 embebida", 'cyan'))
+    safe_print(color("    Tecnica: Configuracion aparente con configuracion C2 embebida", 'cyan'))
     log("Troyano creado: directorio_pruebas/config.ini")
     return path
 
@@ -304,15 +306,15 @@ def analizar_deteccion(archivos_creados):
         safe_print(color(f"\n  {nombre}:", 'cyan'))
 
         if '.exe' in nombre:
-            safe_print(color(f"    [!] Extension dual detectada — .exe oculto", 'red'))
+            safe_print(color("    [!] Extension dual detectada — .exe oculto", 'red'))
         if 'pdf' in nombre.lower() and 'exe' in nombre:
-            safe_print(color(f"    [!] Disfraz de documento PDF", 'yellow'))
+            safe_print(color("    [!] Disfraz de documento PDF", 'yellow'))
         if 'jpg' in nombre.lower() and 'exe' in nombre:
-            safe_print(color(f"    [!] Disfraz de imagen", 'yellow'))
+            safe_print(color("    [!] Disfraz de imagen", 'yellow'))
         if 'update' in nombre.lower():
-            safe_print(color(f"    [!] Nombre de actualizacion sospechoso", 'yellow'))
+            safe_print(color("    [!] Nombre de actualizacion sospechoso", 'yellow'))
         if 'config' in nombre.lower():
-            safe_print(color(f"    [!] Configuracion con datos C2 incrustados", 'yellow'))
+            safe_print(color("    [!] Configuracion con datos C2 incrustados", 'yellow'))
 
         # Analisis de contenido
         try:

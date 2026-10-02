@@ -20,8 +20,8 @@ import argparse
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DIR_RAIZ)
 
-from modulos.common.utils import (
-    log, safe_print, color, banner, cleanup, write_log,    find_lab_dir,)
+from modulos.common.utils import (  # noqa: E402 (sys.path primero: patrón del repo)
+    safe_print, color, banner, cleanup, write_log,    find_lab_dir,)
 
 # ── Constantes ──────────────────────────────────────────────────────────────
 DIR_SIMULACION = find_lab_dir(_DIR_RAIZ)
@@ -233,10 +233,18 @@ def ejecutar_escaneo():
         safe_print(color(f"\n  Analisis de {h['nombre']}:", 'cyan'))
         resultados = analizar_contenido_log(h['ruta'])
 
-        safe_print(color(f"    Total teclas registradas:  {resultados.get('total_teclas', 0)}", 'yellow'))
-        safe_print(color(f"    Teclas ENTER capturadas:   {resultados.get('enter_keys', 0)}", 'yellow'))
-        safe_print(color(f"    Teclas TAB capturadas:     {resultados.get('tab_keys', 0)}", 'yellow'))
-        safe_print(color(f"    Sesiones de escritura:     {resultados.get('sesiones', 0)}", 'yellow'))
+        safe_print(color(
+            f"    Total teclas registradas:  "
+            f"{resultados.get('total_teclas', 0)}", 'yellow'))
+        safe_print(color(
+            f"    Teclas ENTER capturadas:   "
+            f"{resultados.get('enter_keys', 0)}", 'yellow'))
+        safe_print(color(
+            f"    Teclas TAB capturadas:     {resultados.get('tab_keys', 0)}",
+            'yellow'))
+        safe_print(color(
+            f"    Sesiones de escritura:     {resultados.get('sesiones', 0)}",
+            'yellow'))
 
         # Mostrar texto reconstruido (primeros 200 chars)
         texto = resultados.get('texto_reconstruido', '')
@@ -244,13 +252,13 @@ def ejecutar_escaneo():
             fragmento = texto[:200].strip()
             if len(texto) > 200:
                 fragmento += '...'
-            safe_print(color(f"\n    Texto reconstruido (muestra):", 'cyan'))
+            safe_print(color("\n    Texto reconstruido (muestra):", 'cyan'))
             safe_print(color(f"      \"{fragmento}\"", 'blue'))
 
         datos = resultados.get('datos_sensibles', {})
         if datos:
             safe_print(color(
-                f"\n    [!] DATOS SENSIBLES DETECTADOS:",
+                "\n    [!] DATOS SENSIBLES DETECTADOS:",
                 'red',
             ))
             for categoria, hallazgos_cat in datos.items():
@@ -304,7 +312,7 @@ def limpiar():
     if os.path.isdir(DIR_SIMULACION):
         import shutil
         shutil.rmtree(DIR_SIMULACION)
-        safe_print(color(f"  eliminado: directorio_pruebas/", 'green'))
+        safe_print(color("  eliminado: directorio_pruebas/", 'green'))
         removed += 1
 
     removed += cleanup(patterns=[LOG_DEFENSA, 'keylogger_sim.log'])

@@ -19,7 +19,7 @@ import shutil
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from modulos.common.utils import (
+from modulos.common.utils import (  # noqa: E402 (sys.path primero: patrón del repo)
     banner, color, safe_print, log, LOG_LINES,
     write_log, hash_file, traverse_lab_files, find_lab_dir,
 )

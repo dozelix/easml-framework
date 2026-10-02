@@ -17,12 +17,11 @@ import sys
 import struct
 import zlib
 import glob
-import shutil
 
 # ── Configurar path para importar core.common ──
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from modulos.common.utils import log, safe_print, color, banner, cleanup, write_log, hash_file, find_lab_dir
+from modulos.common.utils import safe_print, color, banner, write_log, hash_file, find_lab_dir
 
 # ── Directorio de trabajo de la simulación ──
 LAB_DIR = find_lab_dir(os.path.dirname(os.path.abspath(__file__)))
@@ -143,10 +142,14 @@ def detectar():
                 safe_print(color(f"    Bits 0:             {info['bits_0']}", 'white'))
                 safe_print(color(f"    Ratio de bits 1:    {info['ratio_1']}", 'white'))
                 if info['sospechoso']:
-                    safe_print(color(f"    [!] SOSPECHOSO: distribución de LSB anómala (ratio ~0.5)", 'red'))
-                    safe_print(color(f"        Esto sugiere que la imagen contiene datos ocultos.", 'red'))
+                    safe_print(color(
+                        "    [!] SOSPECHOSO: distribución "
+                        "de LSB anómala (ratio ~0.5)", 'red'))
+                    safe_print(color(
+                        "        Esto sugiere que la imagen contiene datos ocultos.",
+                        'red'))
                 else:
-                    safe_print(color(f"    [OK] Distribución de LSB normal", 'green'))
+                    safe_print(color("    [OK] Distribución de LSB normal", 'green'))
 
     # ── FASE 3: Verificar integridad con hashes ──
     paso_fase(3, "INTEGRIDAD — Comparando hashes SHA-256")
@@ -158,9 +161,9 @@ def detectar():
         safe_print(color(f"  imagen.png:      {h_orig[:48]}...", 'white'))
         safe_print(color(f"  imagen_steg.png: {h_steg[:48]}...", 'white'))
         if h_orig != h_steg:
-            safe_print(color(f"  [!] Los hashes difieren — imagen modificada detectada", 'red'))
+            safe_print(color("  [!] Los hashes difieren — imagen modificada detectada", 'red'))
         else:
-            safe_print(color(f"  [OK] Los hashes coinciden — imagen no modificada", 'green'))
+            safe_print(color("  [OK] Los hashes coinciden — imagen no modificada", 'green'))
 
     return hallazgos
 
@@ -185,7 +188,7 @@ def ejecutar():
     safe_print(color("  - Usar análisis de firmas digitales en archivos multimedia\n", 'cyan'))
 
     write_log("defensa_estegano", [
-        f"Escaneo defensivo completado",
+        "Escaneo defensivo completado",
         f"Artefactos encontrados: {len(hallazgos)}",
     ], os.path.join(LAB_DIR, "defensa_estegano.log"))
 

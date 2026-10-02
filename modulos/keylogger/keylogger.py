@@ -20,7 +20,7 @@ import argparse
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DIR_RAIZ)
 
-from modulos.common.utils import (
+from modulos.common.utils import (  # noqa: E402 (sys.path primero: patrón del repo)
     log, safe_print, color, banner, cleanup, write_log, LOG_LINES,
     find_lab_dir,
 )
@@ -379,7 +379,7 @@ def limpiar():
     if os.path.isdir(DIR_SIMULACION):
         import shutil
         shutil.rmtree(DIR_SIMULACION)
-        safe_print(color(f"  eliminado: directorio_pruebas/", 'green'))
+        safe_print(color("  eliminado: directorio_pruebas/", 'green'))
         removed += 1
 
     removed += cleanup(patterns=['keylogger_sim.log'])

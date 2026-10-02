@@ -114,7 +114,10 @@ def is_lab_ready():
     return all(os.path.exists(os.path.join(lab_dir, name)) for name in required)
 
 
-def cleanup(files_to_remove: Optional[Iterable[str]] = None, patterns: Optional[Iterable[str]] = None):
+def cleanup(
+    files_to_remove: Optional[Iterable[str]] = None,
+    patterns: Optional[Iterable[str]] = None,
+):
     """Elimina de forma segura archivos temporales, directorios o patrones del entorno."""
     removed = 0
     if files_to_remove:

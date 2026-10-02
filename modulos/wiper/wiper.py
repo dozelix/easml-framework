@@ -17,8 +17,8 @@ import time
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DIR_RAIZ)
 
-from core.base_module import BaseThreat
-from modulos.common.utils import (
+from core.base_module import BaseThreat  # noqa: E402 (sys.path primero: patrón del repo)
+from modulos.common.utils import (  # noqa: E402 (sys.path primero: patrón del repo)
     log, safe_print, color, banner, traverse_lab_files,
     hash_file, read_file, cleanup, write_log, is_lab_ready,
     LOG_LINES, find_lab_dir,
@@ -93,12 +93,12 @@ class WiperThreat(BaseThreat):
 
         if os.path.isdir(self.dir_simulacion):
             shutil.rmtree(self.dir_simulacion)
-            safe_print(color(f"  eliminado: directorio_pruebas/", 'green'))
+            safe_print(color("  eliminado: directorio_pruebas/", 'green'))
             removed += 1
 
         if os.path.isdir(self.dir_backup):
             shutil.rmtree(self.dir_backup)
-            safe_print(color(f"  eliminado: .backup_wiper/", 'green'))
+            safe_print(color("  eliminado: .backup_wiper/", 'green'))
             removed += 1
 
         removed += cleanup(patterns=['wiper_sim.log'])
@@ -158,7 +158,9 @@ class WiperThreat(BaseThreat):
             shutil.copy2(ruta, destino)
 
         log(f"Backup seguro creado: {self.dir_backup} ({len(archivos_objetivo)} archivos)")
-        safe_print(color(f"  Backup creado: {len(archivos_objetivo)} archivos en .backup_wiper/", 'green'))
+        safe_print(color(
+            f"  Backup creado: {len(archivos_objetivo)} "
+            f"archivos en .backup_wiper/", 'green'))
 
     def _filtrar_objetivos(self, archivos_lab: list) -> list:
         safe_print(color("  El wiper enumera todos los archivos accesibles:\n", 'cyan'))
@@ -168,7 +170,9 @@ class WiperThreat(BaseThreat):
             _, ext = os.path.splitext(nombre)
             if ext.lower() in self.extensiones_objetivo:
                 objetivos.append(archivo)
-                safe_print(color(f"    [+] {nombre} ({os.path.getsize(archivo)} bytes) — OBJETIVO", 'green'))
+                safe_print(color(
+                    f"    [+] {nombre} ({os.path.getsize(archivo)} bytes) — OBJETIVO",
+                    'green'))
             else:
                 safe_print(color(f"    [-] {nombre} — ignorado", 'blue'))
         return objetivos
@@ -218,9 +222,13 @@ class WiperThreat(BaseThreat):
 
     def _imprimir_comparativa(self) -> None:
         safe_print(color("\n  RANSOMWARE (Módulo 01):", 'green'))
-        safe_print(color("    - Cifra archivos (reversible con clave)\n    - Deja nota de rescate\n    - Objetivo: extorsión monetaria", 'cyan'))
+        safe_print(color(
+            "    - Cifra archivos (reversible con clave)\n    - Deja "
+            "nota de rescate\n    - Objetivo: extorsión monetaria", 'cyan'))
         safe_print(color("\n  WIPER (Módulo 02):", 'red'))
-        safe_print(color("    - Corrompe/destruye archivos (irreversible sin backup)\n    - NO deja nota de rescate\n    - Objetivo: destrucción / sabotaje político", 'red'))
+        safe_print(color("    - Corrompe/destruye archivos (irreversible sin backup)\n"
+                           "    - NO deja nota de rescate\n"
+                           "    - Objetivo: destrucción / sabotaje político", 'red'))
 
 
 if __name__ == "__main__":

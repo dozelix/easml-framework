@@ -26,6 +26,7 @@ package-lock.json
 keylog.log
 dns_tunnel_log.txt
 directorio_pruebas/
+lab_data/
 assets/generate_icons.py
 # web/ (Astro Starlight, monorepo: Root Directory = web/)
 web/node_modules/

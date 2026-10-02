@@ -20,7 +20,10 @@ import glob
 # ── Configurar path para importar core.common ──
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from modulos.common.utils import log, safe_print, color, banner, cleanup, write_log, find_lab_dir, find_logs_dir
+from modulos.common.utils import (
+    safe_print, color, banner, cleanup, write_log, find_lab_dir,
+    find_logs_dir,
+)
 
 # ── Directorio de trabajo de la simulación ──
 LAB_DIR = find_lab_dir(os.path.dirname(os.path.abspath(__file__)))
@@ -78,14 +81,15 @@ def detectar():
             with open(marker_path, 'r', encoding='utf-8') as f:
                 estado = json.load(f)
 
-            safe_print(color(f"\n  Análisis de la bomba lógica:", 'cyan'))
+            safe_print(color("\n  Análisis de la bomba lógica:", 'cyan'))
             safe_print(color(f"    Nombre:     {estado.get('nombre', '?')}", 'white'))
             safe_print(color(f"    Tipo:       {estado.get('tipo', '?')}", 'white'))
-            safe_print(color(f"    Creada:     {estado.get('creada', '?')}", 'white'))
+            safe_print(color(
+                f"    Creada:     {estado.get('creada', '?')}", 'white'))
             safe_print(color(f"    Activa:     {estado.get('activa', '?')}",
                              'red' if estado.get('activa') else 'green'))
-            safe_print(color(f"    Payload:    {'Ejecutado' if estado.get('payload_ejecutado') else 'Pendiente'}",
-                             'yellow'))
+            texto_payload = "Ejecutado" if estado.get('payload_ejecutado') else "Pendiente"
+            safe_print(color(f"    Payload:    {texto_payload}", 'yellow'))
 
             # Mostrar cada condición con su estado
             conds = estado.get('condiciones', [])
@@ -97,8 +101,12 @@ def detectar():
                     'red' if c.get('cumplida') else 'white'
                 ))
 
-            safe_print(color(f"\n  Umbral de activación: >= {estado.get('umbral_activacion', '?')} condiciones", 'yellow'))
-            safe_print(color(f"  Condiciones cumplidas: {estado.get('condiciones_cumplidas', '?')}", 'yellow'))
+            safe_print(color(
+                f"\n  Umbral de activación: >= "
+                f"{estado.get('umbral_activacion', '?')} condiciones", 'yellow'))
+            safe_print(color(
+                f"  Condiciones cumplidas: {estado.get('condiciones_cumplidas', '?')}",
+                'yellow'))
         except Exception as e:
             safe_print(color(f"  Error al analizar marker: {e}", 'yellow'))
 
@@ -136,16 +144,20 @@ def ejecutar():
     safe_print(color("  RECOMENDACIONES PARA ENTORNO PRODUCTIVO:", 'bold'))
     safe_print(color("  - Análisis estático de código buscando condicionales sospechosos", 'cyan'))
     safe_print(color("  - Auditoría de cambios antes de despidos (insider threat)", 'cyan'))
-    safe_print(color("  - Monitoreo de integridad con hashes de archivos críticos", 'cyan'))
+    safe_print(color(
+        "  - Monitoreo de integridad "
+        "con hashes de archivos críticos", 'cyan'))
     safe_print(color("  - Git blame para identificar autores de cambios sospechosos", 'cyan'))
-    safe_print(color("  - Segregación de duties: un empleado no debería tener acceso total", 'cyan'))
+    safe_print(color(
+        "  - Segregación de duties: un empleado no debería tener acceso total",
+        'cyan'))
     safe_print(color("  - Honeypots: archivos trampa que alertan si son modificados\n", 'cyan'))
 
     write_log("defensa_logic_bomb", [
-        f"Escaneo defensivo completado",
+        "Escaneo defensivo completado",
         f"Artefactos encontrados: {len(hallazgos)}",
         f"Artefactos eliminados: {removidos}",
-        f"Bomba neutralizada: SI",
+        "Bomba neutralizada: SI",
     ])
 
 

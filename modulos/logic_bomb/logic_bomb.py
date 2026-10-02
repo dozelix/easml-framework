@@ -102,12 +102,12 @@ def crear_condiciones():
         ),
         CondicionBomba(
             "archivo_trigger",
-            f"Archivo '_trigger_bomb.txt' existe en directorio de trabajo",
+            "Archivo '_trigger_bomb.txt' existe en directorio de trabajo",
             verificar_archivo
         ),
         CondicionBomba(
             "variable_entorno",
-            f"Variable de entorno BOMB_ACTIVE=1",
+            "Variable de entorno BOMB_ACTIVE=1",
             verificar_entorno
         ),
         CondicionBomba(
@@ -218,10 +218,10 @@ def ejecutar():
 
     if activa:
         safe_print(color(f"  Umbral de activación: >= {umbral_activacion} condiciones", 'red'))
-        safe_print(color(f"  RESULTADO: BOMBA ACTIVA", 'red'))
+        safe_print(color("  RESULTADO: BOMBA ACTIVA", 'red'))
     else:
         safe_print(color(f"  Umbral de activación: >= {umbral_activacion} condiciones", 'green'))
-        safe_print(color(f"  RESULTADO: BOMBA INACTIVA", 'green'))
+        safe_print(color("  RESULTADO: BOMBA INACTIVA", 'green'))
 
     # ── FASE 5: Ejecutar payload si activa ──
     if activa:
@@ -252,11 +252,11 @@ def ejecutar():
     }
     with open(BOMB_MARKER, 'w', encoding='utf-8') as f:
         json.dump(estado_bomb, f, indent=2, ensure_ascii=False)
-    safe_print(color(f"  → logic_bomb_marker.json guardado", 'green'))
+    safe_print(color("  → logic_bomb_marker.json guardado", 'green'))
 
     # ── FASE 7: Guardar log ──
     log_entries = [
-        f"Bomba lógica evaluada",
+        "Bomba lógica evaluada",
         f"Condiciones definidas: {total}",
         f"Condiciones cumplidas: {cumplen}",
         f"Bomba activa: {activa}",
@@ -267,7 +267,7 @@ def ejecutar():
             f"  {c.nombre}: {'SI' if c.cumplida else 'NO'} — {c.descripcion}"
         )
     write_log("LOGIC_BOMB", log_entries)
-    safe_print(color(f"  → logic_bomb.log guardado", 'green'))
+    safe_print(color("  → logic_bomb.log guardado", 'green'))
 
     # ── RESUMEN ──
     safe_print(color("\n" + "=" * 60, 'cyan'))

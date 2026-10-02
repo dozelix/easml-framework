@@ -15,9 +15,9 @@ import argparse
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DIR_RAIZ)
 
-from core.base_module import BaseDefense
-from modulos.common.utils import (
-    log, safe_print, color, banner, hash_file, cleanup, write_log, find_lab_dir
+from core.base_module import BaseDefense  # noqa: E402 (sys.path primero: patrón del repo)
+from modulos.common.utils import (  # noqa: E402 (sys.path primero: patrón del repo)
+    safe_print, color, banner, hash_file, cleanup, write_log, find_lab_dir
 )
 
 class WiperDefense(BaseDefense):
@@ -89,12 +89,12 @@ class WiperDefense(BaseDefense):
 
         if os.path.isdir(self.dir_simulacion):
             shutil.rmtree(self.dir_simulacion)
-            safe_print(color(f"  eliminado: directorio_pruebas/", 'green'))
+            safe_print(color("  eliminado: directorio_pruebas/", 'green'))
             removed += 1
 
         if os.path.isdir(self.dir_backup):
             shutil.rmtree(self.dir_backup)
-            safe_print(color(f"  eliminado: .backup_wiper/", 'green'))
+            safe_print(color("  eliminado: .backup_wiper/", 'green'))
             removed += 1
 
         removed += cleanup(patterns=[self.log_defensa, 'wiper_sim.log'])
@@ -110,12 +110,17 @@ class WiperDefense(BaseDefense):
     def _verificar_backup(self) -> tuple:
         if not os.path.isdir(self.dir_backup):
             return False, []
-        archivos = sorted([f for f in os.listdir(self.dir_backup) if os.path.isfile(os.path.join(self.dir_backup, f))])
+        archivos = sorted([
+            f for f in os.listdir(self.dir_backup)
+            if os.path.isfile(os.path.join(self.dir_backup, f))
+        ])
         return True, archivos
 
     def _imprimir_error_backup(self) -> None:
         safe_print(color("  [!] No se encontró directorio de backup (.backup_wiper/).\n", 'red'))
-        safe_print(color("  Esto significa que el wiper no corrió o el backup fue borrado.\n", 'yellow'))
+        safe_print(color(
+            "  Esto significa que el wiper no corrió o el backup fue borrado.\n",
+            'yellow'))
 
     def _auditar_hashes(self) -> list:
         archivos_actuales = [
@@ -140,7 +145,9 @@ class WiperDefense(BaseDefense):
 
     def _imprimir_analisis_hashes(self, corruptos: list, intactos: list) -> None:
         if corruptos:
-            safe_print(color(f"  [!] ALERTA: {len(corruptos)} archivos CORROMPIDOS detectados\n", 'red'))
+            safe_print(color(
+                f"  [!] ALERTA: {len(corruptos)} archivos CORROMPIDOS detectados\n",
+                'red'))
             for r in corruptos:
                 safe_print(color(f"    [CORROMPIDO] {r['nombre']}", 'red'))
                 h_act = (r['hash_actual'][:40] + '...') if r['hash_actual'] else 'N/A'
@@ -148,7 +155,9 @@ class WiperDefense(BaseDefense):
                 safe_print(color(f"      Hash actual:   {h_act}", 'yellow'))
                 safe_print(color(f"      Hash backup:   {h_bak}", 'green'))
         else:
-            safe_print(color("  [OK] Todos los archivos están intactos (hashes coinciden).\n", 'green'))
+            safe_print(color(
+                "  [OK] Todos los archivos están intactos (hashes coinciden).\n",
+                'green'))
 
         if intactos:
             safe_print(color(f"\n  Archivos intactos: {len(intactos)}", 'green'))
@@ -173,12 +182,16 @@ class WiperDefense(BaseDefense):
                 ruta = os.path.join(self.dir_simulacion, nombre)
                 if os.path.isfile(ruta) and not nombre.endswith('.log'):
                     h = hash_file(ruta)
-                    safe_print(color(f"    {nombre:30s} {(h[:48] + '...') if h else 'N/A'}", 'green'))
+                    safe_print(color(
+                        f"    {nombre:30s} {(h[:48] + '...') if h else 'N/A'}",
+                        'green'))
 
     def _imprimir_conclusiones_soc(self, resultados, corruptos, intactos) -> None:
         safe_print(color(f"  Archivos analizados:   {len(resultados)}", 'cyan'))
-        safe_print(color(f"  Archivos corruptos:    {len(corruptos)}", 'red' if corruptos else 'green'))
-        safe_print(color("  - Ransomware: cifra archivos (reversible con clave)\n  - Wiper: destruye archivos (irreversible sin backup)\n", 'cyan'))
+        safe_print(color(f"  Archivos corruptos:    {len(corruptos)}",
+                           'red' if corruptos else 'green'))
+        safe_print(color("  - Ransomware: cifra archivos (reversible con clave)\n"
+                           "  - Wiper: destruye archivos (irreversible sin backup)\n", 'cyan'))
 
 
 if __name__ == "__main__":

@@ -25,8 +25,8 @@ import shutil
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from modulos.common.utils import log, safe_print, color, banner, traverse_lab_files, LOG_LINES
-from modulos.common.utils import hash_file, read_file, cleanup, write_log, is_lab_ready, find_lab_dir
+from modulos.common.utils import log, safe_print, color, banner, LOG_LINES
+from modulos.common.utils import write_log, find_lab_dir
 
 MODULO_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.join(MODULO_DIR, '..', '..')
@@ -222,7 +222,8 @@ def simular_minado(duracion=30, num_workers=2):
     # Impacto de CPU
     safe_print(color("\n--- Impacto en CPU ---", 'cyan'))
     safe_print(f"  CPU real del sistema:  {color(f'{cpu_percent_real():.1f}%', 'yellow')}")
-    safe_print(f"  CPU estimada minero:   {color(f'{min(40, cpu_percent_simulado()):.1f}%', 'yellow')}")
+    safe_print((f"  CPU estimada minero:   "
+        f"{color(f'{min(40, cpu_percent_simulado()):.1f}%', 'yellow')}"))
     safe_print(color("  Nota: CPU estimada es el componente adicional del minero.", 'yellow'))
 
     # Fase 5: Artefactos generados en directorio_pruebas/
