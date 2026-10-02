@@ -159,7 +159,7 @@ def construir_dialogo(page: ft.Page, modulo_key: str) -> ft.AlertDialog:
         area.controls.clear()
         area.controls.append(radios)
         area.controls.append(
-            ft.Button("Comenzar", bgcolor=T.ACCENT, color="#FFFFFF",
+            ft.Button("Comenzar", bgcolor=T.ACCENT, color=T.TEXTO_SOBRE_NEON,
                       on_click=lambda e: iniciar()))
         refrescar()
 
@@ -273,7 +273,7 @@ def construir_dialogo(page: ft.Page, modulo_key: str) -> ft.AlertDialog:
         area.controls.append(
             ft.Container(content=ft.Column(tarjeta, spacing=4),
                          bgcolor=T.BG_CARD, padding=14, border_radius=6))
-        dlg.actions = [ft.Button("Cerrar", bgcolor=T.ACCENT, color="#FFFFFF",
+        dlg.actions = [ft.Button("Cerrar", bgcolor=T.ACCENT, color=T.TEXTO_SOBRE_NEON,
                                  on_click=lambda e: cerrar())]
         refrescar()
 

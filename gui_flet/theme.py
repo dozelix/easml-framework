@@ -1,27 +1,32 @@
 """Paleta y constantes visuales de la GUI Flet.
 
-Paridad intencional con gui/styles.py (mismos hex) para que la migración
-tkinter → Flet no cambie la identidad neobrutalista. Sin dependencias.
+Tema único `red_neon` (oscuro): grilla + neón sobre negro, inspirado en
+estética de red cyberpunk genérica. Sin variantes claro/oscuro ni assets
+externos: todo el contraste se valida sobre fondo oscuro.
+
+Nombres de constantes estables para no romper vistas ni tests.
 """
 
-BG = "#FFF8F0"
-BG_CARD = "#F2ECE4"
-BG_PANEL = "#FFFFFF"
-BG_HOVER = "#E8E0D6"
-BG_CONSOLA = "#1A1A1A"
-TEXTO = "#1A1A1A"
-TEXTO_DIM = "#5C5C5C"
+BG = "#0D0F14"
+BG_CARD = "#232839"
+BG_PANEL = "#1A1D27"
+BG_HOVER = "#2B3245"
+BG_CONSOLA = "#0A0C10"
+TEXTO = "#E6EDF3"
+TEXTO_DIM = "#8B949E"
 TEXTO_CONSOLA = "#9ECE6A"
-ACCENT = "#2563EB"
-BORDE = "#1A1A1A"
+ACCENT = "#00E5FF"
+BORDE = "#3A4156"
 
-ROJO = "#D6394A"
-AZUL = "#2563EB"
-VERDE = "#16A34A"
-AMARILLO = "#D97706"
-CYAN = "#0891B2"
-MORADO = "#7C3AED"
-NARANJA = "#EA580C"
+ROJO = "#FF2A6D"
+AZUL = "#00E5FF"
+VERDE = "#9ECE6A"
+AMARILLO = "#FFB454"
+CYAN = "#00E5FF"
+MORADO = "#BB9AF7"
+NARANJA = "#FF9E64"
+
+TEXTO_SOBRE_NEON = "#0D0F14"
 
 FUENTE = "JetBrains Mono"
 
