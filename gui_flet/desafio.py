@@ -31,6 +31,7 @@ class ControladorQuiz:
         self.indice = 0
         self.correctas = 0
         self.pistas = 0
+        self.pistas_total = 0
         self.fallos = 0
         self.tiempo_inicio = 0.0
         self.respondiendo = False
@@ -40,6 +41,7 @@ class ControladorQuiz:
         self.indice = 0
         self.correctas = 0
         self.pistas = 0
+        self.pistas_total = 0
         self.fallos = 0
         self.tiempo_inicio = time.time()
         self.respondiendo = True
@@ -72,6 +74,7 @@ class ControladorQuiz:
         if d is None or self.pistas >= self.motor.obtener_config()["max_pistas"]:
             return None
         self.pistas += 1
+        self.pistas_total += 1
         return d.pista
 
     def avanzar(self) -> bool:
@@ -94,6 +97,8 @@ class ControladorQuiz:
             "puntos": puntos,
             "tiempo": tiempo,
             "aprobado": aprobado,
+            "pistas_total": self.pistas_total,
+            "fallos": self.fallos,
             "resumen": self.motor.resumen_general(),
         }
 
@@ -102,8 +107,14 @@ def _texto_resultado(ctrl: ControladorQuiz) -> ft.Text:
     return ft.Text("", color=T.TEXTO, font_family=T.FUENTE)
 
 
-def construir_dialogo(page: ft.Page, modulo_key: str) -> ft.AlertDialog:
-    """Crea el diálogo de desafío para un módulo (modal, como el Toplevel)."""
+def construir_dialogo(page: ft.Page, modulo_key: str,
+                      dificultad_fija: str | None = None,
+                      on_finalizar=None) -> ft.AlertDialog:
+    """Crea el diálogo de desafío para un módulo (modal, como el Toplevel).
+
+    dificultad_fija salta el selector (ej: panteón en difícil).
+    on_finalizar(modulo_key, datos) se llama al mostrar el resultado.
+    """
     ctrl = ControladorQuiz(modulo_key)
     if not ctrl.desafios:
         return ft.AlertDialog(
@@ -249,6 +260,8 @@ def construir_dialogo(page: ft.Page, modulo_key: str) -> ft.AlertDialog:
 
     def mostrar_final():
         datos = ctrl.finalizar()
+        if on_finalizar is not None:
+            on_finalizar(modulo_key, datos)
         estado = "[OK] APROBADO" if datos["aprobado"] else "[--] NO APROBADO"
         color_estado = T.VERDE if datos["aprobado"] else T.ROJO
         info.value = ""
@@ -277,5 +290,9 @@ def construir_dialogo(page: ft.Page, modulo_key: str) -> ft.AlertDialog:
                                  on_click=lambda e: cerrar())]
         refrescar()
 
-    mostrar_selector()
+    if dificultad_fija is not None:
+        dificultad["valor"] = dificultad_fija
+        iniciar()
+    else:
+        mostrar_selector()
     return dlg
