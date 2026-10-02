@@ -400,3 +400,39 @@ def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
             size=12, font_family=T.FUENTE)], spacing=2),
             bgcolor=T.BG_CONSOLA, padding=10, border_radius=6))
     return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
+
+
+def vista_portada(siguiente: str, on_jugar=None,
+                  on_como=None) -> ft.Control:
+    """Pantalla título (estilo menú principal): grande, sin chrome de lab."""
+    alias = meta(siguiente)["alias"]
+    return ft.Container(
+        bgcolor=T.BG, expand=True, padding=24,
+        content=ft.Column([
+            ft.Container(expand=True),
+            ft.Text("EASML", size=72, weight=ft.FontWeight.BOLD,
+                    color=T.ACCENT, font_family=T.FUENTE,
+                    text_align=ft.TextAlign.CENTER),
+            ft.Text("LABORATORIO-JUEGO EDUCATIVO DE CIBERSEGURIDAD",
+                    color=T.TEXTO_DIM, size=14, font_family=T.FUENTE,
+                    text_align=ft.TextAlign.CENTER),
+            ft.Text("100% simulado: nada sale de directorio_pruebas/",
+                    color=T.AMARILLO, size=13, font_family=T.FUENTE,
+                    text_align=ft.TextAlign.CENTER),
+            ft.Container(height=24),
+            ft.Row([
+                ft.Button(f"JUGAR: {alias}", bgcolor=T.ACCENT,
+                          color=T.TEXTO_SOBRE_NEON,
+                          on_click=lambda e: on_jugar() if on_jugar else None),
+            ], alignment=ft.MainAxisAlignment.CENTER),
+            ft.Row([
+                ft.Button("CÓMO JUGAR", color=T.MORADO,
+                          bgcolor=T.BG_PANEL,
+                          on_click=lambda e: on_como() if on_como else None),
+            ], alignment=ft.MainAxisAlignment.CENTER),
+            ft.Container(expand=True),
+            ft.Text("v1.0.0.0-alpha — alpha cerrada, todo puede romperse",
+                    color=T.TEXTO_DIM, size=11, font_family=T.FUENTE,
+                    text_align=ft.TextAlign.CENTER),
+        ], spacing=6, expand=True),
+    )
