@@ -97,7 +97,16 @@ def clean_lab(paths):
 
 def main():
     paths = ensure_lab_data_dirs(BASE_DIR)
-    
+
+    if '--status' in sys.argv:
+        print("Rutas activas del laboratorio:\n")
+        print(f"  repo_root:  {paths.repo_root}")
+        print(f"  arena:      {paths.lab_dir}")
+        print(f"  lab_data:   {paths.lab_data_dir}")
+        print(f"  logs:       {paths.logs_dir}")
+        print(f"  samples:    {paths.samples_dir}")
+        return
+
     if '--clean' in sys.argv:
         print("Iniciando saneamiento completo del laboratorio...\n")
         clean_lab(paths)

@@ -5,6 +5,7 @@ ft.Markdown) en vez de guia.html, así la GUI nueva no depende del HTML.
 """
 
 import os
+import sys
 from collections import Counter
 
 import flet as ft
@@ -14,6 +15,10 @@ from app.config import MODULOS, NOMBRES_DEFENSA
 from gui_flet import theme as T
 
 _RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _RAIZ not in sys.path:
+    sys.path.insert(0, _RAIZ)
+
+from modulos.common.paths import base_recursos, resolve_lab_paths
 
 
 def tarjeta(controles, expand=False) -> ft.Container:
@@ -31,7 +36,7 @@ def titulo(texto: str) -> ft.Text:
 def leer_readme_modulo(index: int) -> str | None:
     if index < 0 or index >= len(MODULOS):
         return None
-    path = os.path.join(_RAIZ, "modulos", MODULOS[index][1], "README.md")
+    path = os.path.join(base_recursos(), "modulos", MODULOS[index][1], "README.md")
     if not os.path.isfile(path):
         return None
     with open(path, "r", encoding="utf-8") as f:
@@ -39,8 +44,9 @@ def leer_readme_modulo(index: int) -> str | None:
 
 
 def vista_dashboard() -> ft.Control:
-    dir_lab = os.path.join(_RAIZ, "directorio_pruebas")
-    dir_logs = os.path.join(_RAIZ, "lab_data", "logs")
+    rutas = resolve_lab_paths()
+    dir_lab = rutas['lab_dir']
+    dir_logs = rutas['logs_dir']
 
     archivos = len([f for f in os.listdir(dir_lab)
                     if os.path.isfile(os.path.join(dir_lab, f))]) if os.path.isdir(dir_lab) else 0
@@ -121,7 +127,7 @@ def vista_modulo(index: int) -> ft.Control:
     num, nombre, script, cia, _cis, url_ref = MODULOS[index]
     nombre_defensa = NOMBRES_DEFENSA.get(num, "defensa")
     arch_defensa = nombre_defensa.lower().replace(" ", "_")
-    dir_modulo = os.path.join(_RAIZ, "modulos", nombre)
+    dir_modulo = os.path.join(base_recursos(), "modulos", nombre)
 
     sim_ok = os.path.isfile(os.path.join(dir_modulo, f"{script}.py"))
     def_ok = os.path.isfile(os.path.join(dir_modulo, f"{arch_defensa}.py"))
