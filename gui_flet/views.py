@@ -332,10 +332,12 @@ def vista_ajustes(p: dict, rutas: dict, on_dlc=None, on_anim=None,
 
 def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
                   bitacora: list[str], terminado: str | None,
-                  heroe: str = "HÉROE",
-                  on_atacar=None, on_analizar=None,
-                  on_parchar=None, on_guardia=None) -> ft.Control:
-    """Pantalla de combate por turnos (barras HP + 4 movimientos)."""
+                  heroe: str = "HÉROE", submenu: str | None = None,
+                  mochila: dict | None = None, sombras: list | None = None,
+                  on_menu=None, on_volver=None, on_movimiento=None,
+                  on_item=None, on_huir=None) -> ft.Control:
+    """Combate por turnos: menú ATACAR/MOCHILA/EQUIPO/HUIR + subvistas."""
+    from app.mochila import ITEMS
     bloques: list = [titulo(f"COMBATE: {meta(slug)['alias']} ({slug})")]
 
     def _barra(valor: int, color: str) -> ft.ProgressBar:
@@ -351,22 +353,60 @@ def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
         _barra(heroe_hp, T.VERDE),
     ]))
     fin = terminado is not None
-    bloques.append(
-        ft.Row([
-            ft.Button("ATACAR", bgcolor=T.ROJO, color=T.TEXTO_SOBRE_NEON,
-                      disabled=fin,
-                      on_click=lambda e: on_atacar() if on_atacar else None),
-            ft.Button("ANALIZAR", color=T.AZUL, bgcolor=T.BG_PANEL,
-                      disabled=fin,
-                      on_click=lambda e: on_analizar() if on_analizar else None),
-            ft.Button("PARCHEAR", color=T.VERDE, bgcolor=T.BG_PANEL,
-                      disabled=fin,
-                      on_click=lambda e: on_parchar() if on_parchar else None),
-            ft.Button("GUARDIA", color=T.AMARILLO, bgcolor=T.BG_PANEL,
-                      disabled=fin,
-                      on_click=lambda e: on_guardia() if on_guardia else None),
+
+    def _boton(texto, color, fondo, handler, deshabilitado=False):
+        return ft.Button(texto, color=color, bgcolor=fondo,
+                         disabled=fin or deshabilitado,
+                         on_click=lambda e: handler() if handler else None)
+
+    if submenu == "ataques":
+        fila = ft.Row([
+            _boton("ATAQUE", T.ROJO, T.BG_PANEL,
+                   lambda: on_movimiento("atacar") if on_movimiento else None),
+            _boton("ANALIZAR", T.AZUL, T.BG_PANEL,
+                   lambda: on_movimiento("analizar") if on_movimiento else None),
+            _boton("PARCHEAR", T.VERDE, T.BG_PANEL,
+                   lambda: on_movimiento("parchar") if on_movimiento else None),
+            _boton("GUARDIA", T.AMARILLO, T.BG_PANEL,
+                   lambda: on_movimiento("guardia") if on_movimiento else None),
+            _boton("VOLVER", T.TEXTO_DIM, T.BG_PANEL,
+                   lambda: on_volver() if on_volver else None),
         ], spacing=6)
-    )
+    elif submenu == "mochila":
+        inv = mochila or {}
+        botones = []
+        for clave, info in ITEMS.items():
+            n = inv.get(clave, 0)
+            botones.append(_boton(
+                f"{info['nombre'].upper()} x{n}", T.MORADO, T.BG_PANEL,
+                (lambda k=clave: on_item(k)) if on_item else None,
+                deshabilitado=n <= 0))
+        botones.append(_boton("VOLVER", T.TEXTO_DIM, T.BG_PANEL,
+                              lambda: on_volver() if on_volver else None))
+        fila = ft.Row(botones, spacing=6)
+    elif submenu == "equipo":
+        lista = sombras or []
+        bonus = 5 * len(lista)
+        fila = ft.Column([
+            ft.Text(f"Aliados: {', '.join(lista) if lista else 'ninguno'} "
+                    f"(+{bonus} daño c/u en ATACAR)",
+                    color=T.TEXTO, size=T.TAM_MINIMO, font_family=T.FUENTE),
+            ft.Row([_boton("VOLVER", T.TEXTO_DIM, T.BG_PANEL,
+                           lambda: on_volver() if on_volver else None)],
+                   spacing=6),
+        ], spacing=6)
+    else:
+        fila = ft.Row([
+            _boton("ATACAR", T.ROJO, T.BG_PANEL,
+                   lambda: on_menu("ataques") if on_menu else None),
+            _boton("MOCHILA", T.MORADO, T.BG_PANEL,
+                   lambda: on_menu("mochila") if on_menu else None),
+            _boton("EQUIPO", T.AZUL, T.BG_PANEL,
+                   lambda: on_menu("equipo") if on_menu else None),
+            _boton("HUIR", T.TEXTO_DIM, T.BG_PANEL,
+                   lambda: on_huir() if on_huir else None),
+        ], spacing=6)
+    bloques.append(fila)
     bloques.append(ft.Text("Llévalo a 0% para purificarlo como SOMBRA.",
                            color=T.TEXTO_DIM, size=T.TAM_MINIMO,
                            font_family=T.FUENTE))

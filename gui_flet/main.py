@@ -10,6 +10,7 @@ import os
 import flet as ft
 
 from app.combate import Combate
+from app.mochila import gastar, inventario
 from app.config import (
     MODULOS,
     defensa_arch,
@@ -400,68 +401,82 @@ async def main(page: ft.Page):
                 log_sync(f"[SOMBRA] {meta(c.slug)['alias']} purificado. "
                          "Búscalo en JEFES.")
 
-        async def _atacar():
+        async def _mover_ataque(cual: str):
             import asyncio as _aio
             _am, _de = _rutas_scripts(c.slug)
-            dano = await _aio.to_thread(c.atacar, lambda: _sync_run(_de))
-            if dano >= 25:
-                _escena("defensa")
-            if c.terminado is None:
-                await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
-            _revisar_captura()
-            _tras_mover()
-            mostrar_combate()
-            page.update()
-
-        async def _analizar():
-            c.analizar()
-            _tras_mover()
-            import asyncio as _aio
-            _am, _de = _rutas_scripts(c.slug)
-            await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
-            _tras_mover()
-            mostrar_combate()
-            page.update()
-
-        async def _parchar():
-            import asyncio as _aio
-            await _aio.to_thread(
-                c.parchar,
-                lambda: _sync_run(os.path.join(_DIR_RAIZ, "core", "lab_setup.py")))
-            _escena("setup")
-            if c.terminado is None:
-                _am, _de = _rutas_scripts(c.slug)
-                await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
-            _revisar_captura()
-            _tras_mover()
-            mostrar_combate()
-            page.update()
-
-        async def _guardia():
-            import asyncio as _aio
-            c.guardia()
-            _tras_mover()
-            if c.terminado is None:
-                _am, _de = _rutas_scripts(c.slug)
-                await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
+            if cual == "atacar":
+                dano = await _aio.to_thread(c.atacar, lambda: _sync_run(_de))
+                if dano >= 25:
+                    _escena("defensa")
+            elif cual == "analizar":
+                c.analizar()
                 _tras_mover()
+            elif cual == "parchar":
+                await _aio.to_thread(
+                    c.parchar,
+                    lambda: _sync_run(os.path.join(_DIR_RAIZ, "core", "lab_setup.py")))
+                _escena("setup")
+            elif cual == "guardia":
+                c.guardia()
+                _tras_mover()
+            if c.terminado is None:
+                await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
+            _revisar_captura()
+            _ir(None)
+
+        async def _usar_item(clave: str):
+            import asyncio as _aio
+            if not gastar(estado.prog, clave):
+                return
+            PG.guardar(estado.prog)
+            _am, _de = _rutas_scripts(c.slug)
+            if clave == "copia":
+                await _aio.to_thread(
+                    _sync_run, os.path.join(_DIR_RAIZ, "core", "lab_setup.py"))
+                c.bitacora.append("[MOCHILA] Copia restaurada: arena sana.")
+                _escena("setup")
+            elif clave == "antivirus":
+                c.activar_antivirus()
+            elif clave == "senuelo":
+                c.activar_senuelo()
+            _tras_mover()
+            if c.terminado is None:
+                # El señuelo se cobra dentro del turno enemigo (lo salta).
+                await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
+            _revisar_captura()
+            _tras_mover()
+            _ir(None)
+
+        def _huir():
+            log_sync("[HUIDA] Te repliegas al capítulo. La arena queda como está.")
+            estado.submenu = None
+            mostrar_modulo(estado.modulo_idx if estado.modulo_idx is not None else 0)
+            page.update()
+
+        def _ir(slot: str | None):
+            estado.submenu = slot
             mostrar_combate()
             page.update()
 
         mostrar(vista_combate(
             c.slug, c.heroe_hp, c.enemigo_hp, c.bitacora, c.terminado,
             heroe=estado.prog.get("heroe", "") or "HÉROE",
-            on_atacar=lambda: page.run_task(_atacar),
-            on_analizar=lambda: page.run_task(_analizar),
-            on_parchar=lambda: page.run_task(_parchar),
-            on_guardia=lambda: page.run_task(_guardia),
+            submenu=getattr(estado, "submenu", None),
+            mochila=inventario(estado.prog),
+            sombras=estado.prog.get("sombra", []),
+            on_menu=_ir,
+            on_volver=lambda: _ir(None),
+            on_movimiento=lambda cual: page.run_task(_mover_ataque, cual),
+            on_item=lambda clave: page.run_task(_usar_item, clave),
+            on_huir=_huir,
         ))
 
     def acc_luchar(e):
         if estado.modulo_idx is None or estado.ejecutando:
             return
         slug = estado.slug_por_idx[estado.modulo_idx]
-        estado.combate = Combate(slug)
+        estado.combate = Combate(slug, aliadas=len(estado.prog.get("sombra", [])))
+        estado.submenu = None
         c = estado.combate
         c.bitacora.append(
             f"[{meta(slug)['alias']}] {meta(slug)['salon']}. "

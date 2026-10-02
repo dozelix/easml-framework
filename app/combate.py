@@ -58,9 +58,13 @@ def medir_sanos() -> tuple[int, int]:
 class Combate:
     """Estado de un combate. `ejecutar` corre amenaza/defensa/setup reales."""
 
-    def __init__(self, slug: str, rng: random.Random | None = None):
+    def __init__(self, slug: str, rng: random.Random | None = None,
+                 aliadas: int = 0):
         self.slug = slug
         self.rng = rng or random.Random()
+        self.aliadas = aliadas
+        self.antivirus = False
+        self.senuelo = False
         self.enemigo_hp = 100
         self.turno = 0
         self.analizado = False
@@ -88,6 +92,11 @@ class Combate:
         dano = 25 if (ok and mejora > 0) else 5
         if self.slug in BONUS_DEBILIDAD and self.analizado:
             dano += 5
+        dano += 5 * self.aliadas
+        if self.antivirus:
+            self.antivirus = False
+            dano += 15
+            self._registrar("[ANTIVIRUS] Potencia aplicada: +15.")
         self.enemigo_hp = max(0, self.enemigo_hp - dano)
         self._registrar(
             f"[ATACAR] Defensa {'restauró ' + str(mejora) + ' archivos' if mejora > 0 else 'sin restauración'}: -{dano} HP.")
@@ -128,11 +137,26 @@ class Combate:
         self._registrar("[GUARDIA] Cubierto: el próximo golpe duele la mitad.")
         return True
 
+    def activar_antivirus(self) -> None:
+        self.guardias_seguidas = 0
+        self.antivirus = True
+        self._registrar("[MOCHILA] Antivirus listo para el próximo ATACAR.")
+
+    def activar_senuelo(self) -> None:
+        self.guardias_seguidas = 0
+        self.senuelo = True
+        self._registrar("[MOCHILA] Señuelo plantado: el rival muerde el anzuelo.")
+
     def turno_enemigo(self, ejecutar_amenaza) -> None:
         """El bicho contraataca con su script real (mitad si hay guardia)."""
         if self.terminado:
             return
         self.turno += 1
+        if self.senuelo:
+            self.senuelo = False
+            self._registrar(f"[TURNO {self.turno}] Cayó en el señuelo: "
+                             "sin contraataque.")
+            return
         sanos_antes, _t = medir_sanos()
         ejecutar_amenaza()
         sanos_despues, _t = medir_sanos()
