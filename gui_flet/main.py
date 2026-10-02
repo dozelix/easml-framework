@@ -35,6 +35,7 @@ from gui_flet.views import (
     vista_mapa,
     vista_menu,
     vista_modulo,
+    vista_portada,
     vista_tutorial,
 )
 
@@ -516,6 +517,8 @@ async def main(page: ft.Page):
                           lambda e: (mostrar_ajustes(), page.update())),
             boton_sidebar("CÓMO JUGAR", T.MORADO,
                           lambda e: (mostrar_tutorial(), page.update())),
+            boton_sidebar("MENÚ", T.TEXTO_DIM,
+                          lambda e: mostrar_portada()),
         ], spacing=4, expand=True),
     )
 
@@ -546,23 +549,42 @@ async def main(page: ft.Page):
     caja_consola = ft.Container(content=consola, bgcolor=T.BG_CONSOLA,
                                 border_radius=6, padding=4)
 
-    page.add(
-        ft.Container(
-            bgcolor=T.BG, expand=True, padding=4,
-            content=ft.Row([
-                sidebar,
-                ft.VerticalDivider(width=1),
-                ft.Column([
-                    header,
-                    ft.Container(content=contenido, expand=True, padding=8),
-                    botonera,
-                    consola_cab,
-                    caja_consola,
-                ], expand=True, spacing=4),
+    lab = ft.Container(
+        bgcolor=T.BG, expand=True, padding=4, visible=False,
+        content=ft.Row([
+            sidebar,
+            ft.VerticalDivider(width=1),
+            ft.Column([
+                header,
+                ft.Container(content=contenido, expand=True, padding=8),
+                botonera,
+                consola_cab,
+                caja_consola,
             ], expand=True, spacing=4),
-        )
+        ], expand=True, spacing=4),
     )
-    mostrar_dashboard()
+    portada = ft.Container(expand=True)
+
+    def mostrar_portada():
+        estado.vista = "portada"
+        estado.modulo_idx = None
+        portada.content = vista_portada(
+            PG.siguiente_capitulo(estado.prog, estado.campana),
+            on_jugar=lambda: (entrar(), mostrar_modulo(estado.idx_por_slug[
+                PG.siguiente_capitulo(estado.prog, estado.campana)]),
+                page.update()),
+            on_como=lambda: (entrar(), mostrar_tutorial(), page.update()),
+        )
+        portada.visible = True
+        lab.visible = False
+        page.update()
+
+    def entrar():
+        portada.visible = False
+        lab.visible = True
+
+    page.add(lab, portada)
+    mostrar_portada()
     refrescar()
 
 

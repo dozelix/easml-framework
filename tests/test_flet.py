@@ -199,7 +199,9 @@ class TestLayout(unittest.TestCase):
 
         pagina = asyncio.run(_correr())
         self.assertTrue(pagina.title)
-        self.assertEqual(len(pagina.added), 1)
+        self.assertEqual(len(pagina.added), 2)  # lab (oculto) + portada
+        self.assertFalse(pagina.added[0].visible)
+        self.assertTrue(pagina.added[1].visible)
         fila = pagina.added[0].content
         self.assertEqual(len(fila.controls), 3)  # sidebar | div | central
         central = fila.controls[2]
@@ -221,6 +223,7 @@ class TestLayout(unittest.TestCase):
             {"Confidencialidad": ["keylogger"]}))
         self.assertIsNotNone(V.vista_ajustes(
             {"dlc": False, "anim": True}, {"lab_dir": "x", "logs_dir": "y"}))
+        self.assertIsNotNone(V.vista_portada("trojan"))
 
 
 @unittest.skipIf(REQUIERE_FLET, "flet no instalado")
