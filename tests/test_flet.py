@@ -229,8 +229,8 @@ class TestLayout(unittest.TestCase):
 @unittest.skipIf(REQUIERE_FLET, "flet no instalado")
 class TestQuiz(unittest.TestCase):
     def test_flujo_completo(self):
-        from gui_flet.desafio import ControladorQuiz
-        ctrl = ControladorQuiz("ransomware")
+        from gui_flet.desafio import QuizCapitulo
+        ctrl = QuizCapitulo("ransomware")
         self.assertTrue(ctrl.desafios)
         ctrl.iniciar("facil")
         primera = ctrl.pregunta_actual()
@@ -251,8 +251,8 @@ class TestQuiz(unittest.TestCase):
         self.assertTrue(datos["aprobado"])
 
     def test_modulo_sin_desafios(self):
-        from gui_flet.desafio import ControladorQuiz
-        ctrl = ControladorQuiz("modulo_inexistente")
+        from gui_flet.desafio import QuizCapitulo
+        ctrl = QuizCapitulo("modulo_inexistente")
         self.assertEqual(ctrl.desafios, [])
         self.assertIsNone(ctrl.pregunta_actual())
         self.assertIsNone(ctrl.responder(0))
