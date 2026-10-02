@@ -354,3 +354,49 @@ def vista_ajustes(p: dict, rutas: dict, on_dlc=None, on_anim=None,
                 font_family=T.FUENTE),
     ]))
     return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
+
+
+def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
+                  bitacora: list[str], terminado: str | None,
+                  on_atacar=None, on_analizar=None,
+                  on_parchar=None, on_capturar=None) -> ft.Control:
+    """Pantalla de combate por turnos (barras HP + 4 acciones)."""
+    bloques: list = [titulo(f"COMBATE: {meta(slug)['alias']} ({slug})")]
+
+    def _barra(valor: int, color: str) -> ft.ProgressBar:
+        return ft.ProgressBar(value=max(0, min(100, valor)) / 100,
+                              color=color, bgcolor=T.BG_HOVER)
+
+    bloques.append(tarjeta([
+        ft.Text(f"RIVAL — {enemigo_hp}%", color=T.ROJO, size=12,
+                font_family=T.FUENTE),
+        _barra(enemigo_hp, T.ROJO),
+        ft.Text(f"HÉROE (integridad arena) — {heroe_hp}%", color=T.VERDE,
+                size=12, font_family=T.FUENTE),
+        _barra(heroe_hp, T.VERDE),
+    ]))
+    fin = terminado is not None
+    bloques.append(
+        ft.Row([
+            ft.Button("ATACAR", bgcolor=T.ROJO, color=T.TEXTO_SOBRE_NEON,
+                      disabled=fin,
+                      on_click=lambda e: on_atacar() if on_atacar else None),
+            ft.Button("ANALIZAR", color=T.AZUL, bgcolor=T.BG_PANEL,
+                      disabled=fin,
+                      on_click=lambda e: on_analizar() if on_analizar else None),
+            ft.Button("PARCHEAR", color=T.VERDE, bgcolor=T.BG_PANEL,
+                      disabled=fin,
+                      on_click=lambda e: on_parchar() if on_parchar else None),
+            ft.Button("CAPTURAR", color=T.MORADO, bgcolor=T.BG_PANEL,
+                      disabled=fin or enemigo_hp >= 20,
+                      on_click=lambda e: on_capturar() if on_capturar else None),
+        ], spacing=6)
+    )
+    lineas = [ft.Text(l, size=12, font_family=T.FUENTE,
+                      color=T.TEXTO_CONSOLA) for l in bitacora[-8:]]
+    bloques.append(
+        ft.Container(content=ft.Column(lineas or [ft.Text(
+            "El bicho emerge... elige tu movimiento.",
+            size=12, font_family=T.FUENTE)], spacing=2),
+            bgcolor=T.BG_CONSOLA, padding=10, border_radius=6))
+    return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
