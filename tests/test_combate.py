@@ -107,6 +107,42 @@ class CombateTests(unittest.TestCase):
         from gui_flet.views import vista_combate
         v = vista_combate("trojan", 100, 80, ["[TURNO 1] hola"], None)
         self.assertIsNotNone(v)
+        for submenu in ("ataques", "mochila", "equipo"):
+            self.assertIsNotNone(vista_combate(
+                "trojan", 100, 80, ["hola"], None, submenu=submenu,
+                mochila={"copia": 1, "antivirus": 0, "senuelo": 2},
+                sombras=["trojan"]))
+
+    def test_mochila_items(self):
+        from app.combate import Combate, medir_sanos
+        from app.mochila import gastar, hay, inventario, premiar
+        p = {"mochila": {}}
+        inv = inventario(p)
+        self.assertEqual((inv["copia"], inv["antivirus"], inv["senuelo"]),
+                         (2, 2, 2))
+        self.assertTrue(hay(p, "copia"))
+        self.assertTrue(gastar(p, "copia"))
+        self.assertEqual(inventario(p)["copia"], 1)
+        premiar(p)
+        self.assertEqual(inventario(p)["copia"], 2)
+        # Antivirus potencia el próximo ataque
+        c = Combate("trojan")
+        self._corromper()
+        c.activar_antivirus()
+        c.atacar(lambda: (self._restaurar(), True)[1])
+        self.assertEqual(c.enemigo_hp, 100 - 25 - 15)
+        self.assertFalse(c.antivirus)
+        # Señuelo roba el contraataque (la arena queda intacta)
+        c2 = Combate("trojan")
+        c2.activar_senuelo()
+        c2.turno_enemigo(lambda: (self._corromper(), True)[1])
+        self.assertEqual(medir_sanos()[0], 12)
+        self.assertEqual(c2.turno, 1)
+        # Equipo suma +5 por aliada
+        c3 = Combate("trojan", aliadas=2)
+        self._corromper()
+        c3.atacar(lambda: (self._restaurar(), True)[1])
+        self.assertEqual(c3.enemigo_hp, 100 - 25 - 10)
 
 
 if __name__ == "__main__":

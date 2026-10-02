@@ -27,6 +27,7 @@ def vacio() -> dict:
         "minijefe": {},     # slug -> {"ok": bool, "cien": bool}
         "megajefe": {},     # mundo CIA -> bool
         "sombra": [],       # slugs reclutados (minijefe al 100%)
+        "mochila": {},      # items (ver app/mochila)
         "panteon": {},      # mundo CIA -> True (avalancha superada)
         "dlc": False,       # módulos avanzados activados
         "anim": True,       # animaciones (off en hardware corto)
@@ -70,6 +71,7 @@ def registrar_minijefe(p: dict, slug: str, aprobado: bool,
                        pistas: int, fallos: int,
                        correctas: int, total: int) -> bool:
     """Registra el minijefe (quiz del capítulo). Retorna True si es 100%."""
+    from app.mochila import premiar
     cien = (aprobado and pistas == 0 and fallos == 0
             and total > 0 and correctas == total)
     anterior = p["minijefe"].get(slug, {})
@@ -77,6 +79,8 @@ def registrar_minijefe(p: dict, slug: str, aprobado: bool,
         "ok": anterior.get("ok", False) or aprobado,
         "cien": anterior.get("cien", False) or cien,
     }
+    if aprobado and not anterior.get("ok", False):
+        premiar(p)
     if cien and slug not in p["sombra"]:
         p["sombra"].append(slug)
     return cien and not anterior.get("cien", False)
