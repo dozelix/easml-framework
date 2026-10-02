@@ -9,6 +9,7 @@ import os
 
 import flet as ft
 
+from app.combate import Combate
 from app.config import (
     MODULOS,
     defensa_arch,
@@ -19,6 +20,7 @@ from app.config import (
 )
 from app.laboratorio import DESAFIOS_POR_MODULO
 from app import progreso as PG
+from modulos.common.utils import is_lab_ready
 
 from gui_flet import theme as T
 from gui_flet.desafio import construir_dialogo
@@ -26,6 +28,7 @@ from gui_flet.runner_flet import ejecutar_script
 from gui_flet.views import (
     leer_readme_modulo,
     vista_ajustes,
+    vista_combate,
     vista_dashboard,
     vista_guia,
     vista_jefes,
@@ -51,6 +54,7 @@ class Estado:
         self.campana = orden_campana()
         self.slug_por_idx = {i: m[1] for i, m in enumerate(MODULOS)}
         self.idx_por_slug = {m[1]: i for i, m in enumerate(MODULOS)}
+        self.combate: Combate | None = None
 
 
 async def main(page: ft.Page):
@@ -337,8 +341,116 @@ async def main(page: ft.Page):
             mostrar_jefes()
         elif estado.vista == "ajustes":
             mostrar_ajustes()
+        elif estado.vista == "combate" and estado.combate is not None:
+            mostrar_combate()
         else:
             mostrar_dashboard()
+
+    # ── Combate por turnos ───────────────────────────────────────────────
+    def _rutas_scripts(slug: str) -> tuple[str, str]:
+        from app.config import MODULOS as _M
+        script = next(m[2] for m in _M if m[1] == slug)
+        return (os.path.join(_DIR_RAIZ, "modulos", slug, f"{script}.py"),
+                os.path.join(_DIR_RAIZ, "modulos", slug, defensa_arch(slug)))
+
+    def _sync_run(script: str) -> bool:
+        import subprocess
+        import sys as _sys
+        try:
+            proc = subprocess.run(
+                [_sys.executable, script], capture_output=True, text=True,
+                cwd=_DIR_RAIZ, timeout=120)
+        except Exception:
+            return False
+        return proc.returncode == 0
+
+    def mostrar_combate():
+        estado.vista = "combate"
+        c = estado.combate
+        assert c is not None
+        icono_cia.visible = False
+        lbl_nombre.value = f"COMBATE: {meta(c.slug)['alias']}"
+        lbl_cis.value = meta(c.slug)["salon"]
+
+        def _tras_mover():
+            for linea in c.bitacora[-4:]:
+                log_sync(linea)
+
+        async def _atacar():
+            import asyncio as _aio
+            _am, _de = _rutas_scripts(c.slug)
+            await _aio.to_thread(c.atacar, lambda: _sync_run(_de))
+            if c.terminado is None:
+                await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
+            _tras_mover()
+            mostrar_combate()
+            page.update()
+
+        async def _analizar():
+            c.analizar()
+            _tras_mover()
+            import asyncio as _aio
+            _am, _de = _rutas_scripts(c.slug)
+            await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
+            _tras_mover()
+            mostrar_combate()
+            page.update()
+
+        async def _parchar():
+            import asyncio as _aio
+            await _aio.to_thread(
+                c.parchar,
+                lambda: _sync_run(os.path.join(_DIR_RAIZ, "core", "lab_setup.py")))
+            if c.terminado is None:
+                _am, _de = _rutas_scripts(c.slug)
+                await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
+            _tras_mover()
+            mostrar_combate()
+            page.update()
+
+        def _capturar():
+            if c.capturar():
+                PG.registrar_minijefe(estado.prog, c.slug, True, 0, 0, 1, 1)
+                if c.slug not in estado.prog["sombra"]:
+                    estado.prog["sombra"].append(c.slug)
+                PG.guardar(estado.prog)
+                log_sync(f"[SOMBRA] {meta(c.slug)['alias']} purificado en combate.")
+            else:
+                log_sync(c.bitacora[-1] if c.bitacora else "[CAPTURAR] Falló.")
+            mostrar_combate()
+            page.update()
+
+        mostrar(vista_combate(
+            c.slug, c.heroe_hp, c.enemigo_hp, c.bitacora, c.terminado,
+            on_atacar=lambda: page.run_task(_atacar),
+            on_analizar=lambda: page.run_task(_analizar),
+            on_parchar=lambda: page.run_task(_parchar),
+            on_capturar=_capturar,
+        ))
+
+    def acc_luchar(e):
+        if estado.modulo_idx is None or estado.ejecutando:
+            return
+        slug = estado.slug_por_idx[estado.modulo_idx]
+        estado.combate = Combate(slug)
+        c = estado.combate
+        c.bitacora.append(
+            f"[{meta(slug)['alias']}] {meta(slug)['salon']}. "
+            "El bicho emerge en la arena...")
+
+        async def _emerger():
+            import asyncio as _aio
+            if not is_lab_ready():
+                await _aio.to_thread(
+                    _sync_run, os.path.join(_DIR_RAIZ, "core", "lab_setup.py"))
+            _am, _de = _rutas_scripts(slug)
+            await _aio.to_thread(_sync_run, _am)
+            for linea in c.bitacora:
+                log_sync(linea)
+            mostrar_combate()
+            page.update()
+
+        page.run_task(_emerger)
 
     def on_modulo_click(e):
         mostrar_modulo(e.control.data)
@@ -420,6 +532,7 @@ async def main(page: ft.Page):
         boton_accion("  Setup  ", T.AMARILLO, acc_setup),
         boton_accion(" Simular ", T.ROJO, acc_simular),
         boton_accion(" Defensa ", T.AZUL, acc_defensa),
+        boton_accion(" Luchar  ", T.CYAN, acc_luchar),
         boton_accion("  Clean  ", T.VERDE, acc_clean),
         boton_accion("  Guía   ", T.MORADO, acc_guia),
         boton_accion("  Juego  ", T.NARANJA, acc_juego),
