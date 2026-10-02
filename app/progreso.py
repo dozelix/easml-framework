@@ -21,6 +21,8 @@ def _ruta() -> str:
 
 def vacio() -> dict:
     return {
+        "heroe": "",        # nombre elegido por el jugador
+        "tutorial_visto": False,
         "escenas": {},      # slug -> ["setup", "simular", "defensa"]
         "minijefe": {},     # slug -> {"ok": bool, "cien": bool}
         "megajefe": {},     # mundo CIA -> bool
@@ -84,11 +86,9 @@ def registrar_megajefe(p: dict, mundo: str) -> None:
     p["megajefe"][mundo] = True
 
 
-def porcentaje_mundo(p: dict, slugs_mundo: list[str]) -> int:
-    if not slugs_mundo:
-        return 0
-    ok = sum(1 for s in slugs_mundo if p["minijefe"].get(s, {}).get("ok"))
-    return round(ok / len(slugs_mundo) * 100)
+def es_primera_vez(p: dict) -> bool:
+    """True si nunca se vio el tutorial ni se venció nada."""
+    return not p.get("tutorial_visto", False) and not p.get("minijefe")
 
 
 def siguiente_capitulo(p: dict, campana: list[str]) -> str:

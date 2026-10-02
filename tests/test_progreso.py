@@ -36,6 +36,20 @@ class ProgresoTests(unittest.TestCase):
         p2 = PG.cargar()
         self.assertEqual(p2["minijefe"]["trojan"]["cien"], True)
 
+    def test_primera_vez_y_heroe(self):
+        from app import progreso as PG
+        p = PG.cargar()
+        self.assertTrue(PG.es_primera_vez(p))
+        self.assertEqual(p["heroe"], "")
+        p["heroe"] = "NOVA"
+        p["tutorial_visto"] = True
+        PG.guardar(p)
+        self.assertFalse(PG.es_primera_vez(PG.cargar()))
+
+    def test_recursos_completos(self):
+        from app.recursos import verificar
+        self.assertEqual(verificar(), [])
+
     def test_reset_no_toca_arena(self):
         from app import progreso as PG
         p = PG.cargar()

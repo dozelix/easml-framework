@@ -9,6 +9,7 @@ El runner real (subprocess) lo inyecta la GUI; los tests usan stubs.
 
 import os
 import random
+import shutil
 import sys
 
 _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -63,7 +64,9 @@ class Combate:
         self.enemigo_hp = 100
         self.turno = 0
         self.analizado = False
-        self.terminado: str | None = None  # None | "victoria" | "derrota" | "captura" | "huida"
+        self.guardias_seguidas = 0
+        self.protegido = False
+        self.terminado: str | None = None  # None | "captura" | "derrota"
         self.bitacora: list[str] = []
 
     @property
@@ -76,6 +79,7 @@ class Combate:
 
     def atacar(self, ejecutar_defensa) -> int:
         """Ejecuta la defensa real. Daño 25 si restaura, 5 si no."""
+        self.guardias_seguidas = 0
         _s0, _t = medir_sanos()
         sanos_antes = _s0
         ok = ejecutar_defensa()
@@ -92,6 +96,7 @@ class Combate:
 
     def analizar(self) -> str:
         """Escanea la arena (gratis 1 vez por combate con bonus)."""
+        self.guardias_seguidas = 0
         sanos, total = medir_sanos()
         bonus = ""
         if not self.analizado:
@@ -105,37 +110,63 @@ class Combate:
 
     def parchar(self, ejecutar_setup) -> int:
         """Re-despliega samples sanos. Cura héroe, -10 al enemigo."""
+        self.guardias_seguidas = 0
         ejecutar_setup()
         self.enemigo_hp = max(0, self.enemigo_hp - 10)
         self._registrar("[PARCHEAR] Arena restaurada desde samples: -10 HP rival.")
         self._chequear_fin()
         return self.heroe_hp
 
-    def capturar(self) -> bool:
-        """Solo con rival <20% HP y héroe >=50%. Éxito 70%."""
-        if self.enemigo_hp >= 20 or self.heroe_hp < 50:
-            self._registrar("[CAPTURAR] Falló: debilítalo bajo 20% y mantén tu integridad sobre 50%.")
+    def guardia(self) -> bool:
+        """Protección con fallo creciente si se abusa (100/50/25...%)."""
+        prob = 1.0 / (2 ** self.guardias_seguidas)
+        self.guardias_seguidas += 1
+        if self.rng.random() >= prob:
+            self._registrar("[GUARDIA] ¡La guardia falló! Sin protección.")
             return False
-        exito = self.rng.random() < 0.70
-        if exito:
-            self.terminado = "captura"
-            self._registrar("[CAPTURAR] Purificado: el bicho se une como SOMBRA.")
-        else:
-            self._registrar("[CAPTURAR] Se resistió... sigue debilitándolo.")
-        return exito
+        self.protegido = True
+        self._registrar("[GUARDIA] Cubierto: el próximo golpe duele la mitad.")
+        return True
 
     def turno_enemigo(self, ejecutar_amenaza) -> None:
-        """El bicho contraataca con su script real."""
+        """El bicho contraataca con su script real (mitad si hay guardia)."""
         if self.terminado:
             return
         self.turno += 1
+        sanos_antes, _t = medir_sanos()
         ejecutar_amenaza()
-        self._registrar(f"[TURNO {self.turno}] El bicho ataca la arena...")
+        sanos_despues, _t = medir_sanos()
+        if self.protegido:
+            self.protegido = False
+            danados = [f for f in self._danados_entre(sanos_antes, sanos_despues)]
+            for nombre in danados[::2]:
+                self._restaurar(nombre)
+            self._registrar(f"[TURNO {self.turno}] Guardia: golpe reducido "
+                            f"({len(danados[::2])} archivos bloqueados).")
+        else:
+            self._registrar(f"[TURNO {self.turno}] El bicho ataca la arena...")
         if self.heroe_hp <= 0:
             self.terminado = "derrota"
             self._registrar("[DERROTA] Arena totalmente corrupta. Resetea y reintenta.")
 
+    def _danados_entre(self, _antes: int, _despues: int) -> list[str]:
+        """Archivos que dejaron de coincidir con su sample (daño del turno)."""
+        rutas = resolve_lab_paths()
+        danados = []
+        for nombre in GENERATOR_MAP:
+            arena = os.path.join(rutas["lab_dir"], nombre)
+            muestra = os.path.join(rutas["samples_dir"], nombre)
+            if (os.path.isfile(arena) and os.path.isfile(muestra)
+                    and hash_file(arena) != hash_file(muestra)):
+                danados.append(nombre)
+        return sorted(danados)
+
+    def _restaurar(self, nombre: str) -> None:
+        rutas = resolve_lab_paths()
+        shutil.copy2(os.path.join(rutas["samples_dir"], nombre),
+                     os.path.join(rutas["lab_dir"], nombre))
+
     def _chequear_fin(self) -> None:
         if self.enemigo_hp <= 0 and not self.terminado:
-            self.terminado = "victoria"
-            self._registrar("[VICTORIA] Bicho neutralizado. Reclama tu minijefe en JUEGO.")
+            self.terminado = "captura"
+            self._registrar("[CAPTURA] Rival a 0%: purificado como SOMBRA.")

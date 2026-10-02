@@ -9,9 +9,9 @@ import sys
 
 import flet as ft
 
+from app.combate import DEBILIDADES
 from app.config import (
     MODULOS,
-    defensa_arch,
     es_core,
     meta,
     modulos_por_mundo,
@@ -55,60 +55,67 @@ def vista_dashboard() -> ft.Control:
         modulos_por_mundo(), "trojan")
 
 
-def vista_tutorial() -> ft.Control:
+def vista_tutorial(on_entendido=None) -> ft.Control:
     pasos = [
-        ("[1] Setup   — Genera archivos de prueba", T.AMARILLO),
-        ("[2] Simular — Ejecuta la simulación del módulo", T.ROJO),
-        ("[3] Defensa — Mitiga la amenaza y restaura archivos", T.AZUL),
-        ("[4] Clean   — Limpia consola y entorno", T.VERDE),
+        ("[1] LUCHAR  — Pelea por turnos: Ataque, Analizar, Parchar, Guardia", T.CYAN),
+        ("[2] MINIJEFE — Quiz del capítulo; al 100% el bicho se vuelve SOMBRA", T.NARANJA),
+        ("[3] ARCHIVO — Lore del bicho: era, salón y debilidad", T.MORADO),
     ]
-    flujo = [titulo("TUTORIAL RÁPIDO"),
-             tarjeta([ft.Text("Bienvenido! Este laboratorio te permite ejecutar 14 tipos "
-                              "de amenazas de forma segura en un entorno aislado.",
+    flujo = [titulo("CÓMO JUGAR"),
+             tarjeta([ft.Text("Eres un analista en la Red. Todo lo que rompas "
+                              "vive en directorio_pruebas/ y se restaura solo. "
+                              "Juega sin miedo.",
                               color=T.TEXTO, font_family=T.FUENTE)]),
-             ft.Text("FLUJO DE TRABAJO", weight=ft.FontWeight.BOLD,
+             ft.Text("FLUJO DE CAPÍTULO", weight=ft.FontWeight.BOLD,
                      color=T.TEXTO, font_family=T.FUENTE)]
     for paso, color in pasos:
         flujo.append(tarjeta([ft.Text(paso, color=color,
                                       weight=ft.FontWeight.BOLD,
                                       font_family=T.FUENTE)]))
-    flujo.append(ft.Text("Los módulos están ordenados por control CIS (2 → 15) para "
-                         "facilitar el aprendizaje progresivo de los estándares.",
+    flujo.append(ft.Text("Lleva al rival a 0% para purificarlo. Si caes, la arena "
+                         "se resetea en CONFIGURACIÓN y reintentas.",
                          color=T.TEXTO_DIM, size=12, font_family=T.FUENTE))
+    if on_entendido is not None:
+        flujo.append(ft.Button("ENTENDIDO, A JUGAR", bgcolor=T.ACCENT,
+                               color=T.TEXTO_SOBRE_NEON,
+                               on_click=lambda e: on_entendido()))
     return ft.Column(flujo, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
 
 
-def vista_modulo(index: int) -> ft.Control:
+def vista_modulo(index: int, prog: dict | None = None) -> ft.Control:
+    """Ficha de juego del capítulo (sin jerga de archivos internos)."""
     if index < 0 or index >= len(MODULOS):
         return ft.Text("Selecciona un módulo de la lista.",
                        color=T.TEXTO_DIM, font_family=T.FUENTE)
 
-    num, nombre, script, cia, _cis, url_ref = MODULOS[index]
-    arch_defensa = defensa_arch(nombre).removesuffix(".py")
-    dir_modulo = os.path.join(base_recursos(), "modulos", nombre)
+    _num, nombre, _script, cia, _cis, url_ref = MODULOS[index]
+    m = meta(nombre)
+    p = prog or {}
 
-    sim_ok = os.path.isfile(os.path.join(dir_modulo, f"{script}.py"))
-    def_ok = os.path.isfile(os.path.join(dir_modulo, f"{arch_defensa}.py"))
-    md_ok = os.path.isfile(os.path.join(dir_modulo, "README.md"))
-
-    bloques: list = [titulo("INFORMACIÓN DEL MÓDULO")]
+    bloques: list = [titulo(f"{m['alias']} ({nombre})")]
     bloques.append(tarjeta([
         ft.Text("PILAR CIA", color=T.TEXTO_DIM, size=12, font_family=T.FUENTE),
         ft.Text(cia, color=T.COLOR_CIA.get(cia, T.TEXTO), size=16,
                 weight=ft.FontWeight.BOLD, font_family=T.FUENTE),
     ]))
-    bloques.append(ft.Text("ARCHIVOS DEL MÓDULO", weight=ft.FontWeight.BOLD, color=T.TEXTO,
-                           font_family=T.FUENTE))
-    for etiqueta, existe in [
-        (f"Simulación: {script}.py", sim_ok),
-        (f"Defensa:    {arch_defensa}.py", def_ok),
-        ("Guía (README.md)", md_ok),
-    ]:
-        marca = "[OK]" if existe else "[--]"
-        bloques.append(tarjeta([ft.Text(f"{marca}  {etiqueta}",
-                                        color=T.VERDE if existe else T.ROJO,
-                                        weight=ft.FontWeight.BOLD,
-                                        font_family=T.FUENTE)]))
+    bloques.append(tarjeta([
+        ft.Text(f"ERA {m['era'].upper()} · SALÓN {m['salon'].upper()}",
+                color=T.TEXTO_DIM, size=12, font_family=T.FUENTE),
+        ft.Text(f"Debilidad: {DEBILIDADES.get(nombre, 'Observa la arena.')}",
+                color=T.TEXTO, font_family=T.FUENTE),
+    ]))
+    mj = p.get("minijefe", {}).get(nombre, {})
+    if nombre in p.get("sombra", []):
+        estado_txt, color = "SOMBRA reclutada", T.MORADO
+    elif mj.get("ok"):
+        estado_txt, color = "Jefe vencido", T.VERDE
+    elif not es_core(nombre) and not p.get("dlc", False):
+        estado_txt, color = "Bloqueado (DLC en CONFIGURACIÓN)", T.TEXTO_DIM
+    else:
+        estado_txt, color = "Sin vencer", T.TEXTO
+    bloques.append(tarjeta([ft.Text(estado_txt, color=color,
+                                    weight=ft.FontWeight.BOLD,
+                                    font_family=T.FUENTE)]))
     if url_ref:
         bloques.append(ft.Text("REFERENCIA", weight=ft.FontWeight.BOLD, color=T.TEXTO,
                                font_family=T.FUENTE))
@@ -268,12 +275,19 @@ def vista_jefes(p: dict, mundos: dict, on_rejugar=None,
 
 
 def vista_ajustes(p: dict, rutas: dict, on_dlc=None, on_anim=None,
+                  on_nombre=None,
                   on_reset_arena=None, on_reset_progreso=None) -> ft.Control:
-    """Ajustes: DLC, animaciones, resets separados, rutas activas."""
+    """Ajustes: héroe, DLC, animaciones, resets separados, rutas activas."""
     bloques: list = [titulo("AJUSTES")]
     bloques.append(
         ft.Container(
             content=ft.Column([
+                ft.TextField(
+                    label="Nombre del héroe", value=p.get("heroe", ""),
+                    color=T.TEXTO, bgcolor=T.BG_PANEL,
+                    border_color=T.BORDE, border_radius=6,
+                    on_submit=lambda e: on_nombre(e.control.value.strip().upper()[:16]) if on_nombre else None,
+                ),
                 ft.Row([
                     ft.Text("Módulos avanzados (DLC)", font_family=T.FUENTE,
                             color=T.TEXTO, expand=True),
@@ -318,9 +332,10 @@ def vista_ajustes(p: dict, rutas: dict, on_dlc=None, on_anim=None,
 
 def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
                   bitacora: list[str], terminado: str | None,
+                  heroe: str = "HÉROE",
                   on_atacar=None, on_analizar=None,
-                  on_parchar=None, on_capturar=None) -> ft.Control:
-    """Pantalla de combate por turnos (barras HP + 4 acciones)."""
+                  on_parchar=None, on_guardia=None) -> ft.Control:
+    """Pantalla de combate por turnos (barras HP + 4 movimientos)."""
     bloques: list = [titulo(f"COMBATE: {meta(slug)['alias']} ({slug})")]
 
     def _barra(valor: int, color: str) -> ft.ProgressBar:
@@ -331,7 +346,7 @@ def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
         ft.Text(f"RIVAL — {enemigo_hp}%", color=T.ROJO, size=12,
                 font_family=T.FUENTE),
         _barra(enemigo_hp, T.ROJO),
-        ft.Text(f"HÉROE (integridad arena) — {heroe_hp}%", color=T.VERDE,
+        ft.Text(f"{heroe} (integridad arena) — {heroe_hp}%", color=T.VERDE,
                 size=12, font_family=T.FUENTE),
         _barra(heroe_hp, T.VERDE),
     ]))
@@ -347,11 +362,14 @@ def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
             ft.Button("PARCHEAR", color=T.VERDE, bgcolor=T.BG_PANEL,
                       disabled=fin,
                       on_click=lambda e: on_parchar() if on_parchar else None),
-            ft.Button("CAPTURAR", color=T.MORADO, bgcolor=T.BG_PANEL,
-                      disabled=fin or enemigo_hp >= 20,
-                      on_click=lambda e: on_capturar() if on_capturar else None),
+            ft.Button("GUARDIA", color=T.AMARILLO, bgcolor=T.BG_PANEL,
+                      disabled=fin,
+                      on_click=lambda e: on_guardia() if on_guardia else None),
         ], spacing=6)
     )
+    bloques.append(ft.Text("Llévalo a 0% para purificarlo como SOMBRA.",
+                           color=T.TEXTO_DIM, size=T.TAM_MINIMO,
+                           font_family=T.FUENTE))
     lineas = [ft.Text(l, size=12, font_family=T.FUENTE,
                       color=T.TEXTO_CONSOLA) for l in bitacora[-8:]]
     bloques.append(
@@ -363,11 +381,13 @@ def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
 
 
 def vista_portada(siguiente: str, progreso: dict | None = None,
+                  primera: bool = False, alerta: str | None = None,
                   on_jugar=None, on_historias=None, on_avalancha=None,
                   on_config=None, on_como=None, on_salir=None) -> ft.Control:
     """Pantalla título: fondo de red + 6 botones (máx 2 clicks a todo)."""
     alias = meta(siguiente)["alias"]
     glow = (progreso or {}).get("anim", True)
+    etiqueta_jugar = "COMENZAR AVENTURA" if primera else f"JUGAR: {alias}"
 
     def _btn(texto, color, fondo, handler, expand=False):
         return ft.Button(texto, color=color, bgcolor=fondo,
@@ -396,8 +416,9 @@ def vista_portada(siguiente: str, progreso: dict | None = None,
                 shadow=T.brillo(T.CYAN, glow),
             ),
             ft.Column([
-                _btn(f"JUGAR: {alias}", T.TEXTO_SOBRE_NEON, T.ACCENT, on_jugar),
-                ft.Text(f"continúa en {siguiente}", color=T.TEXTO_DIM,
+                _btn(etiqueta_jugar, T.TEXTO_SOBRE_NEON, T.ACCENT, on_jugar),
+                ft.Text(f"continúa en {siguiente}" if not primera else "tu primera misión te espera",
+                        color=T.TEXTO_DIM,
                         size=T.TAM_MINIMO, font_family=T.FUENTE),
             ], spacing=4, expand=True),
         ], spacing=16, alignment=ft.MainAxisAlignment.CENTER),
@@ -419,6 +440,11 @@ def vista_portada(siguiente: str, progreso: dict | None = None,
                 text_align=ft.TextAlign.CENTER),
     ], spacing=6, expand=True,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+
+    if alerta:
+        menu.controls.insert(-2, ft.Text(alerta, color=T.ROJO, size=T.TAM_MINIMO,
+                                         font_family=T.FUENTE,
+                                         text_align=ft.TextAlign.CENTER))
 
     return ft.Container(
         expand=True,
