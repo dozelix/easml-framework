@@ -19,7 +19,7 @@ sys.path.insert(0, ROOT)
 
 from modulos.common.utils import (
     banner, color, safe_print, log, LOG_LINES,
-    write_log, hash_file, traverse_lab_files, find_lab_dir,
+    write_log, hash_file, traverse_lab_files, find_lab_dir, find_logs_dir,
 )
 
 # ── Ruta del directorio de pruebas ──
@@ -211,7 +211,7 @@ def limpiar_troyano(hallazgos_marcadores, hallazgos_nombres):
             safe_print(color(f"  [-] Error al eliminar {fpath}: {e}", 'red'))
 
     # Eliminar logs en lab_data/logs/
-    log_dir = os.path.join(find_lab_dir(ROOT), '..', 'logs')
+    log_dir = find_logs_dir(ROOT)
     sim_log = os.path.join(log_dir, "05_trojan.log")
     if os.path.exists(sim_log):
         os.remove(sim_log)

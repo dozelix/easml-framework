@@ -7,6 +7,8 @@ import shutil
 from typing import Iterable, Optional
 
 # Importación relativa para resolver rutas del laboratorio
+from .paths import find_lab_data_dir as _find_lab_data_dir
+from .paths import find_logs_dir as _find_logs_dir
 from .paths import resolve_lab_paths
 
 # Paleta de colores ANSI para la consola de la TUI
@@ -31,6 +33,16 @@ def find_lab_dir(start=None):
     Se apoya en resolve_lab_paths para obtener direccionamiento dinámico.
     """
     return resolve_lab_paths(start)['lab_dir']
+
+
+def find_lab_data_dir(start=None):
+    """Ruta de lab_data/ (persistente). Atajo a paths.find_lab_data_dir."""
+    return _find_lab_data_dir(start)
+
+
+def find_logs_dir(start=None):
+    """Ruta de lab_data/logs/. Única fuente para logs."""
+    return _find_logs_dir(start)
 
 
 def log(msg):
@@ -140,10 +152,8 @@ def write_log(modulo_name, log_lines, filename=None):
     la ruta que se pase en 'filename'. Solo se usa el nombre base
     del archivo para determinar el nombre del log.
     """
-    # Encontrar el directorio base de lab_data dinámicamente
-    lab_dir = find_lab_dir()
-    lab_data_root = os.path.dirname(lab_dir)
-    dir_logs = os.path.join(lab_data_root, 'logs')
+    # Resolver el destino canónico lab_data/logs/ (no repo_root/logs/).
+    dir_logs = _find_logs_dir()
     os.makedirs(dir_logs, exist_ok=True)
 
     # Extraer solo el nombre base del archivo (sin ruta)

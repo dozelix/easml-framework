@@ -17,14 +17,15 @@ sys.path.insert(0, _DIR_RAIZ)
 
 from core.base_module import BaseDefense
 from modulos.common.utils import (
-    log, safe_print, color, banner, hash_file, cleanup, write_log, find_lab_dir
+    log, safe_print, color, banner, hash_file, cleanup, write_log, find_lab_dir,
+    find_logs_dir,
 )
 
 class RansomwareDefense(BaseDefense):
     def __init__(self):
         self.dir_simulacion = find_lab_dir(_DIR_RAIZ)
-        # Forzar que el log vaya estrictamente a lab_data/logs/
-        self.dir_logs = os.path.join(os.path.dirname(self.dir_simulacion), 'logs')
+        # Los logs van estrictamente a lab_data/logs/ (fuente única).
+        self.dir_logs = find_logs_dir(_DIR_RAIZ)
         self.extension_locked = '.locked'
         self.nota_rescate = 'README_RESCATE.txt'
 

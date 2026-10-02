@@ -18,7 +18,8 @@ sys.path.insert(0, _DIR_RAIZ)
 from core.base_module import BaseThreat
 from modulos.common.utils import (
     log, safe_print, color, banner, traverse_lab_files,
-    hash_file, cleanup, write_log, is_lab_ready, LOG_LINES, find_lab_dir
+    hash_file, cleanup, write_log, is_lab_ready, LOG_LINES, find_lab_dir,
+    find_logs_dir,
 )
 
 class RansomwareThreat(BaseThreat):
@@ -46,8 +47,8 @@ class RansomwareThreat(BaseThreat):
         self._paso_fase(4, "RESCATE — Creando nota")
         self._crear_nota_rescate()
         
-        # CORRECCIÓN: Forzar ruta absoluta al subdirectorio logs/
-        dir_logs = os.path.join(os.path.dirname(self.dir_simulacion), 'logs')
+        # CORRECCIÓN: logs siempre en lab_data/logs/ (fuente única).
+        dir_logs = find_logs_dir(_DIR_RAIZ)
         os.makedirs(dir_logs, exist_ok=True)
         
         write_log(os.path.join(dir_logs, "ransomware_sim"), list(LOG_LINES))

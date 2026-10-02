@@ -20,7 +20,7 @@ sys.path.insert(0, ROOT)
 
 from modulos.common.utils import (
     banner, color, safe_print, log, LOG_LINES,
-    write_log, hash_file, traverse_lab_files, find_lab_dir,
+    write_log, hash_file, traverse_lab_files, find_lab_dir, find_logs_dir,
 )
 
 # ── Ruta del directorio de pruebas ──
@@ -262,7 +262,7 @@ def limpiar_backdoor(hallazgos_marcadores, hallazgos_c2, hallazgos_persistencia)
             safe_print(color(f"  [-] Error: {fpath}: {e}", 'red'))
 
     # Eliminar logs en lab_data/logs/
-    log_dir = os.path.join(find_lab_dir(ROOT), '..', 'logs')
+    log_dir = find_logs_dir(ROOT)
     for log_name in ['06_backdoor.log', '06_backdoor_defensa.log']:
         log_path = os.path.join(log_dir, log_name)
         if os.path.exists(log_path):
