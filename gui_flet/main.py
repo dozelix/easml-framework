@@ -43,7 +43,7 @@ _DIR_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _ASSETS = os.path.join(_DIR_RAIZ, "assets")
 
 
-class Estado:
+class EstadoApp:
     def __init__(self):
         self.vista = "dashboard"  # dashboard | mapa | tutorial | modulo | jefes | ajustes
         self.modulo_idx: int | None = None
@@ -65,7 +65,7 @@ async def main(page: ft.Page):
     page.window.min_width = 960
     page.window.min_height = 600
 
-    estado = Estado()
+    estado = EstadoApp()
 
     # ── Consola ──────────────────────────────────────────────────────────
     consola = ft.ListView(auto_scroll=True, spacing=2, padding=8, height=162)
@@ -141,7 +141,7 @@ async def main(page: ft.Page):
 
     def acc_clean(e):
         consola.controls.clear()
-        log_sync("[CLEAN] Consola limpiada.")
+        log_sync("[CONSOLA] Limpiada (la arena se resetea en AJUSTES).")
         mostrar_actual()
         page.update()
 
@@ -222,6 +222,12 @@ async def main(page: ft.Page):
         _siguiente(cola)
 
     # ── Navegación ───────────────────────────────────────────────────────
+    def jugar_siguiente():
+        """Un solo helper JUGAR (portada + sidebar, sin duplicar)."""
+        mostrar_modulo(estado.idx_por_slug[
+            PG.siguiente_capitulo(estado.prog, estado.campana)])
+        page.update()
+
     def mostrar_dashboard():
         estado.vista = "dashboard"
         estado.modulo_idx = None
@@ -469,7 +475,7 @@ async def main(page: ft.Page):
         dlc = estado.prog.get("dlc", False)
         for mundo, slugs in estado.mundos.items():
             lista_modulos.controls.append(
-                ft.Text(mundo.upper(), color=T.TEXTO_DIM, size=11,
+                ft.Text(mundo.upper(), color=T.TEXTO_DIM, size=T.TAM_MINIMO,
                         font_family=T.FUENTE))
             for slug in slugs:
                 idx = estado.idx_por_slug[slug]
@@ -482,7 +488,7 @@ async def main(page: ft.Page):
                     title=ft.Text(f"{marca}{meta(slug)['alias']}",
                                   font_family=T.FUENTE, size=13,
                                   color=T.TEXTO_DIM if bloqueado else T.TEXTO),
-                    subtitle=ft.Text(slug, size=11, color=T.TEXTO_DIM,
+                    subtitle=ft.Text(slug, size=T.TAM_MINIMO, color=T.TEXTO_DIM,
                                      font_family=T.FUENTE),
                     data=idx,
                     disabled=bloqueado,
@@ -502,10 +508,7 @@ async def main(page: ft.Page):
                           lambda e: (mostrar_dashboard(), page.update())),
             ft.Divider(height=8, color="transparent"),
             boton_sidebar("JUGAR", T.VERDE,
-                          lambda e: (mostrar_modulo(estado.idx_por_slug[
-                              PG.siguiente_capitulo(estado.prog,
-                                                    estado.campana)]),
-                                     page.update())),
+                          lambda e: (entrar(), jugar_siguiente())),
             ft.Divider(height=8, color="transparent"),
             ft.Text("HISTORIAS", color=T.TEXTO_DIM, size=12,
                     font_family=T.FUENTE),
@@ -536,7 +539,7 @@ async def main(page: ft.Page):
         boton_accion(" Simular ", T.ROJO, acc_simular),
         boton_accion(" Defensa ", T.AZUL, acc_defensa),
         boton_accion(" Luchar  ", T.CYAN, acc_luchar),
-        boton_accion("  Clean  ", T.VERDE, acc_clean),
+        boton_accion("Consola ", T.VERDE, acc_clean),
         boton_accion("  Guía   ", T.MORADO, acc_guia),
         boton_accion("  Juego  ", T.NARANJA, acc_juego),
     ], spacing=6)
@@ -570,10 +573,14 @@ async def main(page: ft.Page):
         estado.modulo_idx = None
         portada.content = vista_portada(
             PG.siguiente_capitulo(estado.prog, estado.campana),
-            on_jugar=lambda: (entrar(), mostrar_modulo(estado.idx_por_slug[
-                PG.siguiente_capitulo(estado.prog, estado.campana)]),
-                page.update()),
+            estado.prog,
+            on_jugar=jugar_siguiente,
+            on_historias=lambda: (entrar(), mostrar_dashboard(),
+                                  page.update()),
+            on_avalancha=lambda: (entrar(), mostrar_jefes(), page.update()),
+            on_config=lambda: (entrar(), mostrar_ajustes(), page.update()),
             on_como=lambda: (entrar(), mostrar_tutorial(), page.update()),
+            on_salir=lambda: page.run_task(page.window.close),
         )
         portada.visible = True
         lab.visible = False

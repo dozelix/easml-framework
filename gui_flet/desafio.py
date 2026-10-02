@@ -1,6 +1,6 @@
 """Juego de desafíos para la GUI Flet.
 
-ControladorQuiz es lógica pura (misma máquina de estados que gui/desafio.py:
+QuizCapitulo es lógica pura (misma máquina de estados que gui/desafio.py:
 selector → pregunta → responder → avanzar → finalizar, aprobado con 60%).
 construir_dialogo() monta el AlertDialog que la vista principal muestra.
 """
@@ -21,7 +21,7 @@ from gui_flet import theme as T
 DEMORA_AVANCE_SEGUNDOS = 2
 
 
-class ControladorQuiz:
+class QuizCapitulo:
     """Estado del juego, sin dependencia de widgets (testeable)."""
 
     def __init__(self, modulo_key: str):
@@ -103,7 +103,7 @@ class ControladorQuiz:
         }
 
 
-def _texto_resultado(ctrl: ControladorQuiz) -> ft.Text:
+def _texto_resultado(ctrl: QuizCapitulo) -> ft.Text:
     return ft.Text("", color=T.TEXTO, font_family=T.FUENTE)
 
 
@@ -115,7 +115,7 @@ def construir_dialogo(page: ft.Page, modulo_key: str,
     dificultad_fija salta el selector (ej: panteón en difícil).
     on_finalizar(modulo_key, datos) se llama al mostrar el resultado.
     """
-    ctrl = ControladorQuiz(modulo_key)
+    ctrl = QuizCapitulo(modulo_key)
     if not ctrl.desafios:
         return ft.AlertDialog(
             modal=True,

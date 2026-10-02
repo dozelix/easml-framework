@@ -24,7 +24,7 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if RAIZ not in sys.path:
     sys.path.insert(0, RAIZ)
 
-from app.config import MODULOS, NOMBRES_DEFENSA  # noqa: E402
+from app.config import MODULOS, NOMBRES_DEFENSA, defensa_arch  # noqa: E402
 
 DIR_MODULOS = os.path.join(RAIZ, "modulos")
 DIR_WEB = os.path.join(RAIZ, "web")
@@ -34,9 +34,9 @@ PATH_JSON = os.path.join(DIR_DATA, "modulos.json")
 PATH_README_RAIZ = os.path.join(RAIZ, "README.md")
 
 
-def nombre_archivo_defensa(num: str) -> str:
-    """Replica la convención de gui_flet (NOMBRES_DEFENSA en minúsculas)."""
-    return NOMBRES_DEFENSA.get(num, "defensa").lower().replace(" ", "_") + ".py"
+def nombre_archivo_defensa(slug: str) -> str:
+    """Fuente única: app.config.defensa_arch (slug, no número CIS)."""
+    return defensa_arch(slug)
 
 
 def leer_readme(nombre: str) -> str | None:
@@ -56,7 +56,7 @@ def construir_entradas() -> list[dict]:
             "num": num,
             "nombre": nombre,
             "script": script + ".py",
-            "defensa": nombre_archivo_defensa(num),
+            "defensa": nombre_archivo_defensa(nombre),
             "defensa_nombre": NOMBRES_DEFENSA.get(num, "defensa"),
             "cia": cia,
             "cis": cis,

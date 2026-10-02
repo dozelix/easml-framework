@@ -6,11 +6,16 @@ ft.Markdown) en vez de guia.html, así la GUI nueva no depende del HTML.
 
 import os
 import sys
-from collections import Counter
 
 import flet as ft
 
-from app.config import MODULOS, defensa_arch, es_core, meta
+from app.config import (
+    MODULOS,
+    defensa_arch,
+    es_core,
+    meta,
+    modulos_por_mundo,
+)
 
 from gui_flet import theme as T
 
@@ -18,7 +23,7 @@ _RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _RAIZ not in sys.path:
     sys.path.insert(0, _RAIZ)
 
-from modulos.common.paths import base_recursos, resolve_lab_paths
+from modulos.common.paths import base_recursos
 
 
 def tarjeta(controles, expand=False) -> ft.Container:
@@ -44,56 +49,10 @@ def leer_readme_modulo(index: int) -> str | None:
 
 
 def vista_dashboard() -> ft.Control:
-    rutas = resolve_lab_paths()
-    dir_lab = rutas['lab_dir']
-    dir_logs = rutas['logs_dir']
-
-    archivos = len([f for f in os.listdir(dir_lab)
-                    if os.path.isfile(os.path.join(dir_lab, f))]) if os.path.isdir(dir_lab) else 0
-    logs = len([f for f in os.listdir(dir_logs)
-                if f.endswith(".log")]) if os.path.isdir(dir_logs) else 0
-    contador_cia = Counter(m[3] for m in MODULOS)
-    activo = archivos > 0
-
-    stats = []
-    for tit, val, color in [
-        ("ESTADO", "ACTIVO" if activo else "VACÍO", T.VERDE if activo else T.ROJO),
-        ("ARCHIVOS", str(archivos), T.TEXTO),
-        ("LOGS", str(logs), T.TEXTO),
-    ]:
-        stats.append(
-            ft.Container(
-                content=ft.Column([
-                    ft.Text(tit, color=T.TEXTO_DIM, size=12, font_family=T.FUENTE),
-                    ft.Text(val, color=color, size=28,
-                            weight=ft.FontWeight.BOLD, font_family=T.FUENTE),
-                ], spacing=4, tight=True),
-                bgcolor=T.BG_CARD, padding=14, border_radius=8, expand=True,
-            )
-        )
-
-    cias = []
-    for cia_nombre in ("Confidencialidad", "Integridad", "Disponibilidad"):
-        cias.append(
-            ft.Container(
-                content=ft.Column([
-                    ft.Text(cia_nombre, color=T.TEXTO_DIM, size=12,
-                            font_family=T.FUENTE),
-                    ft.Text(str(contador_cia.get(cia_nombre, 0)), size=28,
-                            weight=ft.FontWeight.BOLD, font_family=T.FUENTE),
-                ], spacing=4, tight=True),
-                bgcolor=T.BG_CARD, padding=14, border_radius=8, expand=True,
-            )
-        )
-
-    return ft.Column([
-        titulo("DASHBOARD"),
-        ft.Row(stats, spacing=8),
-        ft.Divider(height=16, color="transparent"),
-        ft.Text("MÓDULOS POR PILAR CIA", weight=ft.FontWeight.BOLD,
-                font_family=T.FUENTE),
-        ft.Row(cias, spacing=8),
-    ], spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
+    """Compat: el antiguo dashboard hoy ES el menú (una sola fuente)."""
+    return vista_menu(
+        {"minijefe": {}, "sombra": [], "dlc": False},
+        modulos_por_mundo(), "trojan")
 
 
 def vista_tutorial() -> ft.Control:
@@ -402,37 +361,68 @@ def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
     return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
 
 
-def vista_portada(siguiente: str, on_jugar=None,
-                  on_como=None) -> ft.Control:
-    """Pantalla título (estilo menú principal): grande, sin chrome de lab."""
+def vista_portada(siguiente: str, progreso: dict | None = None,
+                  on_jugar=None, on_historias=None, on_avalancha=None,
+                  on_config=None, on_como=None, on_salir=None) -> ft.Control:
+    """Pantalla título: fondo de red + 6 botones (máx 2 clicks a todo)."""
     alias = meta(siguiente)["alias"]
+    glow = (progreso or {}).get("anim", True)
+
+    def _btn(texto, color, fondo, handler, expand=False):
+        return ft.Button(texto, color=color, bgcolor=fondo,
+                         expand=expand,
+                         on_click=lambda e: handler() if handler else None)
+
+    menu = ft.Column([
+        ft.Container(expand=True),
+        ft.Text("EASML", size=72, weight=ft.FontWeight.BOLD,
+                color=T.ACCENT, font_family=T.FUENTE,
+                text_align=ft.TextAlign.CENTER),
+        ft.Text("LABORATORIO-JUEGO EDUCATIVO DE CIBERSEGURIDAD",
+                color=T.TEXTO, size=14, font_family=T.FUENTE,
+                text_align=ft.TextAlign.CENTER),
+        ft.Text("100% simulado: nada sale de directorio_pruebas/",
+                color=T.AMARILLO, size=T.TAM_CUERPO, font_family=T.FUENTE,
+                text_align=ft.TextAlign.CENTER),
+        ft.Container(height=12),
+        ft.Row([
+            ft.Container(
+                content=ft.Image(src=T.icono_modulo(siguiente), width=96,
+                                 height=96,
+                                 error_content=ft.Text("·", color=T.TEXTO_DIM)),
+                width=104, height=104, border_radius=52,
+                border=T.borde_neon(T.CYAN), bgcolor=T.BG_TARJETA,
+                shadow=T.brillo(T.CYAN, glow),
+            ),
+            ft.Column([
+                _btn(f"JUGAR: {alias}", T.TEXTO_SOBRE_NEON, T.ACCENT, on_jugar),
+                ft.Text(f"continúa en {siguiente}", color=T.TEXTO_DIM,
+                        size=T.TAM_MINIMO, font_family=T.FUENTE),
+            ], spacing=4, expand=True),
+        ], spacing=16),
+        ft.Container(height=8),
+        ft.Row([
+            _btn("HISTORIAS", T.ACCENT, T.BG_PANEL, on_historias, expand=True),
+            _btn("AVALANCHA", T.ROJO, T.BG_PANEL, on_avalancha, expand=True),
+        ], spacing=8),
+        ft.Row([
+            _btn("CONFIGURACIÓN", T.AMARILLO, T.BG_PANEL, on_config, expand=True),
+            _btn("CÓMO JUGAR", T.MORADO, T.BG_PANEL, on_como, expand=True),
+        ], spacing=8),
+        ft.Row([
+            _btn("SALIR", T.TEXTO_DIM, T.BG_PANEL, on_salir),
+        ], alignment=ft.MainAxisAlignment.CENTER),
+        ft.Container(expand=True),
+        ft.Text("v1.0.0.0-alpha — alpha cerrada, todo puede romperse",
+                color=T.TEXTO_DIM, size=T.TAM_MINIMO, font_family=T.FUENTE,
+                text_align=ft.TextAlign.CENTER),
+    ], spacing=6, expand=True)
+
     return ft.Container(
-        bgcolor=T.BG, expand=True, padding=24,
-        content=ft.Column([
-            ft.Container(expand=True),
-            ft.Text("EASML", size=72, weight=ft.FontWeight.BOLD,
-                    color=T.ACCENT, font_family=T.FUENTE,
-                    text_align=ft.TextAlign.CENTER),
-            ft.Text("LABORATORIO-JUEGO EDUCATIVO DE CIBERSEGURIDAD",
-                    color=T.TEXTO_DIM, size=14, font_family=T.FUENTE,
-                    text_align=ft.TextAlign.CENTER),
-            ft.Text("100% simulado: nada sale de directorio_pruebas/",
-                    color=T.AMARILLO, size=13, font_family=T.FUENTE,
-                    text_align=ft.TextAlign.CENTER),
-            ft.Container(height=24),
-            ft.Row([
-                ft.Button(f"JUGAR: {alias}", bgcolor=T.ACCENT,
-                          color=T.TEXTO_SOBRE_NEON,
-                          on_click=lambda e: on_jugar() if on_jugar else None),
-            ], alignment=ft.MainAxisAlignment.CENTER),
-            ft.Row([
-                ft.Button("CÓMO JUGAR", color=T.MORADO,
-                          bgcolor=T.BG_PANEL,
-                          on_click=lambda e: on_como() if on_como else None),
-            ], alignment=ft.MainAxisAlignment.CENTER),
-            ft.Container(expand=True),
-            ft.Text("v1.0.0.0-alpha — alpha cerrada, todo puede romperse",
-                    color=T.TEXTO_DIM, size=11, font_family=T.FUENTE,
-                    text_align=ft.TextAlign.CENTER),
-        ], spacing=6, expand=True),
+        expand=True,
+        content=ft.Stack([
+            ft.Image(src=T.fondo_portada(), fit=ft.BoxFit.COVER, expand=True,
+                     error_content=ft.Container(bgcolor=T.BG, expand=True)),
+            ft.Container(content=menu, padding=24, expand=True),
+        ], expand=True),
     )

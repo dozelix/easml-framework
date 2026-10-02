@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Punto de entrada para la GUI del laboratorio (Flet).
+"""Punto de entrada para la GUI del juego (flet)
 
 Uso:
     python flet_main.py                 # abre la ventana Flet (desktop)
@@ -9,11 +9,11 @@ Uso:
     python flet_main.py --clean         # limpia artefactos del laboratorio
 """
 
-PUERTO_WEB_DEFECTO = 8550
-
 import os
 import subprocess
 import sys
+
+PUERTO_WEB_DEFECTO = 8550
 
 _DIR_RAIZ = os.path.dirname(os.path.abspath(__file__))
 if _DIR_RAIZ not in sys.path:
