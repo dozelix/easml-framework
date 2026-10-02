@@ -65,9 +65,9 @@ def vista_tutorial() -> ft.Control:
     flujo = [titulo("TUTORIAL RÁPIDO"),
              tarjeta([ft.Text("Bienvenido! Este laboratorio te permite ejecutar 14 tipos "
                               "de amenazas de forma segura en un entorno aislado.",
-                              font_family=T.FUENTE)]),
+                              color=T.TEXTO, font_family=T.FUENTE)]),
              ft.Text("FLUJO DE TRABAJO", weight=ft.FontWeight.BOLD,
-                     font_family=T.FUENTE)]
+                     color=T.TEXTO, font_family=T.FUENTE)]
     for paso, color in pasos:
         flujo.append(tarjeta([ft.Text(paso, color=color,
                                       weight=ft.FontWeight.BOLD,
@@ -97,7 +97,7 @@ def vista_modulo(index: int) -> ft.Control:
         ft.Text(cia, color=T.COLOR_CIA.get(cia, T.TEXTO), size=16,
                 weight=ft.FontWeight.BOLD, font_family=T.FUENTE),
     ]))
-    bloques.append(ft.Text("ARCHIVOS DEL MÓDULO", weight=ft.FontWeight.BOLD,
+    bloques.append(ft.Text("ARCHIVOS DEL MÓDULO", weight=ft.FontWeight.BOLD, color=T.TEXTO,
                            font_family=T.FUENTE))
     for etiqueta, existe in [
         (f"Simulación: {script}.py", sim_ok),
@@ -110,7 +110,7 @@ def vista_modulo(index: int) -> ft.Control:
                                         weight=ft.FontWeight.BOLD,
                                         font_family=T.FUENTE)]))
     if url_ref:
-        bloques.append(ft.Text("REFERENCIA", weight=ft.FontWeight.BOLD,
+        bloques.append(ft.Text("REFERENCIA", weight=ft.FontWeight.BOLD, color=T.TEXTO,
                                font_family=T.FUENTE))
         # BLANK: abre pestaña nueva; SELF navegaría la app y parecería rota.
         bloques.append(ft.Button(
@@ -129,6 +129,7 @@ def vista_guia(markdown_texto: str) -> ft.Control:
                 content=ft.Markdown(
                     markdown_texto,
                     extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
+                    md_style_sheet=T.hoja_markdown(),
                     auto_follow_links=True,
                     selectable=True,
                 ),
@@ -155,7 +156,7 @@ def vista_menu(p: dict, mundos: dict, siguiente: str,
     bloques.append(tarjeta([
         ft.Text("Todo lo que rompas vive en directorio_pruebas/ y se "
                 "restaura con un botón. Juega sin miedo.",
-                font_family=T.FUENTE),
+                font_family=T.FUENTE, color=T.TEXTO),
     ]))
     alias = meta(siguiente)["alias"]
     bloques.append(
@@ -163,7 +164,7 @@ def vista_menu(p: dict, mundos: dict, siguiente: str,
             content=ft.Row([
                 ft.Text(f"CONTINUAR: {alias} ({siguiente})",
                         weight=ft.FontWeight.BOLD, font_family=T.FUENTE,
-                        expand=True),
+                        color=T.TEXTO, expand=True),
                 ft.Button("JUGAR", bgcolor=T.ACCENT,
                           color=T.TEXTO_SOBRE_NEON,
                           on_click=lambda e: on_jugar() if on_jugar else None),
@@ -178,7 +179,7 @@ def vista_menu(p: dict, mundos: dict, siguiente: str,
                 content=ft.Column([
                     ft.Text(mundo.upper(), color=T.TEXTO_DIM, size=12,
                             font_family=T.FUENTE),
-                    ft.Text(f"{_pct(p, slugs)}%", size=28,
+                    ft.Text(f"{_pct(p, slugs)}%", size=28, color=T.TEXTO,
                             weight=ft.FontWeight.BOLD, font_family=T.FUENTE),
                     ft.Button("MAPA", color=T.ACCENT, bgcolor=T.BG_PANEL,
                               on_click=lambda e, m=mundo: on_mapa(m) if on_mapa else None),
@@ -235,13 +236,13 @@ def vista_jefes(p: dict, mundos: dict, on_rejugar=None,
         for slug in sup:
             estrella = "SOMBRA" if slug in p.get("sombra", []) else "vencido"
             filas.append(ft.Row([
-                ft.Text(f"{meta(slug)['alias']} — {estrella}",
+                ft.Text(f"{meta(slug)['alias']} — {estrella}", color=T.TEXTO,
                         font_family=T.FUENTE, expand=True),
                 ft.Button("REJUGAR", color=T.ACCENT, bgcolor=T.BG_PANEL,
                           on_click=lambda e, s=slug: on_rejugar(s) if on_rejugar else None),
             ], spacing=8))
         bloques.append(tarjeta(
-            [ft.Text(mundo.upper(), weight=ft.FontWeight.BOLD,
+            [ft.Text(mundo.upper(), weight=ft.FontWeight.BOLD, color=T.TEXTO,
                      font_family=T.FUENTE)] + filas))
     for mundo, slugs in mundos.items():
         pct = _pct(p, slugs)
@@ -251,7 +252,7 @@ def vista_jefes(p: dict, mundos: dict, on_rejugar=None,
                 content=ft.Row([
                     ft.Text(f"{'PANTEÓN' if listo else 'PANTEÓN ???'} — {mundo} ({pct}%)",
                             weight=ft.FontWeight.BOLD, font_family=T.FUENTE,
-                            expand=True),
+                            color=T.TEXTO, expand=True),
                     ft.Button("INICIAR", bgcolor=T.ROJO,
                               color=T.TEXTO_SOBRE_NEON, disabled=not listo,
                               on_click=lambda e, m=mundo: on_panteon(m) if on_panteon else None),
@@ -262,7 +263,7 @@ def vista_jefes(p: dict, mundos: dict, on_rejugar=None,
     if len(bloques) == 1:
         bloques.append(tarjeta([ft.Text("Aún no vences ningún jefe. "
                                         "Completa capítulos desde el mapa.",
-                                        font_family=T.FUENTE)]))
+                                        color=T.TEXTO_DIM, font_family=T.FUENTE)]))
     return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
 
 
@@ -275,7 +276,7 @@ def vista_ajustes(p: dict, rutas: dict, on_dlc=None, on_anim=None,
             content=ft.Column([
                 ft.Row([
                     ft.Text("Módulos avanzados (DLC)", font_family=T.FUENTE,
-                            expand=True),
+                            color=T.TEXTO, expand=True),
                     ft.Switch(value=p.get("dlc", False),
                               on_change=lambda e: on_dlc(e.control.value) if on_dlc else None),
                 ], spacing=8),
@@ -283,7 +284,7 @@ def vista_ajustes(p: dict, rutas: dict, on_dlc=None, on_anim=None,
                         "el exe. Pueden generar más alertas en Defender.",
                         color=T.TEXTO_DIM, size=12, font_family=T.FUENTE),
                 ft.Row([
-                    ft.Text("Animaciones", font_family=T.FUENTE, expand=True),
+                    ft.Text("Animaciones", font_family=T.FUENTE, color=T.TEXTO, expand=True),
                     ft.Switch(value=p.get("anim", True),
                               on_change=lambda e: on_anim(e.control.value) if on_anim else None),
                 ], spacing=8),
@@ -307,9 +308,9 @@ def vista_ajustes(p: dict, rutas: dict, on_dlc=None, on_anim=None,
     bloques.append(tarjeta([
         ft.Text("RUTAS ACTIVAS", color=T.TEXTO_DIM, size=12,
                 font_family=T.FUENTE),
-        ft.Text(f"arena: {rutas.get('lab_dir', '')}", size=12,
+        ft.Text(f"arena: {rutas.get('lab_dir', '')}", size=12, color=T.TEXTO_DIM,
                 font_family=T.FUENTE),
-        ft.Text(f"logs:  {rutas.get('logs_dir', '')}", size=12,
+        ft.Text(f"logs:  {rutas.get('logs_dir', '')}", size=12, color=T.TEXTO_DIM,
                 font_family=T.FUENTE),
     ]))
     return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
@@ -355,7 +356,7 @@ def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
                       color=T.TEXTO_CONSOLA) for l in bitacora[-8:]]
     bloques.append(
         ft.Container(content=ft.Column(lineas or [ft.Text(
-            "El bicho emerge... elige tu movimiento.",
+            "El bicho emerge... elige tu movimiento.", color=T.TEXTO_DIM,
             size=12, font_family=T.FUENTE)], spacing=2),
             bgcolor=T.BG_CONSOLA, padding=10, border_radius=6))
     return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)

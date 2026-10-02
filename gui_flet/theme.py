@@ -71,3 +71,29 @@ def brillo(color: str, activado: bool = True):
     if not activado:
         return None
     return ft.BoxShadow(color=color, blur_radius=18, spread_radius=1)
+
+
+def hoja_markdown():
+    """MarkdownStyleSheet oscuro para guías (importa flet solo aquí)."""
+    import flet as ft
+    base = ft.TextStyle(color=TEXTO, font_family=FUENTE)
+    return ft.MarkdownStyleSheet(
+        p_text_style=base,
+        h1_text_style=ft.TextStyle(color=ACCENT, font_family=FUENTE,
+                                   weight=ft.FontWeight.BOLD),
+        h2_text_style=ft.TextStyle(color=ACCENT, font_family=FUENTE,
+                                    weight=ft.FontWeight.BOLD),
+        h3_text_style=ft.TextStyle(color=TEXTO, font_family=FUENTE,
+                                    weight=ft.FontWeight.BOLD),
+        a_text_style=ft.TextStyle(color=ACCENT, font_family=FUENTE),
+        strong_text_style=ft.TextStyle(color=TEXTO, font_family=FUENTE,
+                                       weight=ft.FontWeight.BOLD),
+        em_text_style=ft.TextStyle(color=TEXTO_DIM, font_family=FUENTE,
+                                   italic=True),
+        code_text_style=ft.TextStyle(color=VERDE, font_family=FUENTE),
+        table_head_text_style=ft.TextStyle(
+            color=TEXTO_SOBRE_NEON, font_family=FUENTE,
+            weight=ft.FontWeight.BOLD, bgcolor=ACCENT),
+        table_body_text_style=base,
+        list_bullet_text_style=ft.TextStyle(color=ACCENT),
+    )

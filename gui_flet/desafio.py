@@ -119,9 +119,11 @@ def construir_dialogo(page: ft.Page, modulo_key: str,
     if not ctrl.desafios:
         return ft.AlertDialog(
             modal=True,
-            title=ft.Text(f"Desafío — {modulo_key}", font_family=T.FUENTE),
+            bgcolor=T.BG_PANEL,
+            title=ft.Text(f"Desafío — {modulo_key}", font_family=T.FUENTE,
+                          color=T.TEXTO),
             content=ft.Text("Este módulo no tiene desafíos disponibles.",
-                            font_family=T.FUENTE),
+                            font_family=T.FUENTE, color=T.TEXTO_DIM),
             actions=[ft.Button("Cerrar", on_click=lambda e: cerrar())],
         )
 
@@ -134,7 +136,7 @@ def construir_dialogo(page: ft.Page, modulo_key: str,
     barra = ft.ProgressBar(value=0, color=T.ACCENT, bgcolor=T.BG_HOVER)
     dificultad = {"valor": "facil"}
 
-    dlg = ft.AlertDialog(modal=True, title=titulo,
+    dlg = ft.AlertDialog(modal=True, title=titulo, bgcolor=T.BG_PANEL,
                          content=ft.Column([info, area, resultado, barra],
                                            spacing=8, tight=True))
 
@@ -158,6 +160,8 @@ def construir_dialogo(page: ft.Page, modulo_key: str,
                     content=ft.Radio(
                         value=clave,
                         label=f"{cfg['nombre']}  —  {cfg['descripcion']}",
+                        label_style=ft.TextStyle(color=T.TEXTO,
+                                                 font_family=T.FUENTE),
                     ),
                     bgcolor=T.BG_CARD, padding=8, border_radius=6,
                 )
@@ -197,7 +201,8 @@ def construir_dialogo(page: ft.Page, modulo_key: str,
         )
         for i, opcion in enumerate(d.opciones):
             area.controls.append(
-                ft.Button(f"{i + 1}. {opcion}",
+                ft.Button(f"{i + 1}. {opcion}", color=T.TEXTO,
+                          bgcolor=T.BG_CARD,
                           on_click=lambda e, idx=i: responder(idx)))
         if ctrl.pistas_restantes() <= 0:
             area.controls.append(ft.Text("[PISTA] Agotada", color=T.TEXTO_DIM,
