@@ -56,8 +56,8 @@ class CombateTests(unittest.TestCase):
         c2.atacar(lambda: False)
         self.assertEqual(c2.enemigo_hp, 95)
 
-    def test_analizar_parchar_y_captura(self):
-        from app.combate import Combate
+    def test_analizar_parchar_y_guardia(self):
+        from app.combate import Combate, medir_sanos
         c = Combate("trojan")
         texto = c.analizar()
         self.assertIn("Debilidad", texto)
@@ -65,13 +65,30 @@ class CombateTests(unittest.TestCase):
         c.enemigo_hp = 50
         c.parchar(lambda: True)
         self.assertEqual(c.enemigo_hp, 40)
-        # Captura exige rival <20 y héroe >=50
-        self.assertFalse(c.capturar())
-        # semilla 1 -> 0.134 < 0.70: captura exitosa
-        c2 = Combate("trojan", rng=random.Random(1))
-        c2.enemigo_hp = 10
-        self.assertTrue(c2.capturar())
-        self.assertEqual(c2.terminado, "captura")
+        # Guardia: 1.º siempre entra, gasta turno enemigo a la mitad
+        g = Combate("trojan", rng=random.Random(1))
+        self.assertTrue(g.guardia())
+        self.assertTrue(g.protegido)
+        self._corromper()
+        self._corromper("notas.txt")
+        g.turno_enemigo(lambda: True)
+        sanos, _t = medir_sanos()
+        self.assertEqual(sanos, 11)  # mitad de 2 restaurados
+        self.assertFalse(g.protegido)
+        # Abuso: 2.ª seguida solo 50% (semilla 0 -> 0.844 falla)
+        g2 = Combate("trojan", rng=random.Random(0))
+        self.assertTrue(g2.guardia())
+        self.assertFalse(g2.guardia())
+        # Otro movimiento resetea la racha
+        g2.analizar()
+        self.assertEqual(g2.guardias_seguidas, 0)
+
+    def test_rival_a_cero_es_captura_automatica(self):
+        from app.combate import Combate
+        c = Combate("trojan")
+        c.enemigo_hp = 5
+        c.atacar(lambda: (self._corromper("notas.txt"), False)[1])
+        self.assertEqual(c.terminado, "captura")
 
     def test_derrota_con_arena_destruida(self):
         from app.combate import Combate

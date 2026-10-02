@@ -24,7 +24,6 @@ from modulos.common.utils import is_lab_ready
 
 from gui_flet import theme as T
 from gui_flet.desafio import construir_dialogo
-from gui_flet.runner_flet import ejecutar_script
 from gui_flet.views import (
     leer_readme_modulo,
     vista_ajustes,
@@ -102,49 +101,7 @@ async def main(page: ft.Page):
     def refrescar():
         page.update()
 
-    # ── Acciones ─────────────────────────────────────────────────────────
-    async def correr(script_path: str, etiqueta: str, inicio: str,
-                     escena: str | None = None):
-        if estado.ejecutando:
-            return
-        estado.ejecutando = True
-        consola.controls.clear()
-        log(inicio)
-        await ejecutar_script(script_path, etiqueta, log)
-        if escena is not None and estado.modulo_idx is not None:
-            slug = estado.slug_por_idx[estado.modulo_idx]
-            PG.marcar_escena(estado.prog, slug, escena)
-            PG.guardar(estado.prog)
-        estado.ejecutando = False
-
-    def acc_setup(e):
-        page.run_task(correr, os.path.join(_DIR_RAIZ, "core", "lab_setup.py"),
-                      "Setup", "[SETUP] Preparando entorno de pruebas...",
-                      "setup")
-
-    def acc_simular(e):
-        if estado.modulo_idx is None or estado.ejecutando:
-            return
-        _, nombre, script, _, _, _ = MODULOS[estado.modulo_idx]
-        ruta = os.path.join(_DIR_RAIZ, "modulos", nombre, f"{script}.py")
-        page.run_task(correr, ruta, f"{nombre}/simulacion",
-                      f"[SIMULAR] Ejecutando {nombre}...", "simular")
-
-    def acc_defensa(e):
-        if estado.modulo_idx is None or estado.ejecutando:
-            return
-        nombre = MODULOS[estado.modulo_idx][1]
-        ruta = os.path.join(_DIR_RAIZ, "modulos", nombre, defensa_arch(nombre))
-        page.run_task(correr, ruta, f"{nombre}/defensa",
-                      f"[DEFENSA] Ejecutando mitigación para {nombre}...",
-                      "defensa")
-
-    def acc_clean(e):
-        consola.controls.clear()
-        log_sync("[CONSOLA] Limpiada (la arena se resetea en AJUSTES).")
-        mostrar_actual()
-        page.update()
-
+    # ── Acciones (la escena se juega en combate; sin botones duplicados) ──
     def acc_guia(e):
         if estado.modulo_idx is None:
             return
@@ -224,9 +181,42 @@ async def main(page: ft.Page):
     # ── Navegación ───────────────────────────────────────────────────────
     def jugar_siguiente():
         """Un solo helper JUGAR (portada + sidebar, sin duplicar)."""
+        if not estado.prog.get("heroe", ""):
+            pedir_nombre(lambda: jugar_siguiente())
+            return
+        if PG.es_primera_vez(estado.prog):
+            entrar()
+            mostrar_tutorial()
+            page.update()
+            return
         mostrar_modulo(estado.idx_por_slug[
             PG.siguiente_capitulo(estado.prog, estado.campana)])
         page.update()
+
+    def pedir_nombre(al_continuar):
+        campo = ft.TextField(
+            label="Nombre del héroe", autofocus=True,
+            color=T.TEXTO, bgcolor=T.BG_CARD, border_color=T.BORDE,
+            on_submit=lambda e: _guardar_nombre(e.control.value))
+
+        def _guardar_nombre(valor: str):
+            nombre = (valor or "").strip().upper()[:16] or "ANALISTA"
+            estado.prog["heroe"] = nombre
+            PG.guardar(estado.prog)
+            dlg.open = False
+            page.update()
+            al_continuar()
+
+        dlg = ft.AlertDialog(
+            modal=True, bgcolor=T.BG_PANEL,
+            title=ft.Text("¿CÓMO TE LLAMAS, ANALISTA?", color=T.ACCENT,
+                           weight=ft.FontWeight.BOLD, font_family=T.FUENTE),
+            content=campo,
+            actions=[ft.Button("EMPEZAR", bgcolor=T.ACCENT,
+                               color=T.TEXTO_SOBRE_NEON,
+                               on_click=lambda e: _guardar_nombre(campo.value))],
+        )
+        page.show_dialog(dlg)
 
     def mostrar_dashboard():
         estado.vista = "dashboard"
@@ -288,6 +278,13 @@ async def main(page: ft.Page):
             estado.prog["anim"] = valor
             PG.guardar(estado.prog)
 
+        def _nombre(valor: str):
+            nombre = (valor or "").strip().upper()[:16] or "ANALISTA"
+            estado.prog["heroe"] = nombre
+            PG.guardar(estado.prog)
+            mostrar_ajustes()
+            page.update()
+
         def _reset_progreso():
             PG.reset()
             estado.prog = PG.cargar()
@@ -311,7 +308,7 @@ async def main(page: ft.Page):
 
         mostrar(vista_ajustes(
             estado.prog, resolve_lab_paths(),
-            on_dlc=_dlc, on_anim=_anim,
+            on_dlc=_dlc, on_anim=_anim, on_nombre=_nombre,
             on_reset_arena=lambda: page.run_task(_reset_arena_clean),
             on_reset_progreso=_reset_progreso,
         ))
@@ -320,9 +317,15 @@ async def main(page: ft.Page):
         estado.vista = "tutorial"
         estado.modulo_idx = None
         icono_cia.visible = False
-        lbl_nombre.value = "TUTORIAL"
+        lbl_nombre.value = "CÓMO JUGAR"
         lbl_cis.value = ""
-        mostrar(vista_tutorial())
+
+        def _entendido():
+            estado.prog["tutorial_visto"] = True
+            PG.guardar(estado.prog)
+            jugar_siguiente()
+
+        mostrar(vista_tutorial(on_entendido=_entendido))
 
     def mostrar_modulo(idx: int):
         estado.vista = "modulo"
@@ -332,7 +335,7 @@ async def main(page: ft.Page):
         icono_cia.visible = True
         lbl_nombre.value = f"  {meta(nombre)['alias']} ({nombre})"
         lbl_cis.value = cia
-        mostrar(vista_modulo(idx))
+        mostrar(vista_modulo(idx, estado.prog))
         for tile in lista_modulos.controls:
             if isinstance(tile, ft.ListTile):
                 tile.selected = (tile.data == idx)
@@ -383,12 +386,29 @@ async def main(page: ft.Page):
             for linea in c.bitacora[-4:]:
                 log_sync(linea)
 
+        def _escena(*nombres: str):
+            for nombre_esc in nombres:
+                PG.marcar_escena(estado.prog, c.slug, nombre_esc)
+            PG.guardar(estado.prog)
+
+        def _revisar_captura():
+            if c.terminado == "captura":
+                PG.registrar_minijefe(estado.prog, c.slug, True, 0, 0, 1, 1)
+                if c.slug not in estado.prog["sombra"]:
+                    estado.prog["sombra"].append(c.slug)
+                PG.guardar(estado.prog)
+                log_sync(f"[SOMBRA] {meta(c.slug)['alias']} purificado. "
+                         "Búscalo en JEFES.")
+
         async def _atacar():
             import asyncio as _aio
             _am, _de = _rutas_scripts(c.slug)
-            await _aio.to_thread(c.atacar, lambda: _sync_run(_de))
+            dano = await _aio.to_thread(c.atacar, lambda: _sync_run(_de))
+            if dano >= 25:
+                _escena("defensa")
             if c.terminado is None:
                 await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
+            _revisar_captura()
             _tras_mover()
             mostrar_combate()
             page.update()
@@ -408,31 +428,33 @@ async def main(page: ft.Page):
             await _aio.to_thread(
                 c.parchar,
                 lambda: _sync_run(os.path.join(_DIR_RAIZ, "core", "lab_setup.py")))
+            _escena("setup")
             if c.terminado is None:
                 _am, _de = _rutas_scripts(c.slug)
                 await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
+            _revisar_captura()
             _tras_mover()
             mostrar_combate()
             page.update()
 
-        def _capturar():
-            if c.capturar():
-                PG.registrar_minijefe(estado.prog, c.slug, True, 0, 0, 1, 1)
-                if c.slug not in estado.prog["sombra"]:
-                    estado.prog["sombra"].append(c.slug)
-                PG.guardar(estado.prog)
-                log_sync(f"[SOMBRA] {meta(c.slug)['alias']} purificado en combate.")
-            else:
-                log_sync(c.bitacora[-1] if c.bitacora else "[CAPTURAR] Falló.")
+        async def _guardia():
+            import asyncio as _aio
+            c.guardia()
+            _tras_mover()
+            if c.terminado is None:
+                _am, _de = _rutas_scripts(c.slug)
+                await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
+                _tras_mover()
             mostrar_combate()
             page.update()
 
         mostrar(vista_combate(
             c.slug, c.heroe_hp, c.enemigo_hp, c.bitacora, c.terminado,
+            heroe=estado.prog.get("heroe", "") or "HÉROE",
             on_atacar=lambda: page.run_task(_atacar),
             on_analizar=lambda: page.run_task(_analizar),
             on_parchar=lambda: page.run_task(_parchar),
-            on_capturar=_capturar,
+            on_guardia=lambda: page.run_task(_guardia),
         ))
 
     def acc_luchar(e):
@@ -452,6 +474,9 @@ async def main(page: ft.Page):
                     _sync_run, os.path.join(_DIR_RAIZ, "core", "lab_setup.py"))
             _am, _de = _rutas_scripts(slug)
             await _aio.to_thread(_sync_run, _am)
+            for esc in ("setup", "simular"):
+                PG.marcar_escena(estado.prog, slug, esc)
+            PG.guardar(estado.prog)
             for linea in c.bitacora:
                 log_sync(linea)
             mostrar_combate()
@@ -535,13 +560,9 @@ async def main(page: ft.Page):
         content=ft.Row([icono_cia, lbl_nombre, lbl_cis], spacing=8),
     )
     botonera = ft.Row([
-        boton_accion("  Setup  ", T.AMARILLO, acc_setup),
-        boton_accion(" Simular ", T.ROJO, acc_simular),
-        boton_accion(" Defensa ", T.AZUL, acc_defensa),
         boton_accion(" Luchar  ", T.CYAN, acc_luchar),
-        boton_accion("Consola ", T.VERDE, acc_clean),
-        boton_accion("  Guía   ", T.MORADO, acc_guia),
-        boton_accion("  Juego  ", T.NARANJA, acc_juego),
+        boton_accion("Minijefe ", T.NARANJA, acc_juego),
+        boton_accion(" Archivo ", T.MORADO, acc_guia),
     ], spacing=6)
     consola_cab = ft.Row([
         ft.Text("CONSOLA", color=T.TEXTO_DIM, size=12,
@@ -569,11 +590,19 @@ async def main(page: ft.Page):
     portada = ft.Container(expand=True)
 
     def mostrar_portada():
+        from app.recursos import verificar
         estado.vista = "portada"
         estado.modulo_idx = None
+        faltan = verificar()
+        alerta = (f"[ALERTA] Faltan {len(faltan)} recursos empaquetados. "
+                  "Reinstala el juego." if faltan else None)
+        if faltan:
+            log_sync(f"[ALERTA] Recursos faltantes: {', '.join(faltan[:5])}")
         portada.content = vista_portada(
             PG.siguiente_capitulo(estado.prog, estado.campana),
             estado.prog,
+            primera=PG.es_primera_vez(estado.prog),
+            alerta=alerta,
             on_jugar=jugar_siguiente,
             on_historias=lambda: (entrar(), mostrar_dashboard(),
                                   page.update()),
