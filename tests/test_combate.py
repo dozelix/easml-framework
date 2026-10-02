@@ -4,8 +4,11 @@ import os
 import random
 import shutil
 import unittest
+from importlib.util import find_spec
 
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+REQUIERE_FLET = find_spec("flet") is None
 
 
 class CombateTests(unittest.TestCase):
@@ -82,6 +85,7 @@ class CombateTests(unittest.TestCase):
         c.turno_enemigo(_arrasar)
         self.assertEqual(c.terminado, "derrota")
 
+    @unittest.skipIf(REQUIERE_FLET, "flet no instalado")
     def test_vista_combate_existe(self):
         from gui_flet.views import vista_combate
         v = vista_combate("trojan", 100, 80, ["[TURNO 1] hola"], None)
