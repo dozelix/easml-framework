@@ -10,7 +10,7 @@ from collections import Counter
 
 import flet as ft
 
-from app.config import MODULOS, NOMBRES_DEFENSA
+from app.config import MODULOS, defensa_arch
 
 from gui_flet import theme as T
 
@@ -125,8 +125,7 @@ def vista_modulo(index: int) -> ft.Control:
                        color=T.TEXTO_DIM, font_family=T.FUENTE)
 
     num, nombre, script, cia, _cis, url_ref = MODULOS[index]
-    nombre_defensa = NOMBRES_DEFENSA.get(num, "defensa")
-    arch_defensa = nombre_defensa.lower().replace(" ", "_")
+    arch_defensa = defensa_arch(nombre).removesuffix(".py")
     dir_modulo = os.path.join(base_recursos(), "modulos", nombre)
 
     sim_ok = os.path.isfile(os.path.join(dir_modulo, f"{script}.py"))

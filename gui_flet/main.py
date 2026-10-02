@@ -9,7 +9,7 @@ import os
 
 import flet as ft
 
-from app.config import MODULOS, NOMBRES_DEFENSA
+from app.config import MODULOS, defensa_arch
 from app.laboratorio import DESAFIOS_POR_MODULO
 
 from gui_flet import theme as T
@@ -104,9 +104,8 @@ async def main(page: ft.Page):
     def acc_defensa(e):
         if estado.modulo_idx is None or estado.ejecutando:
             return
-        num, nombre = MODULOS[estado.modulo_idx][0], MODULOS[estado.modulo_idx][1]
-        arch = NOMBRES_DEFENSA.get(num, "defensa").lower().replace(" ", "_")
-        ruta = os.path.join(_DIR_RAIZ, "modulos", nombre, f"{arch}.py")
+        nombre = MODULOS[estado.modulo_idx][1]
+        ruta = os.path.join(_DIR_RAIZ, "modulos", nombre, defensa_arch(nombre))
         page.run_task(correr, ruta, f"{nombre}/defensa",
                       f"[DEFENSA] Ejecutando mitigación para {nombre}...")
 
