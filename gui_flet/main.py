@@ -499,7 +499,9 @@ async def main(page: ft.Page):
             _ir(None)
 
         def _huir():
-            log_sync("[HUIDA] Te repliegas al capítulo. La arena queda como está.")
+            restaurados = c.huir()
+            log_sync(f"[HUIDA] {meta(c.slug)['alias']}: +{restaurados} archivos, "
+                     f"arena al {c.heroe_hp}%. La debilidad quedó en la bitácora.")
             estado.submenu = None
             mostrar_modulo(estado.modulo_idx if estado.modulo_idx is not None else 0)
             page.update()

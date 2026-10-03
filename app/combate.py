@@ -173,6 +173,23 @@ class Combate:
             self.terminado = "derrota"
             self._registrar("[DERROTA] Arena totalmente corrupta. Resetea y reintenta.")
 
+    def huir(self) -> int:
+        """Huida con penalización: restaura la mitad de lo corrupto.
+
+        A cambio revela la debilidad (conocimiento para el reintento).
+        Sin EXP, sin niveles, sin contadores.
+        """
+        danados = self._danados_entre(0, 0)
+        mitad = danados[::2]
+        for nombre in mitad:
+            self._restaurar(nombre)
+        self._registrar(
+            f"[HUIDA] Te repliegas con {len(mitad)} archivos restaurados "
+            f"de {len(danados)} corruptos.")
+        self._registrar(
+            f"[PISTA] Viste su truco: {DEBILIDADES.get(self.slug, 'Observa la arena.')}")
+        return len(mitad)
+
     def _danados_entre(self, _antes: int, _despues: int) -> list[str]:
         """Archivos que dejaron de coincidir con su sample (daño del turno)."""
         rutas = resolve_lab_paths()
