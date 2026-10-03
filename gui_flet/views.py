@@ -48,7 +48,7 @@ def leer_readme_modulo(index: int) -> str | None:
         return f.read()
 
 
-def vista_dashboard() -> ft.Control:
+def vista_progreso() -> ft.Control:
     """Compat: el antiguo dashboard hoy ES el menú (una sola fuente)."""
     return vista_menu(
         {"minijefe": {}, "sombra": [], "dlc": False},
@@ -159,7 +159,14 @@ def _pct(p: dict, slugs: list[str]) -> int:
 def vista_menu(p: dict, mundos: dict, siguiente: str,
                on_jugar=None, on_mapa=None) -> ft.Control:
     """Menú principal: JUGAR/CONTINUAR + 3 historias CIA con %."""
-    bloques: list = [titulo("EASML — MODO HISTORIA")]
+    bloques: list = [titulo("EASML — PROGRESO")]
+    sombras = len(p.get("sombra", []))
+    panteones = sum(1 for v in p.get("panteon", {}).values() if v)
+    bloques.append(tarjeta([
+        ft.Text(f"SOMBRAS {sombras}/14 · PANTEONES {panteones}/3"
+                + (f" · HÉROE {p['heroe']}" if p.get("heroe") else ""),
+                color=T.TEXTO_DIM, size=12, font_family=T.FUENTE),
+    ]))
     bloques.append(tarjeta([
         ft.Text("Todo lo que rompas vive en directorio_pruebas/ y se "
                 "restaura con un botón. Juega sin miedo.",
@@ -268,15 +275,21 @@ def vista_avalancha(p: dict, mundos: dict, on_panteon=None) -> ft.Control:
         listo = pct == 100
         superado = p.get("panteon", {}).get(mundo, False)
         marca = "SUPERADO" if superado else ("PANTEÓN" if listo else "PANTEÓN ???")
+        if listo:
+            accion = ft.Button("INICIAR", bgcolor=T.ROJO,
+                               color=T.TEXTO_SOBRE_NEON,
+                               on_click=lambda e, m=mundo: on_panteon(m) if on_panteon else None)
+        else:
+            accion = ft.Text("Cierra la historia al 100% para desbloquearlo",
+                             color=T.TEXTO_DIM, size=T.TAM_MINIMO,
+                             font_family=T.FUENTE)
         bloques.append(
             ft.Container(
                 content=ft.Row([
                     ft.Text(f"{marca} — {mundo} ({pct}%)",
                             weight=ft.FontWeight.BOLD, font_family=T.FUENTE,
                             color=T.VERDE if superado else T.TEXTO, expand=True),
-                    ft.Button("INICIAR", bgcolor=T.ROJO,
-                              color=T.TEXTO_SOBRE_NEON, disabled=not listo,
-                              on_click=lambda e, m=mundo: on_panteon(m) if on_panteon else None),
+                    accion,
                 ], spacing=8),
                 bgcolor=T.BG_CARD, padding=12, border_radius=8,
             )
@@ -300,15 +313,15 @@ def vista_ajustes(p: dict, on_dlc=None, on_anim=None,
                 ft.Row([
                     ft.Text("Módulos avanzados (DLC)", font_family=T.FUENTE,
                             color=T.TEXTO, expand=True),
-                    ft.Switch(value=p.get("dlc", False),
+                    ft.Switch(value=p.get("dlc", False), active_color=T.ACCENT,
                               on_change=lambda e: on_dlc(e.control.value) if on_dlc else None),
                 ], spacing=8),
                 ft.Text("Desbloquea los 8 capítulos difíciles incluidos en "
-                        "el exe. Pueden generar más alertas en Defender.",
+                        "el programa. Pueden generar más alertas en tu antivirus.",
                         color=T.TEXTO_DIM, size=12, font_family=T.FUENTE),
                 ft.Row([
                     ft.Text("Animaciones", font_family=T.FUENTE, color=T.TEXTO, expand=True),
-                    ft.Switch(value=p.get("anim", True),
+                    ft.Switch(value=p.get("anim", True), active_color=T.ACCENT,
                               on_change=lambda e: on_anim(e.control.value) if on_anim else None),
                 ], spacing=8),
             ], spacing=6),
@@ -338,10 +351,10 @@ def vista_datos(rutas: dict, tam_lab: str,
     bloques.append(tarjeta([
         ft.Text("RUTAS ACTIVAS", color=T.TEXTO_DIM, size=12,
                 font_family=T.FUENTE),
-        ft.Text(f"arena: {rutas.get('lab_dir', '')}", size=12, color=T.TEXTO_DIM,
-                font_family=T.FUENTE),
-        ft.Text(f"logs:  {rutas.get('logs_dir', '')}", size=12, color=T.TEXTO_DIM,
-                font_family=T.FUENTE),
+        ft.Text(f"arena: …/{rutas.get('lab_dir', '').split('/')[-1]}", size=12, color=T.TEXTO_DIM,
+                font_family=T.FUENTE, tooltip=rutas.get('lab_dir', '')),
+        ft.Text(f"logs:  …/lab_data/logs", size=12, color=T.TEXTO_DIM,
+                font_family=T.FUENTE, tooltip=rutas.get('logs_dir', '')),
         ft.Text(f"arena en disco: {tam_lab}", size=12, color=T.TEXTO_DIM,
                 font_family=T.FUENTE),
     ]))

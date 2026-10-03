@@ -32,8 +32,9 @@ class MetricasTests(unittest.TestCase):
         prog = {"minijefe": {}, "sombra": [], "dlc": False,
                 "megajefe": {}, "panteon": {}, "anim": True}
         for nombre, args in [
-            ("dashboard", ()), ("tutorial", ()),
+            ("progreso", ()),
             ("menu", (prog, {"Confidencialidad": ["keylogger"]}, "keylogger")),
+            ("tutorial", ()),
             ("mapa", ("Confidencialidad", ["keylogger"], prog)),
             ("jefes", (prog, {"Confidencialidad": ["keylogger"]})),
             ("avalancha", (prog, {"Confidencialidad": ["keylogger"]})),
