@@ -28,8 +28,10 @@ from gui_flet.desafio import construir_dialogo
 from gui_flet.views import (
     leer_readme_modulo,
     vista_ajustes,
+    vista_avalancha,
     vista_combate,
     vista_dashboard,
+    vista_datos,
     vista_guia,
     vista_jefes,
     vista_mapa,
@@ -251,21 +253,30 @@ async def main(page: ft.Page):
         estado.vista = "jefes"
         estado.modulo_idx = None
         icono_cia.visible = False
-        lbl_nombre.value = "JEFES Y PANTEÓN"
+        lbl_nombre.value = "JEFES"
         lbl_cis.value = ""
         mostrar(vista_jefes(
             estado.prog, estado.mundos,
             on_rejugar=lambda s: (mostrar_modulo(estado.idx_por_slug[s]),
                                   page.update()),
+        ))
+
+    def mostrar_avalancha():
+        estado.vista = "avalancha"
+        estado.modulo_idx = None
+        icono_cia.visible = False
+        lbl_nombre.value = "AVALANCHA"
+        lbl_cis.value = ""
+        mostrar(vista_avalancha(
+            estado.prog, estado.mundos,
             on_panteon=lambda m: iniciar_panteon(m),
         ))
 
     def mostrar_ajustes():
-        from modulos.common.paths import resolve_lab_paths
         estado.vista = "ajustes"
         estado.modulo_idx = None
         icono_cia.visible = False
-        lbl_nombre.value = "AJUSTES"
+        lbl_nombre.value = "CONFIGURACIÓN"
         lbl_cis.value = ""
 
         def _dlc(valor: bool):
@@ -286,14 +297,26 @@ async def main(page: ft.Page):
             mostrar_ajustes()
             page.update()
 
-        def _reset_progreso():
-            PG.reset()
-            estado.prog = PG.cargar()
-            construir_lista()
-            mostrar_ajustes()
-            page.update()
+        mostrar(vista_ajustes(
+            estado.prog, on_dlc=_dlc, on_anim=_anim, on_nombre=_nombre,
+        ))
 
-        # --clean vacía la arena: se corre con el flag como argumento extra
+    def mostrar_datos():
+        from modulos.common.paths import resolve_lab_paths
+        estado.vista = "datos"
+        estado.modulo_idx = None
+        icono_cia.visible = False
+        lbl_nombre.value = "DATOS"
+        lbl_cis.value = ""
+        rutas = resolve_lab_paths()
+        total = 0
+        for base, _dirs, fich in os.walk(rutas["lab_dir"]):
+            for f in fich:
+                try:
+                    total += os.path.getsize(os.path.join(base, f))
+                except OSError:
+                    pass
+
         async def _reset_arena_clean():
             import subprocess
             import sys as _sys
@@ -307,9 +330,15 @@ async def main(page: ft.Page):
                     log_sync(linea.strip())
             page.update()
 
-        mostrar(vista_ajustes(
-            estado.prog, resolve_lab_paths(),
-            on_dlc=_dlc, on_anim=_anim, on_nombre=_nombre,
+        def _reset_progreso():
+            PG.reset()
+            estado.prog = PG.cargar()
+            construir_lista()
+            mostrar_datos()
+            page.update()
+
+        mostrar(vista_datos(
+            rutas, f"{total // 1024} KB",
             on_reset_arena=lambda: page.run_task(_reset_arena_clean),
             on_reset_progreso=_reset_progreso,
         ))
@@ -350,8 +379,12 @@ async def main(page: ft.Page):
             mostrar_mapa(estado.mapa_mundo)
         elif estado.vista == "jefes":
             mostrar_jefes()
+        elif estado.vista == "avalancha":
+            mostrar_avalancha()
         elif estado.vista == "ajustes":
             mostrar_ajustes()
+        elif estado.vista == "datos":
+            mostrar_datos()
         elif estado.vista == "combate" and estado.combate is not None:
             mostrar_combate()
         else:
@@ -556,8 +589,12 @@ async def main(page: ft.Page):
             ft.Divider(height=8),
             boton_sidebar("JEFES", T.ROJO,
                           lambda e: (mostrar_jefes(), page.update())),
-            boton_sidebar("AJUSTES", T.AMARILLO,
+            boton_sidebar("AVALANCHA", T.ROJO,
+                          lambda e: (mostrar_avalancha(), page.update())),
+            boton_sidebar("CONFIG", T.AMARILLO,
                           lambda e: (mostrar_ajustes(), page.update())),
+            boton_sidebar("DATOS", T.VERDE,
+                          lambda e: (mostrar_datos(), page.update())),
             boton_sidebar("CÓMO JUGAR", T.MORADO,
                           lambda e: (mostrar_tutorial(), page.update())),
             boton_sidebar("MENÚ", T.TEXTO_DIM,
@@ -621,8 +658,9 @@ async def main(page: ft.Page):
             on_jugar=jugar_siguiente,
             on_historias=lambda: (entrar(), mostrar_dashboard(),
                                   page.update()),
-            on_avalancha=lambda: (entrar(), mostrar_jefes(), page.update()),
+            on_avalancha=lambda: (entrar(), mostrar_avalancha(), page.update()),
             on_config=lambda: (entrar(), mostrar_ajustes(), page.update()),
+            on_datos=lambda: (entrar(), mostrar_datos(), page.update()),
             on_como=lambda: (entrar(), mostrar_tutorial(), page.update()),
             on_salir=lambda: page.run_task(page.window.close),
         )

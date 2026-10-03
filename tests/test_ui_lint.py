@@ -87,8 +87,10 @@ class UiLintTests(unittest.TestCase):
         self._revisar(V.vista_menu(prog, mundos, "trojan"), "menu")
         self._revisar(V.vista_mapa("Integridad", ["trojan"], prog), "mapa")
         self._revisar(V.vista_jefes(prog, mundos), "jefes")
-        self._revisar(V.vista_ajustes(
-            prog, {"lab_dir": "x", "logs_dir": "y"}), "ajustes")
+        self._revisar(V.vista_avalancha(prog, mundos), "avalancha")
+        self._revisar(V.vista_ajustes(prog), "config")
+        self._revisar(V.vista_datos({"lab_dir": "x", "logs_dir": "y"}, "0 KB"),
+                      "datos")
         self._revisar(V.vista_portada("trojan", prog), "portada")
         self._revisar(V.vista_combate("trojan", 100, 80, ["hola"], None),
                       "combate")
