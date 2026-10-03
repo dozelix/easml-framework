@@ -102,6 +102,19 @@ class CombateTests(unittest.TestCase):
         c.turno_enemigo(_arrasar)
         self.assertEqual(c.terminado, "derrota")
 
+    def test_huir_restaura_mitad_y_revela(self):
+        from app.combate import Combate, medir_sanos
+        c = Combate("trojan")
+        for nombre in ("documento.txt", "notas.txt", "script.py", "index.html"):
+            with open(os.path.join(self.paths.lab_dir, nombre), "w") as f:
+                f.write("CORRUPTO")
+        self.assertEqual(medir_sanos()[0], 8)
+        restaurados = c.huir()
+        self.assertEqual(restaurados, 2)
+        self.assertEqual(medir_sanos()[0], 10)
+        self.assertTrue(any("[PISTA]" in l for l in c.bitacora))
+        self.assertIsNone(c.terminado)  # huir no termina el combate en el modelo
+
     @unittest.skipIf(REQUIERE_FLET, "flet no instalado")
     def test_vista_combate_existe(self):
         from gui_flet.views import vista_combate
