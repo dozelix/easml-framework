@@ -515,6 +515,7 @@ async def main(page: ft.Page):
             submenu=getattr(estado, "submenu", None),
             mochila=inventario(estado.prog),
             sombras=estado.prog.get("sombra", []),
+            es_sombra=c.slug in estado.prog.get("sombra", []),
             on_menu=_ir,
             on_volver=lambda: _ir(None),
             on_movimiento=lambda cual: page.run_task(_mover_ataque, cual),
