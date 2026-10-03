@@ -66,7 +66,7 @@ async def ejecutar_script(script_path: str, etiqueta: str, on_log) -> None:
     formato que app/runner.py para mantener paridad con la GUI tkinter.
 
     En ejecutable congelado (flet pack) no hay intérprete para relanzar:
-    sys.executable es el propio .exe, así que el script corre en-proceso
+    sys.executable es el propio binario, así que el script corre en-proceso
     vía runpy con salida capturada.
     """
     if _es_congelado():

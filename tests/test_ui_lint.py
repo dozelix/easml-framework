@@ -79,7 +79,7 @@ class UiLintTests(unittest.TestCase):
         mundos = {"Confidencialidad": ["keylogger"],
                   "Integridad": ["trojan"],
                   "Disponibilidad": ["wiper"]}
-        self._revisar(V.vista_dashboard(), "dashboard")
+        self._revisar(V.vista_progreso(), "dashboard")
         self._revisar(V.vista_tutorial(), "tutorial")
         self._revisar(V.vista_modulo(0), "modulo")
         self._revisar(V.vista_guia("# Hola\n\n| a | b |\n|---|---|\n| 1 | 2 |"),

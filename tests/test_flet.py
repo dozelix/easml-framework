@@ -146,7 +146,7 @@ class TestTema(unittest.TestCase):
 class TestVistas(unittest.TestCase):
     def test_dashboard_tutorial_modulo(self):
         from gui_flet import views as V
-        self.assertIsNotNone(V.vista_dashboard())
+        self.assertIsNotNone(V.vista_progreso())
         self.assertIsNotNone(V.vista_tutorial())
         self.assertIsNotNone(V.vista_modulo(0))
         guia = V.vista_guia("# Hola")

@@ -30,7 +30,7 @@ from gui_flet.views import (
     vista_ajustes,
     vista_avalancha,
     vista_combate,
-    vista_dashboard,
+    vista_progreso,
     vista_datos,
     vista_guia,
     vista_jefes,
@@ -61,7 +61,7 @@ class EstadoApp:
 
 
 async def main(page: ft.Page):
-    page.title = "E.A.S.M.L — Laboratorio Educativo de Malware"
+    page.title = "EASML — Modo Historia"
     page.window.width = 1280
     page.window.height = 800
     page.window.min_width = 960
@@ -92,7 +92,7 @@ async def main(page: ft.Page):
     icono_cia = ft.Image(src=T.icono_cia("Disponibilidad"), width=22,
                          height=22, visible=False,
                          error_content=ft.Text(""))
-    lbl_nombre = ft.Text("PANEL", size=16, weight=ft.FontWeight.BOLD,
+    lbl_nombre = ft.Text("PROGRESO", size=16, weight=ft.FontWeight.BOLD,
                          color=T.ACCENT, font_family=T.FUENTE, expand=True)
     lbl_cis = ft.Text("", color=T.TEXTO_DIM, size=12, font_family=T.FUENTE)
     contenido = ft.Container(content=None, expand=True)
@@ -100,6 +100,14 @@ async def main(page: ft.Page):
     def mostrar(nueva_vista: ft.Control):
         contenido.content = nueva_vista
         estado.viendo_guia = False
+
+    def _botonera_para(vista: str):
+        botonera.visible = vista in ("modulo", "combate")
+
+    def _consola_para(vista: str):
+        # En combate manda la bitácora integrada (sin consola duplicada).
+        for caja in (consola_cab, caja_consola):
+            caja.visible = vista != "combate"
 
     def refrescar():
         page.update()
@@ -221,11 +229,13 @@ async def main(page: ft.Page):
         )
         page.show_dialog(dlg)
 
-    def mostrar_dashboard():
+    def mostrar_progreso():
         estado.vista = "dashboard"
+        _botonera_para("dashboard")
+        _consola_para("dashboard")
         estado.modulo_idx = None
         icono_cia.visible = False
-        lbl_nombre.value = "MODO HISTORIA"
+        lbl_nombre.value = "PROGRESO"
         lbl_cis.value = ""
         mostrar(vista_menu(
             estado.prog, estado.mundos,
@@ -238,6 +248,8 @@ async def main(page: ft.Page):
 
     def mostrar_mapa(mundo: str):
         estado.vista = "mapa"
+        _botonera_para("mapa")
+        _consola_para("mapa")
         estado.mapa_mundo = mundo
         estado.modulo_idx = None
         icono_cia.visible = False
@@ -251,6 +263,8 @@ async def main(page: ft.Page):
 
     def mostrar_jefes():
         estado.vista = "jefes"
+        _botonera_para("jefes")
+        _consola_para("jefes")
         estado.modulo_idx = None
         icono_cia.visible = False
         lbl_nombre.value = "JEFES"
@@ -263,6 +277,8 @@ async def main(page: ft.Page):
 
     def mostrar_avalancha():
         estado.vista = "avalancha"
+        _botonera_para("avalancha")
+        _consola_para("avalancha")
         estado.modulo_idx = None
         icono_cia.visible = False
         lbl_nombre.value = "AVALANCHA"
@@ -274,6 +290,8 @@ async def main(page: ft.Page):
 
     def mostrar_ajustes():
         estado.vista = "ajustes"
+        _botonera_para("ajustes")
+        _consola_para("ajustes")
         estado.modulo_idx = None
         icono_cia.visible = False
         lbl_nombre.value = "CONFIGURACIÓN"
@@ -304,6 +322,8 @@ async def main(page: ft.Page):
     def mostrar_datos():
         from modulos.common.paths import resolve_lab_paths
         estado.vista = "datos"
+        _botonera_para("datos")
+        _consola_para("datos")
         estado.modulo_idx = None
         icono_cia.visible = False
         lbl_nombre.value = "DATOS"
@@ -345,6 +365,8 @@ async def main(page: ft.Page):
 
     def mostrar_tutorial():
         estado.vista = "tutorial"
+        _botonera_para("tutorial")
+        _consola_para("tutorial")
         estado.modulo_idx = None
         icono_cia.visible = False
         lbl_nombre.value = "CÓMO JUGAR"
@@ -359,6 +381,8 @@ async def main(page: ft.Page):
 
     def mostrar_modulo(idx: int):
         estado.vista = "modulo"
+        _botonera_para("modulo")
+        _consola_para("modulo")
         estado.modulo_idx = idx
         _num, nombre, _script, cia, _cis, _ref = MODULOS[idx]
         icono_cia.src = T.icono_cia(cia)
@@ -388,7 +412,7 @@ async def main(page: ft.Page):
         elif estado.vista == "combate" and estado.combate is not None:
             mostrar_combate()
         else:
-            mostrar_dashboard()
+            mostrar_progreso()
 
     # ── Combate por turnos ───────────────────────────────────────────────
     def _rutas_scripts(slug: str) -> tuple[str, str]:
@@ -410,15 +434,13 @@ async def main(page: ft.Page):
 
     def mostrar_combate():
         estado.vista = "combate"
+        _botonera_para("combate")
+        _consola_para("combate")
         c = estado.combate
         assert c is not None
         icono_cia.visible = False
         lbl_nombre.value = f"COMBATE: {meta(c.slug)['alias']}"
         lbl_cis.value = meta(c.slug)["salon"]
-
-        def _tras_mover():
-            for linea in c.bitacora[-4:]:
-                log_sync(linea)
 
         def _escena(*nombres: str):
             for nombre_esc in nombres:
@@ -443,7 +465,6 @@ async def main(page: ft.Page):
                     _escena("defensa")
             elif cual == "analizar":
                 c.analizar()
-                _tras_mover()
             elif cual == "parchar":
                 await _aio.to_thread(
                     c.parchar,
@@ -451,7 +472,6 @@ async def main(page: ft.Page):
                 _escena("setup")
             elif cual == "guardia":
                 c.guardia()
-                _tras_mover()
             if c.terminado is None:
                 await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
             _revisar_captura()
@@ -472,12 +492,10 @@ async def main(page: ft.Page):
                 c.activar_antivirus()
             elif clave == "senuelo":
                 c.activar_senuelo()
-            _tras_mover()
             if c.terminado is None:
                 # El señuelo se cobra dentro del turno enemigo (lo salta).
                 await _aio.to_thread(c.turno_enemigo, lambda: _sync_run(_am))
             _revisar_captura()
-            _tras_mover()
             _ir(None)
 
         def _huir():
@@ -525,8 +543,6 @@ async def main(page: ft.Page):
             for esc in ("setup", "simular"):
                 PG.marcar_escena(estado.prog, slug, esc)
             PG.guardar(estado.prog)
-            for linea in c.bitacora:
-                log_sync(linea)
             mostrar_combate()
             page.update()
 
@@ -577,8 +593,8 @@ async def main(page: ft.Page):
         bgcolor=T.BG_PANEL,
         padding=8,
         content=ft.Column([
-            boton_sidebar("PANEL", T.CYAN,
-                          lambda e: (mostrar_dashboard(), page.update())),
+            boton_sidebar("PROGRESO", T.CYAN,
+                          lambda e: (mostrar_progreso(), page.update())),
             ft.Divider(height=8, color="transparent"),
             boton_sidebar("JUGAR", T.VERDE,
                           lambda e: (entrar(), jugar_siguiente())),
@@ -656,7 +672,7 @@ async def main(page: ft.Page):
             primera=PG.es_primera_vez(estado.prog),
             alerta=alerta,
             on_jugar=jugar_siguiente,
-            on_historias=lambda: (entrar(), mostrar_dashboard(),
+            on_historias=lambda: (entrar(), mostrar_progreso(),
                                   page.update()),
             on_avalancha=lambda: (entrar(), mostrar_avalancha(), page.update()),
             on_config=lambda: (entrar(), mostrar_ajustes(), page.update()),
