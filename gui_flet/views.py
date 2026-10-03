@@ -424,23 +424,53 @@ def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
                   bitacora: list[str], terminado: str | None,
                   heroe: str = "HÉROE", submenu: str | None = None,
                   mochila: dict | None = None, sombras: list | None = None,
+                  es_sombra: bool = False,
                   on_menu=None, on_volver=None, on_movimiento=None,
                   on_item=None, on_huir=None) -> ft.Control:
-    """Combate por turnos (orquesta barras + un submenú a la vez)."""
+    """Campo de batalla: arena del mundo + sprites enfrentados + menú."""
+    from app.config import arena_de
     bloques: list = [titulo(f"COMBATE: {meta(slug)['alias']} ({slug})")]
 
-    def _barra(valor: int, color: str) -> ft.ProgressBar:
+    def _barra(valor: int, color: str, ancho: int = 280) -> ft.ProgressBar:
         return ft.ProgressBar(value=max(0, min(100, valor)) / 100,
-                              color=color, bgcolor=T.BG_HOVER)
+                              color=color, bgcolor=T.BG_HOVER, width=ancho)
 
-    bloques.append(tarjeta([
-        ft.Text(f"RIVAL — {enemigo_hp}%", color=T.ROJO, size=12,
-                font_family=T.FUENTE),
-        _barra(enemigo_hp, T.ROJO),
-        ft.Text(f"{heroe} (integridad arena) — {heroe_hp}%", color=T.VERDE,
-                size=12, font_family=T.FUENTE),
-        _barra(heroe_hp, T.VERDE),
-    ]))
+    def _sprite(src: str, etiqueta: str) -> ft.Control:
+        return ft.Column([
+            ft.Container(
+                content=ft.Image(src=src, width=96, height=96,
+                                 error_content=ft.Text("·", color=T.TEXTO_DIM)),
+                width=104, height=104, border_radius=52,
+                border=T.borde_neon(T.CYAN),
+            ),
+            ft.Text(etiqueta, color=T.TEXTO_DIM, size=T.TAM_MINIMO,
+                    font_family=T.FUENTE, text_align=ft.TextAlign.CENTER),
+        ], spacing=4, tight=True, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+
+    src_rival = T.icono_sombra(slug) if es_sombra else T.icono_modulo(slug)
+    bloques.append(
+        ft.Container(
+            image=ft.DecorationImage(src=T.fondo_arena(arena_de(slug)),
+                                     fit=ft.BoxFit.COVER),
+            padding=12, border_radius=8,
+            content=ft.Column([
+                ft.Row([
+                    ft.Container(expand=True),
+                    ft.Column([
+                        _sprite(src_rival, f"RIVAL — {enemigo_hp}%"),
+                        _barra(enemigo_hp, T.ROJO),
+                    ], spacing=4, tight=True),
+                ], spacing=8),
+                ft.Row([
+                    ft.Column([
+                        _barra(heroe_hp, T.VERDE),
+                        _sprite(T.icono_heroe(), f"{heroe} — {heroe_hp}%"),
+                    ], spacing=4, tight=True),
+                    ft.Container(expand=True),
+                ], spacing=8),
+            ], spacing=8),
+        )
+    )
     fin = terminado is not None
 
     if submenu == "ataques":

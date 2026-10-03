@@ -59,6 +59,21 @@ def fondo_portada() -> str:
     return "portada_fondo.png"
 
 
+def fondo_arena(nombre: str) -> str:
+    """Arena de combate dentro de assets/."""
+    return f"arenas/{nombre}.png"
+
+
+def icono_heroe() -> str:
+    """Chibi del analista dentro de assets/."""
+    return "heroe.png"
+
+
+def icono_sombra(nombre: str) -> str:
+    """Variante reclutada del bicho dentro de assets/."""
+    return f"modulos/{nombre}_sombra.png"
+
+
 def borde_neon(color: str):
     """Borde fino luminoso para tarjetas (importa flet solo aquí)."""
     import flet as ft

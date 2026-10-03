@@ -108,6 +108,15 @@ META_POR_SLUG = {
 
 _NUM_POR_SLUG = {nombre: num for num, nombre, _s, _cia, _cis, _url in MODULOS}
 
+MUNDO_POR_SLUG = {nombre: cia for _num, nombre, _s, cia, _cis, _url in MODULOS}
+
+
+def arena_de(slug: str) -> str:
+    """Arena del capítulo: garaje tutorial, resto por mundo CIA."""
+    if slug == "trojan":
+        return "garaje"
+    return MUNDO_POR_SLUG[slug].lower()
+
 
 def slug_de(indice: int) -> str:
     """Slug del módulo en la posición `indice` de MODULOS."""
