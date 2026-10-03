@@ -36,7 +36,9 @@ class MetricasTests(unittest.TestCase):
             ("menu", (prog, {"Confidencialidad": ["keylogger"]}, "keylogger")),
             ("mapa", ("Confidencialidad", ["keylogger"], prog)),
             ("jefes", (prog, {"Confidencialidad": ["keylogger"]})),
-            ("ajustes", (prog, {"lab_dir": "x", "logs_dir": "y"})),
+            ("avalancha", (prog, {"Confidencialidad": ["keylogger"]})),
+            ("ajustes", (prog,)),
+            ("datos", ({"lab_dir": "x", "logs_dir": "y"}, "0 KB")),
             ("portada", ("trojan",)),
             ("guia", ("# Hola",)),
         ]:

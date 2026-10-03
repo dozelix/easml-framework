@@ -221,8 +221,12 @@ class TestLayout(unittest.TestCase):
         self.assertIsNotNone(V.vista_jefes(
             {"minijefe": {}, "megajefe": {}, "sombra": [], "panteon": {}},
             {"Confidencialidad": ["keylogger"]}))
-        self.assertIsNotNone(V.vista_ajustes(
-            {"dlc": False, "anim": True}, {"lab_dir": "x", "logs_dir": "y"}))
+        self.assertIsNotNone(V.vista_avalancha(
+            {"minijefe": {}, "megajefe": {}, "sombra": [], "panteon": {}},
+            {"Confidencialidad": ["keylogger"]}))
+        self.assertIsNotNone(V.vista_ajustes({"dlc": False, "anim": True}))
+        self.assertIsNotNone(V.vista_datos(
+            {"lab_dir": "x", "logs_dir": "y"}, "0 KB"))
         self.assertIsNotNone(V.vista_portada("trojan"))
 
 

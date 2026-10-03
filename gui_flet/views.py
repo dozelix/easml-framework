@@ -231,10 +231,9 @@ def vista_mapa(mundo: str, slugs: list[str], p: dict,
     return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
 
 
-def vista_jefes(p: dict, mundos: dict, on_rejugar=None,
-                on_panteon=None) -> ft.Control:
-    """Jefes superados, sombras reclutadas y panteones."""
-    bloques: list = [titulo("JEFES Y PANTEÓN")]
+def vista_jefes(p: dict, mundos: dict, on_rejugar=None) -> ft.Control:
+    """Solo rejugables: jefes vencidos y sombras (el Panteón vive aparte)."""
+    bloques: list = [titulo("JEFES")]
     for mundo, slugs in mundos.items():
         sup = [s for s in slugs if p.get("minijefe", {}).get(s, {}).get("ok")]
         if not sup:
@@ -251,22 +250,6 @@ def vista_jefes(p: dict, mundos: dict, on_rejugar=None,
         bloques.append(tarjeta(
             [ft.Text(mundo.upper(), weight=ft.FontWeight.BOLD, color=T.TEXTO,
                      font_family=T.FUENTE)] + filas))
-    for mundo, slugs in mundos.items():
-        pct = _pct(p, slugs)
-        listo = pct == 100
-        bloques.append(
-            ft.Container(
-                content=ft.Row([
-                    ft.Text(f"{'PANTEÓN' if listo else 'PANTEÓN ???'} — {mundo} ({pct}%)",
-                            weight=ft.FontWeight.BOLD, font_family=T.FUENTE,
-                            color=T.TEXTO, expand=True),
-                    ft.Button("INICIAR", bgcolor=T.ROJO,
-                              color=T.TEXTO_SOBRE_NEON, disabled=not listo,
-                              on_click=lambda e, m=mundo: on_panteon(m) if on_panteon else None),
-                ], spacing=8),
-                bgcolor=T.BG_CARD, padding=12, border_radius=8,
-            )
-        )
     if len(bloques) == 1:
         bloques.append(tarjeta([ft.Text("Aún no vences ningún jefe. "
                                         "Completa capítulos desde el mapa.",
@@ -274,11 +257,37 @@ def vista_jefes(p: dict, mundos: dict, on_rejugar=None,
     return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
 
 
-def vista_ajustes(p: dict, rutas: dict, on_dlc=None, on_anim=None,
-                  on_nombre=None,
-                  on_reset_arena=None, on_reset_progreso=None) -> ft.Control:
-    """Ajustes: héroe, DLC, animaciones, resets separados, rutas activas."""
-    bloques: list = [titulo("AJUSTES")]
+def vista_avalancha(p: dict, mundos: dict, on_panteon=None) -> ft.Control:
+    """Solo modo avalancha: un Panteón por historia (??? hasta el 100%)."""
+    bloques: list = [titulo("AVALANCHA")]
+    bloques.append(tarjeta([ft.Text(
+        "Racha de jefes en difícil, sin piedad. Se desbloquea al cerrar "
+        "una historia al 100%.", color=T.TEXTO, font_family=T.FUENTE)]))
+    for mundo, slugs in mundos.items():
+        pct = _pct(p, slugs)
+        listo = pct == 100
+        superado = p.get("panteon", {}).get(mundo, False)
+        marca = "SUPERADO" if superado else ("PANTEÓN" if listo else "PANTEÓN ???")
+        bloques.append(
+            ft.Container(
+                content=ft.Row([
+                    ft.Text(f"{marca} — {mundo} ({pct}%)",
+                            weight=ft.FontWeight.BOLD, font_family=T.FUENTE,
+                            color=T.VERDE if superado else T.TEXTO, expand=True),
+                    ft.Button("INICIAR", bgcolor=T.ROJO,
+                              color=T.TEXTO_SOBRE_NEON, disabled=not listo,
+                              on_click=lambda e, m=mundo: on_panteon(m) if on_panteon else None),
+                ], spacing=8),
+                bgcolor=T.BG_CARD, padding=12, border_radius=8,
+            )
+        )
+    return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
+
+
+def vista_ajustes(p: dict, on_dlc=None, on_anim=None,
+                  on_nombre=None) -> ft.Control:
+    """Solo configuración: héroe, DLC y animaciones (datos vive aparte)."""
+    bloques: list = [titulo("CONFIGURACIÓN")]
     bloques.append(
         ft.Container(
             content=ft.Column([
@@ -306,6 +315,13 @@ def vista_ajustes(p: dict, rutas: dict, on_dlc=None, on_anim=None,
             bgcolor=T.BG_CARD, padding=14, border_radius=8,
         )
     )
+    return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
+
+
+def vista_datos(rutas: dict, tam_lab: str,
+                on_reset_arena=None, on_reset_progreso=None) -> ft.Control:
+    """Solo datos locales: resets separados y diagnóstico de rutas."""
+    bloques: list = [titulo("DATOS")]
     bloques.append(
         ft.Container(
             content=ft.Row([
@@ -326,8 +342,69 @@ def vista_ajustes(p: dict, rutas: dict, on_dlc=None, on_anim=None,
                 font_family=T.FUENTE),
         ft.Text(f"logs:  {rutas.get('logs_dir', '')}", size=12, color=T.TEXTO_DIM,
                 font_family=T.FUENTE),
+        ft.Text(f"arena en disco: {tam_lab}", size=12, color=T.TEXTO_DIM,
+                font_family=T.FUENTE),
     ]))
     return ft.Column(bloques, spacing=8, scroll=ft.ScrollMode.AUTO, expand=True)
+
+
+def _boton_combate(texto, color, fondo, handler, fin=False,
+                   deshabilitado=False):
+    return ft.Button(texto, color=color, bgcolor=fondo,
+                     disabled=fin or deshabilitado,
+                     on_click=lambda e: handler() if handler else None)
+
+
+def _sub_ataques(fin, on_movimiento, on_volver):
+    movimientos = [("ATAQUE", T.ROJO, "atacar"), ("ANALIZAR", T.AZUL, "analizar"),
+                   ("PARCHEAR", T.VERDE, "parchar"), ("GUARDIA", T.AMARILLO, "guardia")]
+    fila = [_boton_combate(txt, col, T.BG_PANEL,
+                           lambda m=mov: on_movimiento(m) if on_movimiento else None,
+                           fin=fin)
+            for txt, col, mov in movimientos]
+    fila.append(_boton_combate("VOLVER", T.TEXTO_DIM, T.BG_PANEL,
+                              lambda: on_volver() if on_volver else None, fin=fin))
+    return ft.Row(fila, spacing=6)
+
+
+def _sub_mochila(fin, mochila, on_item, on_volver):
+    from app.mochila import ITEMS
+    inv = mochila or {}
+    botones = [_boton_combate(
+        f"{info['nombre'].upper()} x{inv.get(clave, 0)}", T.MORADO, T.BG_PANEL,
+        (lambda k=clave: on_item(k)) if on_item else None,
+        fin=fin, deshabilitado=inv.get(clave, 0) <= 0)
+        for clave, info in ITEMS.items()]
+    botones.append(_boton_combate("VOLVER", T.TEXTO_DIM, T.BG_PANEL,
+                                  lambda: on_volver() if on_volver else None,
+                                  fin=fin))
+    return ft.Row(botones, spacing=6)
+
+
+def _sub_equipo(fin, sombras, on_volver):
+    lista = sombras or []
+    return ft.Column([
+        ft.Text(f"Aliados: {', '.join(lista) if lista else 'ninguno'} "
+                f"(+{5 * len(lista)} daño c/u en ATACAR)",
+                color=T.TEXTO, size=T.TAM_MINIMO, font_family=T.FUENTE),
+        ft.Row([_boton_combate("VOLVER", T.TEXTO_DIM, T.BG_PANEL,
+                               lambda: on_volver() if on_volver else None,
+                               fin=fin)],
+               spacing=6),
+    ], spacing=6)
+
+
+def _menu_combate(fin, on_menu, on_huir):
+    return ft.Row([
+        _boton_combate("ATACAR", T.ROJO, T.BG_PANEL,
+                       lambda: on_menu("ataques") if on_menu else None, fin=fin),
+        _boton_combate("MOCHILA", T.MORADO, T.BG_PANEL,
+                       lambda: on_menu("mochila") if on_menu else None, fin=fin),
+        _boton_combate("EQUIPO", T.AZUL, T.BG_PANEL,
+                       lambda: on_menu("equipo") if on_menu else None, fin=fin),
+        _boton_combate("HUIR", T.TEXTO_DIM, T.BG_PANEL,
+                       lambda: on_huir() if on_huir else None, fin=fin),
+    ], spacing=6)
 
 
 def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
@@ -336,8 +413,7 @@ def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
                   mochila: dict | None = None, sombras: list | None = None,
                   on_menu=None, on_volver=None, on_movimiento=None,
                   on_item=None, on_huir=None) -> ft.Control:
-    """Combate por turnos: menú ATACAR/MOCHILA/EQUIPO/HUIR + subvistas."""
-    from app.mochila import ITEMS
+    """Combate por turnos (orquesta barras + un submenú a la vez)."""
     bloques: list = [titulo(f"COMBATE: {meta(slug)['alias']} ({slug})")]
 
     def _barra(valor: int, color: str) -> ft.ProgressBar:
@@ -354,58 +430,14 @@ def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
     ]))
     fin = terminado is not None
 
-    def _boton(texto, color, fondo, handler, deshabilitado=False):
-        return ft.Button(texto, color=color, bgcolor=fondo,
-                         disabled=fin or deshabilitado,
-                         on_click=lambda e: handler() if handler else None)
-
     if submenu == "ataques":
-        fila = ft.Row([
-            _boton("ATAQUE", T.ROJO, T.BG_PANEL,
-                   lambda: on_movimiento("atacar") if on_movimiento else None),
-            _boton("ANALIZAR", T.AZUL, T.BG_PANEL,
-                   lambda: on_movimiento("analizar") if on_movimiento else None),
-            _boton("PARCHEAR", T.VERDE, T.BG_PANEL,
-                   lambda: on_movimiento("parchar") if on_movimiento else None),
-            _boton("GUARDIA", T.AMARILLO, T.BG_PANEL,
-                   lambda: on_movimiento("guardia") if on_movimiento else None),
-            _boton("VOLVER", T.TEXTO_DIM, T.BG_PANEL,
-                   lambda: on_volver() if on_volver else None),
-        ], spacing=6)
+        fila = _sub_ataques(fin, on_movimiento, on_volver)
     elif submenu == "mochila":
-        inv = mochila or {}
-        botones = []
-        for clave, info in ITEMS.items():
-            n = inv.get(clave, 0)
-            botones.append(_boton(
-                f"{info['nombre'].upper()} x{n}", T.MORADO, T.BG_PANEL,
-                (lambda k=clave: on_item(k)) if on_item else None,
-                deshabilitado=n <= 0))
-        botones.append(_boton("VOLVER", T.TEXTO_DIM, T.BG_PANEL,
-                              lambda: on_volver() if on_volver else None))
-        fila = ft.Row(botones, spacing=6)
+        fila = _sub_mochila(fin, mochila, on_item, on_volver)
     elif submenu == "equipo":
-        lista = sombras or []
-        bonus = 5 * len(lista)
-        fila = ft.Column([
-            ft.Text(f"Aliados: {', '.join(lista) if lista else 'ninguno'} "
-                    f"(+{bonus} daño c/u en ATACAR)",
-                    color=T.TEXTO, size=T.TAM_MINIMO, font_family=T.FUENTE),
-            ft.Row([_boton("VOLVER", T.TEXTO_DIM, T.BG_PANEL,
-                           lambda: on_volver() if on_volver else None)],
-                   spacing=6),
-        ], spacing=6)
+        fila = _sub_equipo(fin, sombras, on_volver)
     else:
-        fila = ft.Row([
-            _boton("ATACAR", T.ROJO, T.BG_PANEL,
-                   lambda: on_menu("ataques") if on_menu else None),
-            _boton("MOCHILA", T.MORADO, T.BG_PANEL,
-                   lambda: on_menu("mochila") if on_menu else None),
-            _boton("EQUIPO", T.AZUL, T.BG_PANEL,
-                   lambda: on_menu("equipo") if on_menu else None),
-            _boton("HUIR", T.TEXTO_DIM, T.BG_PANEL,
-                   lambda: on_huir() if on_huir else None),
-        ], spacing=6)
+        fila = _menu_combate(fin, on_menu, on_huir)
     bloques.append(fila)
     bloques.append(ft.Text("Llévalo a 0% para purificarlo como SOMBRA.",
                            color=T.TEXTO_DIM, size=T.TAM_MINIMO,
@@ -423,8 +455,9 @@ def vista_combate(slug: str, heroe_hp: int, enemigo_hp: int,
 def vista_portada(siguiente: str, progreso: dict | None = None,
                   primera: bool = False, alerta: str | None = None,
                   on_jugar=None, on_historias=None, on_avalancha=None,
-                  on_config=None, on_como=None, on_salir=None) -> ft.Control:
-    """Pantalla título: fondo de red + 6 botones (máx 2 clicks a todo)."""
+                  on_config=None, on_datos=None,
+                  on_como=None, on_salir=None) -> ft.Control:
+    """Pantalla título: fondo de red + 7 botones (máx 2 clicks a todo)."""
     alias = meta(siguiente)["alias"]
     glow = (progreso or {}).get("anim", True)
     etiqueta_jugar = "COMENZAR AVENTURA" if primera else f"JUGAR: {alias}"
@@ -469,6 +502,9 @@ def vista_portada(siguiente: str, progreso: dict | None = None,
         ], spacing=8),
         ft.Row([
             _btn("CONFIGURACIÓN", T.AMARILLO, T.BG_PANEL, on_config, expand=True),
+            _btn("DATOS", T.VERDE, T.BG_PANEL, on_datos, expand=True),
+        ], spacing=8),
+        ft.Row([
             _btn("CÓMO JUGAR", T.MORADO, T.BG_PANEL, on_como, expand=True),
         ], spacing=8),
         ft.Row([
